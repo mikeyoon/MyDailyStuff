@@ -1,0 +1,37 @@
+{
+	"ImportPath": "github.com/mikeyoon/MyDailyStuff",
+	"GoVersion": "go1.4.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/araddon/gou",
+			"Rev": "d88ffbf6bbf42f05e3021ba707c3eb08c37126e8"
+		},
+		{
+			"ImportPath": "github.com/bitly/go-hostpool",
+			"Rev": "8c2964dbe369e4f05a0b1775d12a94cb858646b8"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/inject",
+			"Comment": "v1.0-rc1-10-g33e0aa1",
+			"Rev": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
+		},
+		{
+			"ImportPath": "github.com/go-martini/martini",
+			"Comment": "v1.0-93-g1fa63f1",
+			"Rev": "1fa63f1c64ff0e05a5b923c6506224ad3db803c2"
+		},
+		{
+			"ImportPath": "github.com/martini-contrib/render",
+			"Rev": "b65063311fac6cbf84d3538f5715f7847e648322"
+		},
+		{
+			"ImportPath": "github.com/mattbaird/elastigo/lib",
+			"Comment": "v1.0-132-g9481518",
+			"Rev": "948151831445d88ea7f833ef717a1ccd0a71b5b7"
+		},
+		{
+			"ImportPath": "github.com/oxtoacart/bpool",
+			"Rev": "923fab21d0624a469b877a05bbfc562c1c26c663"
+		}
+	]
+}
