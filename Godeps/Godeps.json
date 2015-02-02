@@ -3,6 +3,11 @@
 	"GoVersion": "go1.4.1",
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/go-uuid/uuid",
+			"Comment": "null-15",
+			"Rev": "35bc42037350f0078e3c974c6ea690f1926603ab"
+		},
+		{
 			"ImportPath": "github.com/araddon/gou",
 			"Rev": "d88ffbf6bbf42f05e3021ba707c3eb08c37126e8"
 		},
@@ -11,14 +16,39 @@
 			"Rev": "8c2964dbe369e4f05a0b1775d12a94cb858646b8"
 		},
 		{
+			"ImportPath": "github.com/boj/redistore",
+			"Comment": "v1",
+			"Rev": "9d1554b400d726c7aa54b6e4a836f273b72b97f7"
+		},
+		{
 			"ImportPath": "github.com/codegangsta/inject",
 			"Comment": "v1.0-rc1-10-g33e0aa1",
 			"Rev": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
 		},
 		{
+			"ImportPath": "github.com/garyburd/redigo/internal",
+			"Rev": "785e0ca9319196b94fd61abd4c9eab5c11777377"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/redis",
+			"Rev": "785e0ca9319196b94fd61abd4c9eab5c11777377"
+		},
+		{
 			"ImportPath": "github.com/go-martini/martini",
 			"Comment": "v1.0-93-g1fa63f1",
 			"Rev": "1fa63f1c64ff0e05a5b923c6506224ad3db803c2"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/securecookie",
+			"Rev": "f0559d009e6943011cd1ba6eb16195cf5e0ed326"
+		},
+		{
+			"ImportPath": "github.com/gorilla/sessions",
+			"Rev": "13c86220d944600e7a6e3de6c87418896ccfbe77"
 		},
 		{
 			"ImportPath": "github.com/martini-contrib/binding",
@@ -29,6 +59,10 @@
 			"Rev": "b65063311fac6cbf84d3538f5715f7847e648322"
 		},
 		{
+			"ImportPath": "github.com/martini-contrib/sessions",
+			"Rev": "fa13114fbcf036dff8185d728651d85fcef772db"
+		},
+		{
 			"ImportPath": "github.com/mattbaird/elastigo/lib",
 			"Comment": "v1.0-132-g9481518",
 			"Rev": "948151831445d88ea7f833ef717a1ccd0a71b5b7"
@@ -36,6 +70,14 @@
 		{
 			"ImportPath": "github.com/oxtoacart/bpool",
 			"Rev": "923fab21d0624a469b877a05bbfc562c1c26c663"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/bcrypt",
+			"Rev": "7db43667c77d5d330c359ffd03f5789cf390e973"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "7db43667c77d5d330c359ffd03f5789cf390e973"
 		}
 	]
 }
