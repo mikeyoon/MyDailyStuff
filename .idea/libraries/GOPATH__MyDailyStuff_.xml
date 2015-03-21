@@ -1,0 +1,22 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;MyDailyStuff&gt;">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../../kr" />
+      <root url="file://$PROJECT_DIR$/../../boj" />
+      <root url="file://$PROJECT_DIR$/../../bitly" />
+      <root url="file://$PROJECT_DIR$/../../tools" />
+      <root url="file://$PROJECT_DIR$/../../araddon" />
+      <root url="file://$PROJECT_DIR$/../../gorilla" />
+      <root url="file://$PROJECT_DIR$/../../garyburd" />
+      <root url="file://$PROJECT_DIR$/../../mattbaird" />
+      <root url="file://$PROJECT_DIR$/../../oxtoacart" />
+      <root url="file://$PROJECT_DIR$/../../go-martini" />
+      <root url="file://$PROJECT_DIR$/../../codegangsta" />
+      <root url="file://$PROJECT_DIR$/../../martini-contrib" />
+      <root url="file://$PROJECT_DIR$/../../../golang.org" />
+      <root url="file://$PROJECT_DIR$/../../../code.google.com" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
