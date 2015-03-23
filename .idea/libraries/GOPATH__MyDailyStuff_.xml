@@ -7,7 +7,9 @@
       <root url="file://$PROJECT_DIR$/../../tools" />
       <root url="file://$PROJECT_DIR$/../../araddon" />
       <root url="file://$PROJECT_DIR$/../../gorilla" />
+      <root url="file://$PROJECT_DIR$/../../olivere" />
       <root url="file://$PROJECT_DIR$/../../garyburd" />
+      <root url="file://$PROJECT_DIR$/../elastigo" />
       <root url="file://$PROJECT_DIR$/../../mattbaird" />
       <root url="file://$PROJECT_DIR$/../../oxtoacart" />
       <root url="file://$PROJECT_DIR$/../../go-martini" />

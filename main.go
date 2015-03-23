@@ -2,18 +2,13 @@
 package main
 
 import (
-	"code.google.com/p/go-uuid/uuid"
-	"encoding/json"
 	"flag"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
-	elastigo "github.com/mattbaird/elastigo/lib"
-	. "github.com/mikeyoon/MyDailyStuff/utils"
-	"golang.org/x/crypto/bcrypt"
+    "github.com/mikeyoon/MyDailyStuff/lib"
 	"log"
-	"time"
 )
 
 var (
@@ -26,13 +21,6 @@ type JournalEntry struct {
 	Date       string
 	Entries    []string
 	ModifyDate string
-}
-
-type User struct {
-	UserId       string
-	Email        string
-	PasswordHash []byte
-	CreateDate   time.Time
 }
 
 type LoginRequest struct {
@@ -56,14 +44,12 @@ type CreateEntryRequest struct {
 }
 
 func main() {
-	conn := elastigo.NewConn()
-	conn.Domain = *eshost
-
-	err := CreateIndexes(conn)
+    service := lib.Service{}
+    err := service.InitDataStore(nil)
 
 	if err != nil {
-		log.Fatal(err)
-	}
+        log.Fatal(err)
+    }
 
 	store := sessions.NewCookieStore([]byte(*sessionSecret))
 
@@ -77,34 +63,17 @@ func main() {
 	})
 
 	//Login
-	m.Post("/account/login", binding.Bind(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
-		pass, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
+	m.Post("/account/login", binding.Json(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
+
+        user, err := service.GetUserByLogin(req.Email, req.Password)
 
 		if err != nil {
-			panic(err)
+			r.Status(404)
+            return
 		}
 
-		result, err := conn.Search("users", "user", map[string]interface{}{
-			"Email":        req.Email,
-			"PasswordHash": string(pass)}, nil)
-
-		if err != nil {
-			panic(err)
-		}
-
-		if result.Hits.Total > 0 {
-			var u User
-			bytes, err := result.Hits.Hits[0].Source.MarshalJSON()
-			if err != nil {
-				panic(err)
-			}
-
-			json.Unmarshal(bytes, u)
-			session.Set("userId", u.UserId)
-			r.JSON(200, map[string]interface{}{"result": "success"})
-		} else {
-			r.JSON(200, map[string]interface{}{"result": "notfound"})
-		}
+        session.Set("userId", user.UserId)
+        r.JSON(200, map[string]interface{}{"result": "success"})
 	})
 
 	//Get user account information
@@ -115,62 +84,25 @@ func main() {
 	//Submit registration
 	m.Post("/account/register", binding.Json(RegisterRequest{}),
 		func(reg RegisterRequest, r render.Render) {
-			id := uuid.New()
-
-			pass, err := bcrypt.GenerateFromPassword([]byte(reg.Password), 10)
-			if err != nil {
-				panic(err)
-			}
-
-			result, err := conn.Search("users", "user", map[string]interface{}{
-				"Email": reg.Email}, nil)
-
-			if result.Hits.Total > 0 {
-				r.JSON(200, map[string]interface{}{"error": "User already exists"})
-			} else {
-				resp, err := conn.Index("users", "user", id, nil, User{
-					Email:        reg.Email,
-					UserId:       id,
-					CreateDate:   time.Now(),
-					PasswordHash: pass})
-
-				if err != nil {
-					panic(err)
-				}
-
-				if resp.Created {
-					r.JSON(200, map[string]interface{}{"Hello": "World"})
-				} else {
-					r.JSON(500, map[string]interface{}{"Stuff": "Things"})
-				}
-			}
+            err := service.CreateUser(reg.Email, reg.Password)
+            if err != nil {
+                r.JSON(200, map[string]interface{}{ "success": false })
+            } else {
+                r.JSON(200, map[string]interface{}{ "success": true })
+            }
 		})
 
 	//Modify user account
 	m.Post("/account/:id", binding.Json(ModifyAccountRequest{}),
 		func(req ModifyAccountRequest, args martini.Params, r render.Render) {
-			var result User
-			err := conn.GetSource("users", "user", args["id"], nil, result)
+            log.Println("Modifying user " + args["id"])
 
-			if err != nil {
-				r.JSON(200, map[string]interface{}{"Not": "Found"})
-			} else {
-				if req.Password != "" {
-					hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
-					if err != nil {
-						panic(err)
-					}
-
-					result.PasswordHash = hash
-				}
-
-				result.Email = req.Email
-				conn.Index("users", "user", args["id"], nil, User{
-					Email: req.Email,
-				})
-
-				r.JSON(200, map[string]interface{}{"result": "success"})
-			}
+            err := service.UpdateUser(args["id"], req.Email, req.Password)
+            if err != nil {
+                r.JSON(200, map[string]interface{}{ "success": false })
+            } else {
+                r.JSON(200, map[string]interface{}{ "success": true })
+            }
 		})
 
 	//Get a journal entry
