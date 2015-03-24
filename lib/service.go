@@ -24,6 +24,12 @@ type User struct {
     LastLoginDate time.Time `json:"last_login_date"`
 }
 
+type JournalEntry struct {
+    UserId     string `json:"user_id"`
+    Entries    []string `json:"entries"`
+    Date time.Time `json:"create_date"`
+}
+
 type Service struct {
     es *elastigo.Conn
 }
@@ -62,30 +68,43 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
         log.Println("Creating main index")
 
         indexJson := []byte(`{
-          "mapper": {
-            "dynamic": false
-          },
-          "mappings": {
-            "user": {
-              "properties": {
-                  "user_id" {
-                    "type": "string",
-                    "index": "no"
-                  },
-                  "email": {
-                    "type": "string",
-                    "index": "not_analyzed"
-                  },
-                  "password_hash": {
-                    "type": "string",
-                    "index": "not_analyzed"
-                  },
-                  "create_date": {"type": "date"},
-                  "last_login_date": {"type": "date"}
-              }
+            "mapper": {
+                "dynamic": false
+            },
+            "mappings": {
+                "user": {
+                    "properties": {
+                        "user_id": {
+                            "type": "string",
+                            "index": "no"
+                        },
+                        "email": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "password_hash": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                            "create_date": {"type": "date"},
+                            "last_login_date": {"type": "date"}
+                        }
+                    },
+                "journal": {
+                    "properties": {
+                        "user_id": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "entries": {
+                            "type": "string",
+                            "index": "analyzed"
+                        }
+                    }
+                }
             }
-          }
         }`)
+
         var indexSettings IndexSettings
         err := json.Unmarshal(indexJson, &indexSettings)
 
@@ -259,3 +278,80 @@ func (s *Service) CreateUser(email string, password string) (error) {
 }
 
 //Journal Functions
+
+func (s *Service) CreateJournalEntry(userId string, entries []string, date time.Time) (error) {
+    _, err := s.GetJournalEntryByDate(userId, date)
+    if err != NoJournalWithDate {
+        return EntryAlreadyExists
+    }
+
+    createDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+
+    id := uuid.New()
+    entry := JournalEntry{UserId: userId, Date: createDate, Entries: entries}
+
+    _, err = s.es.Index(EsIndex, JournalIndex, id, nil, entry)
+    return err
+}
+
+func (s *Service) UpdateJournalEntry(id string, userId string, entries []string) (error) {
+    var entry JournalEntry
+
+    err := s.es.GetSource(EsIndex, JournalIndex, id, nil, &entry)
+
+    if err != nil {
+        return err
+    }
+
+    if entry.UserId != userId {
+        return EntryNotFound
+    }
+
+    entry.Entries = entries
+    _, err = s.es.Index(EsIndex, JournalIndex, id, nil, entry)
+
+    return err
+}
+
+func (s *Service) DeleteJournalEntry(id string, userId string) (error) {
+    var entry JournalEntry
+    err := s.es.GetSource(EsIndex, JournalIndex, id, nil, &entry)
+
+    if err != nil || userId != entry.UserId {
+        return EntryNotFound
+    }
+
+    _, err = s.es.Delete(EsIndex, JournalIndex, id, nil)
+    return err
+}
+
+func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error) {
+    var retval JournalEntry
+
+    createDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+
+    query := elastigo.Query().
+        All().
+        Filter(elastigo.CompoundFilter(
+            elastigo.Filter().Term("user_id", userId),
+            elastigo.Filter().Term("create_date", createDate)))
+
+    result, err := s.es.Search(EsIndex, JournalIndex, nil, query)
+    if err != nil {
+        log.Println(err.Error())
+        if err == elastigo.RecordNotFound {
+            return retval, NoJournalWithDate
+        }
+
+        return retval, err
+    }
+
+    if result.Hits.Total == 0 {
+        return retval, NoJournalWithDate
+    }
+
+    err = getSingleResult(result, &retval)
+    return retval, err
+}
+
+//Search journal entries
