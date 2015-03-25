@@ -332,9 +332,9 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 
     query := elastigo.Query().
         All().
-        Filter(elastigo.CompoundFilter(
-            elastigo.Filter().Term("user_id", userId),
-            elastigo.Filter().Term("create_date", createDate)))
+        Filter(elastigo.Filter().
+            And(elastigo.Filter().Term("user_id", userId)).
+            And(elastigo.Filter().Term("create_date", createDate)))
 
     result, err := s.es.Search(EsIndex, JournalIndex, nil, query)
     if err != nil {
