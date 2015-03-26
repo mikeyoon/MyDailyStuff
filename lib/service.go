@@ -4,11 +4,11 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	elastigo "github.com/mikeyoon/elastigo/lib"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
-	"fmt"
 )
 
 const (
@@ -164,7 +164,9 @@ func (s *Service) GetUserByEmail(email string) (User, error) {
 		All().
 		Filter(elastigo.Filter().Term("email", email))
 
-	result, err := s.es.Search(EsIndex, UserIndex, nil, query)
+	search := elastigo.Search(EsIndex).Query(query)
+	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
+	
 	if err != nil {
 		if err == elastigo.RecordNotFound {
 			return retval, UserNotFound
@@ -188,7 +190,9 @@ func (s *Service) GetUserByLogin(email string, password string) (User, error) {
 		All().
 		Filter(elastigo.Filter().Term("email", email))
 
-	result, err := s.es.Search(EsIndex, UserIndex, nil, query)
+	search := elastigo.Search(EsIndex).Query(query)
+	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
+
 	if err != nil {
 		if err == elastigo.RecordNotFound {
 			return retval, UserNotFound
@@ -361,7 +365,9 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 		And(elastigo.Filter().Term("user_id", userId)).
 		And(elastigo.Filter().Term("create_date", createDate)))
 
-	result, err := s.es.Search(EsIndex, JournalIndex, nil, query)
+	search := elastigo.Search(EsIndex).Query(query)
+	result, err := s.es.Search(EsIndex, JournalIndex, nil, search)
+
 	if err != nil {
 		log.Println(err.Error())
 		if err == elastigo.RecordNotFound {
@@ -387,6 +393,7 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	}
 
 	query := elastigo.Query()
+
 	if jq.Query != "" {
 		query = query.Search(jq.Query)
 	}
@@ -402,7 +409,9 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 		query = query.Filter(elastigo.Filter().AddRange("create_date", nil, nil, end, nil, ""))
 	}
 
-	result, err := s.es.Search(EsIndex, JournalIndex, nil, query)
+	search := elastigo.Search(EsIndex).Query(query)
+	result, err := s.es.Search(EsIndex, JournalIndex, nil, search)
+
 	if err != nil {
 		return nil, err
 	}
