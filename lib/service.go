@@ -92,8 +92,7 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
                             "index": "not_analyzed"
                         },
                         "password_hash": {
-                            "type": "string",
-                            "index": "not_analyzed"
+                            "type": "binary"
                         },
                             "create_date": {"type": "date"},
                             "last_login_date": {"type": "date"}
@@ -107,7 +106,11 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
                         },
                         "entries": {
                             "type": "string",
-                            "index": "analyzed"
+                            "analyzer": "english"
+
+                        },
+                        "create_date": {
+                            "type": "date"
                         }
                     }
                 }
@@ -166,7 +169,7 @@ func (s *Service) GetUserByEmail(email string) (User, error) {
 
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
-	
+
 	if err != nil {
 		if err == elastigo.RecordNotFound {
 			return retval, UserNotFound
@@ -386,7 +389,6 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 }
 
 //Search journal entries
-
 func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error) {
 	if userId == "" {
 		return nil, UserUnauthorized
@@ -395,7 +397,7 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	query := elastigo.Query()
 
 	if jq.Query != "" {
-		query = query.Search(jq.Query)
+		query = query.Fields("entries,create_date", jq.Query, "", "").SetLenient(true)
 	}
 
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
