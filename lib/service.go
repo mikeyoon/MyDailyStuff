@@ -404,11 +404,11 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().AddRange("create_date", start, nil, end, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, end, nil, ""))
 	} else if !jq.Start.IsZero() {
-		query = query.Filter(elastigo.Filter().AddRange("create_date", start, nil, nil, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, nil, nil, ""))
 	} else if !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().AddRange("create_date", nil, nil, end, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("create_date", nil, nil, end, nil, ""))
 	}
 
 	search := elastigo.Search(EsIndex).Query(query)
