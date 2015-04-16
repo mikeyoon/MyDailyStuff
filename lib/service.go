@@ -126,6 +126,7 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
 		}
 
 		resp, err := c.CreateIndexWithSettings(EsIndex, indexSettings)
+
 		if err != nil {
 			log.Println("Error creating index: " + err.Error())
 		} else {

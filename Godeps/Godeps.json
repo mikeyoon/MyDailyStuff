@@ -51,6 +51,10 @@
 			"Rev": "13c86220d944600e7a6e3de6c87418896ccfbe77"
 		},
 		{
+			"ImportPath": "github.com/jinzhu/now",
+			"Rev": "664da28e00d9ee7e15a5cd6c38c1a4434f0d8e1a"
+		},
+		{
 			"ImportPath": "github.com/martini-contrib/binding",
 			"Rev": "1928ed2850e7d65507ea4198d935597e43612c7d"
 		},
