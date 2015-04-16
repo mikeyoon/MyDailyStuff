@@ -48,6 +48,20 @@ type SearchJournalRequest struct {
 	End   string `form:"end"`
 }
 
+type Response struct {
+	Success bool        `json:"success"`
+	Error   string      `json:"error,omitempty"`
+	Result  interface{} `json:"result,omitempty"`
+}
+
+func ErrorResponse(error string) Response {
+	return Response{Success:false,Error:error}
+}
+
+func SuccessResponse(result interface{}) Response {
+	return Response{Success:true, Result:result}
+}
+
 func main() {
 	service := lib.Service{}
 	err := service.InitDataStore(nil)
@@ -78,7 +92,7 @@ func main() {
 		}
 
 		session.Set("userId", user.UserId)
-		r.JSON(200, map[string]interface{}{"result": "success"})
+		r.JSON(200, SuccessResponse(nil))
 	})
 
 	//Get user account information
@@ -91,9 +105,9 @@ func main() {
 		func(reg RegisterRequest, r render.Render) {
 			err := service.CreateUser(reg.Email, reg.Password)
 			if err != nil {
-				r.JSON(200, map[string]interface{}{"success": false})
+				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, map[string]interface{}{"success": true})
+				r.JSON(200, SuccessResponse(nil))
 			}
 		})
 
@@ -104,9 +118,9 @@ func main() {
 
 			err := service.UpdateUser(args["id"], req.Email, req.Password)
 			if err != nil {
-				r.JSON(200, map[string]interface{}{"success": false})
+				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, map[string]interface{}{"success": true})
+				r.JSON(200, SuccessResponse(nil))
 			}
 		})
 
@@ -115,9 +129,9 @@ func main() {
 		entry, err := service.GetJournalEntryByDate(session.Get("userId").(string), now.MustParse(args["date"]))
 
 		if err != nil {
-			r.JSON(200, map[string]interface{}{"success": false, "message": err.Error()})
+			r.JSON(200, ErrorResponse(err.Error()))
 		} else {
-			r.JSON(200, entry)
+			r.JSON(200, SuccessResponse(entry))
 		}
 	})
 
@@ -126,9 +140,9 @@ func main() {
 			err := service.DeleteJournalEntry(args["id"], session.Get("userId").(string))
 
 			if err != nil {
-				r.JSON(200, map[string]interface{}{"success": false, "message": err.Error()})
+				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, map[string]interface{}{"success": true})
+				r.JSON(200, SuccessResponse(nil))
 			}
 		})
 
@@ -138,9 +152,9 @@ func main() {
 			err := service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
 
 			if err != nil {
-				r.JSON(200, map[string]interface{}{"success": false, "message": err.Error()})
+				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, map[string]interface{}{"success": true})
+				r.JSON(200, SuccessResponse(nil))
 			}
 		})
 
@@ -150,9 +164,9 @@ func main() {
 			err := service.UpdateJournalEntry(args["id"], session.Get("userId").(string), entry.Entries)
 
 			if err != nil {
-				r.JSON(200, map[string]interface{}{"success": false, "message": err.Error()})
+				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, map[string]interface{}{"success": true})
+				r.JSON(200, SuccessResponse(nil))
 			}
 		})
 
@@ -173,9 +187,9 @@ func main() {
 			log.Println(req.Query)
 			results, err := service.SearchJournal(session.Get("userId").(string), query)
 			if err != nil {
-				r.JSON(500, map[string]interface{}{"success": false, "message": err.Error()})
+				r.JSON(500, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, results)
+				r.JSON(200, SuccessResponse(results))
 			}
 		})
 
