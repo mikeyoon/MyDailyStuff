@@ -399,6 +399,8 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 
 	if jq.Query != "" {
 		query = query.Fields("entries,create_date", jq.Query, "", "").SetLenient(true)
+	} else {
+		query = query.All()
 	}
 
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
@@ -454,6 +456,8 @@ func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, 
 
 	if jq.Query != "" {
 		query = query.Fields("entries,create_date", jq.Query, "", "").SetLenient(true)
+	} else {
+		query = query.All()
 	}
 
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
