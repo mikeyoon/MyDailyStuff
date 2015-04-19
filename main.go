@@ -48,6 +48,11 @@ type SearchJournalRequest struct {
 	End   string `form:"end"`
 }
 
+type FindDaysRequest struct {
+	Start string `form:start`
+	End   string `form:end`
+}
+
 type Response struct {
 	Success bool        `json:"success"`
 	Error   string      `json:"error,omitempty"`
@@ -55,11 +60,11 @@ type Response struct {
 }
 
 func ErrorResponse(error string) Response {
-	return Response{Success:false,Error:error}
+	return Response{Success: false, Error: error}
 }
 
 func SuccessResponse(result interface{}) Response {
-	return Response{Success:true, Result:result}
+	return Response{Success: true, Result: result}
 }
 
 func main() {
@@ -193,7 +198,27 @@ func main() {
 			}
 		})
 
-	//Find dates that have entries in range
+	//Find dates that have entries in month
+	m.Get("/search/date", binding.Bind(SearchJournalRequest{}),
+		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
+			var query lib.JournalQuery
+			query.Query = req.Query
+
+			if req.Start != "" {
+				query.Start = now.MustParse(req.Start)
+			}
+
+			if req.End != "" {
+				query.End = now.MustParse(req.End)
+			}
+
+			results, err := service.SearchJournalDates(session.Get("userId").(string), query)
+			if err != nil {
+				r.JSON(500, ErrorResponse(err.Error()))
+			} else {
+				r.JSON(200, SuccessResponse(results))
+			}
+		})
 
 	m.Run()
 }

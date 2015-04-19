@@ -443,3 +443,55 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 
 	return retval, nil
 }
+
+//Search journal entries
+func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, error) {
+	if userId == "" {
+		return nil, UserUnauthorized
+	}
+
+	query := elastigo.Query()
+
+	if jq.Query != "" {
+		query = query.Fields("entries,create_date", jq.Query, "", "").SetLenient(true)
+	}
+
+	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
+	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
+
+	if !jq.Start.IsZero() && !jq.End.IsZero() {
+		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, end, nil, ""))
+	} else if !jq.Start.IsZero() {
+		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, nil, nil, ""))
+	} else if !jq.End.IsZero() {
+		query = query.Filter(elastigo.Filter().Range("create_date", nil, nil, end, nil, ""))
+	}
+
+	search := elastigo.Search(EsIndex).Type(JournalIndex).Query(query).Fields("create_date")
+
+	result, err := search.Result(s.es)
+
+	if err != nil {
+		return nil, err
+	}
+
+	retval := make([]string, result.Hits.Total)
+
+	for index, hit := range result.Hits.Hits {
+		bytes, err := hit.Fields.MarshalJSON()
+		if err != nil {
+			panic(err)
+		}
+
+		var fields map[string][]interface{}
+
+		err = json.Unmarshal(bytes, &fields)
+		if err != nil {
+			panic(err)
+		}
+
+		retval[index] = fields["create_date"][0].(string)
+	}
+
+	return retval, nil
+}
