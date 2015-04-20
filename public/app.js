@@ -15,13 +15,12 @@ var App = (function (_super) {
         _super.apply(this, arguments);
     }
     App.prototype.render = function () {
-        return React.DOM.div(null, "Hello World");
+        return React.DOM.div(null, "Hello World 2");
     };
     return App;
 })(TypedReact.Component);
-var app = new App();
-TypedReact.createClass(App);
-React.render(React.DOM.div(null, "Hello World"), document.getElementById('content-body'));
+var app = TypedReact.createClass(App);
+React.render(React.createElement(app, null), document.getElementById('content-body'));
 
 },{"react":157,"typed-react":162}],2:[function(require,module,exports){
 // shim for using process in browser
