@@ -1,0 +1,16 @@
+{
+  "name": "MyDailyStuff.js",
+  "version": "0.0.1",
+  "devDependencies": {
+    "bootstrap": "^3.3.4",
+    "browserify": "^9.0.8",
+    "gulp": "^3.8.11",
+    "gulp-browserify": "^0.5.1",
+    "gulp-typescript": "^2.6.0",
+    "merge2": "^0.3.4",
+    "react": "^0.13.2",
+    "tsify": "^0.8.1",
+    "typed-react": "^3.4.1",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}

@@ -80,14 +80,15 @@ func main() {
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Use(sessions.Sessions("my_session", store))
+	m.Use(martini.Static("public", martini.StaticOptions{Fallback:"index.html", Exclude:"/api"}))
 
 	//Home page
-	m.Get("/", func(r render.Render) {
-		r.JSON(200, map[string]interface{}{"Hello": "World"})
-	})
+//	m.Get("/", func(r render.Render) {
+//		r.JSON(200, map[string]interface{}{"Hello": "World"})
+//	})
 
 	//Login
-	m.Post("/account/login", binding.Json(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
+	m.Post("/api/account/login", binding.Json(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
 
 		user, err := service.GetUserByLogin(req.Email, req.Password)
 
@@ -101,12 +102,12 @@ func main() {
 	})
 
 	//Get user account information
-	m.Get("/account", func(r render.Render) {
+	m.Get("/api/account", func(r render.Render) {
 
 	})
 
 	//Submit registration
-	m.Post("/account/register", binding.Json(RegisterRequest{}),
+	m.Post("/api/account/register", binding.Json(RegisterRequest{}),
 		func(reg RegisterRequest, r render.Render) {
 			err := service.CreateUser(reg.Email, reg.Password)
 			if err != nil {
@@ -117,7 +118,7 @@ func main() {
 		})
 
 	//Modify user account
-	m.Post("/account/:id", binding.Json(ModifyAccountRequest{}),
+	m.Post("/api/account/:id", binding.Json(ModifyAccountRequest{}),
 		func(req ModifyAccountRequest, args martini.Params, r render.Render) {
 			log.Println("Modifying user " + args["id"])
 
@@ -130,7 +131,7 @@ func main() {
 		})
 
 	//Get a journal entry
-	m.Get("/journal/:date", func(r render.Render, args martini.Params, session sessions.Session) {
+	m.Get("/api/journal/:date", func(r render.Render, args martini.Params, session sessions.Session) {
 		entry, err := service.GetJournalEntryByDate(session.Get("userId").(string), now.MustParse(args["date"]))
 
 		if err != nil {
@@ -140,7 +141,7 @@ func main() {
 		}
 	})
 
-	m.Delete("/journal/:id",
+	m.Delete("/api/journal/:id",
 		func(args martini.Params, session sessions.Session, r render.Render) {
 			err := service.DeleteJournalEntry(args["id"], session.Get("userId").(string))
 
@@ -152,7 +153,7 @@ func main() {
 		})
 
 	//Create a journal entry
-	m.Post("/journal", binding.Json(CreateEntryRequest{}),
+	m.Post("/api/journal", binding.Json(CreateEntryRequest{}),
 		func(entry CreateEntryRequest, session sessions.Session, r render.Render) {
 			err := service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
 
@@ -164,7 +165,7 @@ func main() {
 		})
 
 	//Update a journal entry
-	m.Put("/journal/:id", binding.Json(CreateEntryRequest{}),
+	m.Put("/api/journal/:id", binding.Json(CreateEntryRequest{}),
 		func(entry CreateEntryRequest, session sessions.Session, args martini.Params, r render.Render) {
 			err := service.UpdateJournalEntry(args["id"], session.Get("userId").(string), entry.Entries)
 
@@ -176,7 +177,7 @@ func main() {
 		})
 
 	//Search journal entries
-	m.Get("/search", binding.Bind(SearchJournalRequest{}),
+	m.Get("/api/search", binding.Bind(SearchJournalRequest{}),
 		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
 			var query lib.JournalQuery
 			query.Query = req.Query
@@ -199,7 +200,7 @@ func main() {
 		})
 
 	//Find dates that have entries in month
-	m.Get("/search/date", binding.Bind(SearchJournalRequest{}),
+	m.Get("/api/search/date", binding.Bind(SearchJournalRequest{}),
 		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
 			var query lib.JournalQuery
 			query.Query = req.Query
