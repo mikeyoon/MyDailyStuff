@@ -7,6 +7,12 @@
   "installed": {
     "react/react.d.ts": {
       "commit": "609c6a7a11a79e0e831a301f1def7b581853216f"
+    },
+    "fluxxor/fluxxor.d.ts": {
+      "commit": "2c6d3c7ee23ee9eb51ea8e64f860a5131963e7eb"
+    },
+    "react-router/react-router.d.ts": {
+      "commit": "2c6d3c7ee23ee9eb51ea8e64f860a5131963e7eb"
     }
   }
 }

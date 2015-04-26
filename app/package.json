@@ -6,9 +6,12 @@
     "browserify": "^9.0.8",
     "gulp": "^3.8.11",
     "gulp-browserify": "^0.5.1",
+    "gulp-less": "^3.0.3",
+    "gulp-sourcemaps": "^1.5.2",
     "gulp-typescript": "^2.6.0",
     "merge2": "^0.3.4",
     "react": "^0.13.2",
+    "react-router": "^0.13.2",
     "tsify": "^0.8.1",
     "typed-react": "^3.4.1",
     "vinyl-source-stream": "^1.1.0"
