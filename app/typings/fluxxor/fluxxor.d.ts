@@ -3,7 +3,7 @@
 // Definitions by: Yuichi Murata <https://github.com/mrk21>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-///<reference path='../react/legacy/react-0.12.d.ts' />
+///<reference path='../react/react.d.ts' />
 ///<reference path='../eventemitter3/eventemitter3.d.ts' />
 
 declare module Fluxxor {
@@ -58,8 +58,8 @@ declare module Fluxxor {
         getStateFromFlux(): StoreState;
     }
     
-    function FluxMixin(React: React.Exports): FluxMixin;
-    function FluxChildMixin(React: React.Exports): FluxChildMixin;
+    function FluxMixin(React: React): FluxMixin;
+    function FluxChildMixin(React: React): FluxChildMixin;
     function StoreWatchMixin<StoreState>(...storeNames: string[]): StoreWatchMixin<StoreState>;
     function createStore(spec: StoreSpec): StoreClass;
     var version: string;

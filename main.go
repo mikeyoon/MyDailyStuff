@@ -10,6 +10,7 @@ import (
 	"github.com/martini-contrib/sessions"
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	"log"
+	"net/http"
 )
 
 var (
@@ -82,13 +83,11 @@ func main() {
 	m.Use(sessions.Sessions("my_session", store))
 	m.Use(martini.Static("public", martini.StaticOptions{Fallback:"index.html", Exclude:"/api"}))
 
-	//Home page
-//	m.Get("/", func(r render.Render) {
-//		r.JSON(200, map[string]interface{}{"Hello": "World"})
-//	})
-
 	//Login
 	m.Post("/api/account/login", binding.Json(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
+		if (session.Get("userId") != nil) {
+
+		}
 
 		user, err := service.GetUserByLogin(req.Email, req.Password)
 
@@ -102,8 +101,17 @@ func main() {
 	})
 
 	//Get user account information
-	m.Get("/api/account", func(r render.Render) {
-
+	m.Get("/api/account", func(session sessions.Session, r render.Render) {
+		user, err := service.GetUserById(session.Get("userId").(string))
+		if (err != nil) {
+			r.JSON(200, SuccessResponse(map[string]interface{}{
+				"UserId": user.UserId,
+				"CreateDate": user.CreateDate,
+				"LastLoginDate": user.LastLoginDate,
+			}))
+		} else {
+			r.JSON(404, ErrorResponse(err.Error()))
+		}
 	})
 
 	//Submit registration

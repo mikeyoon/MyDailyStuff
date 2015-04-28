@@ -1,11 +1,10 @@
 /// <reference path='../typings/react/react.d.ts' />
 /// <reference path='../node_modules/typed-react/typed-react.d.ts' />
-/// <reference path='../typings/react-router/react-router.d.ts' />
+/// <reference path='../typings/page/page.d.ts' />
 
 import React = require('react');
 import TypedReact = require('typed-react');
-import Router = require('react-router');
-
+import page = require('page');
 
 //var Route = React.createFactory(Router.Route);
 //var DefaultRoute = React.createFactory(Router.DefaultRoute);
@@ -18,11 +17,28 @@ class App extends TypedReact.Component<{}, {}> {
 }
 
 var app = TypedReact.createClass(App);
-var Route = TypedReact.createClass(Router);
 
-var routeElement = React.createElement(Router, {location: "history"},
-    Route({path: "/", handler: App}));
+page('/', () => {
+    //Check if logged in, if not, route to /login
+    //If logged in, route to journal/today's date
+    var routeElement = React.createElement(app, null);
+    React.render(routeElement, document.getElementById('content-body'));
+});
 
-//var routes = Router.Route()
+page('/register', () => {
+    console.log('register');
+});
 
-React.render(routeElement, document.getElementById('content-body'));
+page('/login', () => {
+    console.log('login');
+});
+
+page('/account', () => {
+    console.log('account');
+});
+
+page('/journal/:date', (ctx) => {
+    console.log(ctx.params.date);
+});
+
+page();

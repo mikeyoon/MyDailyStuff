@@ -11,8 +11,17 @@
     "fluxxor/fluxxor.d.ts": {
       "commit": "2c6d3c7ee23ee9eb51ea8e64f860a5131963e7eb"
     },
-    "react-router/react-router.d.ts": {
-      "commit": "2c6d3c7ee23ee9eb51ea8e64f860a5131963e7eb"
+    "rest/rest.d.ts": {
+      "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
+    },
+    "page/page.d.ts": {
+      "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
+    },
+    "when/when.d.ts": {
+      "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
+    },
+    "eventemitter3/eventemitter3.d.ts": {
+      "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
     }
   }
 }
