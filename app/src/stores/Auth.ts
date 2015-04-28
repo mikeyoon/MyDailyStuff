@@ -12,29 +12,42 @@ var AuthStore = Fluxxor.createStore({
     initialize: function() {
         this.bindActions(
             actions.constants.ACCOUNT.LOGIN, this.onLogin,
-            actions.constants.ACCOUNT.LOGOUT, this.onLogout
+            actions.constants.ACCOUNT.LOGOUT, this.onLogout,
+            actions.constants.ACCOUNT.REGISTER, this.onRegister
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
     },
 
-    onRegister: function(params) {
-
-    },
-
-    onLogout: function() {
-        this.client({ path: "/api/account/logout" }).then(
-            (response) => {
+    onRegister: function(params: any) {
+        this.client({
+            method: "POST",
+            path: "/api/account/register",
+            entity: params
+        }).then(
+            (response: rest.Response) => {
                 console.log(response);
             },
-            (response) => {
+            (response: rest.Response) => {
                 console.log("Error");
                 console.log(response);
             }
         );
     },
 
-    onLogin: function(email, password) {
+    onLogout: function() {
+        this.client({ path: "/api/account/logout" }).then(
+            (response: rest.Response) => {
+                console.log(response);
+            },
+            (response: rest.Response) => {
+                console.log("Error");
+                console.log(response);
+            }
+        );
+    },
+
+    onLogin: function(email: string, password: string) {
         this.client({
             method: "POST",
             path: "/api/account/login",
@@ -43,13 +56,15 @@ var AuthStore = Fluxxor.createStore({
                 password: password
             }
         }).then(
-            (response) => {
+            (response: rest.Response) => {
                 console.log(response);
             },
-            (response) => {
+            (response: rest.Response) => {
                 console.log("Error");
                 console.log(response);
             }
         );
     }
 });
+
+export = AuthStore;

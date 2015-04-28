@@ -58,8 +58,8 @@ declare module Fluxxor {
         getStateFromFlux(): StoreState;
     }
     
-    function FluxMixin(React: React): FluxMixin;
-    function FluxChildMixin(React: React): FluxChildMixin;
+    function FluxMixin(React: any): FluxMixin;
+    function FluxChildMixin(React: any): FluxChildMixin;
     function StoreWatchMixin<StoreState>(...storeNames: string[]): StoreWatchMixin<StoreState>;
     function createStore(spec: StoreSpec): StoreClass;
     var version: string;

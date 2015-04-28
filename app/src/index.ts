@@ -5,10 +5,11 @@
 import React = require('react');
 import TypedReact = require('typed-react');
 import page = require('page');
+import AuthStore = require('./stores/Auth');
+import Fluxxor = require('fluxxor');
+import actions = require('./actions');
 
-//var Route = React.createFactory(Router.Route);
-//var DefaultRoute = React.createFactory(Router.DefaultRoute);
-//var NotFoundRoute = React.createFactory(Router.NotFoundRoute);
+import LoginComponent = require('./components/Login');
 
 class App extends TypedReact.Component<{}, {}> {
     render() {
@@ -17,6 +18,15 @@ class App extends TypedReact.Component<{}, {}> {
 }
 
 var app = TypedReact.createClass(App);
+
+var stores = {
+    auth: new AuthStore()
+};
+
+var flux = new Fluxxor.Flux(stores, actions.methods);
+flux.on("dispatch", function(type: string, payload: any) {
+    console.log("Dispatch:", type, payload);
+});
 
 page('/', () => {
     //Check if logged in, if not, route to /login
@@ -30,7 +40,8 @@ page('/register', () => {
 });
 
 page('/login', () => {
-    console.log('login');
+    var routeElement = React.createElement(LoginComponent, null);
+    React.render(routeElement, document.getElementById('content-body'));
 });
 
 page('/account', () => {

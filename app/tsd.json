@@ -5,9 +5,6 @@
   "path": "typings",
   "bundle": "typings/tsd.d.ts",
   "installed": {
-    "react/react.d.ts": {
-      "commit": "609c6a7a11a79e0e831a301f1def7b581853216f"
-    },
     "fluxxor/fluxxor.d.ts": {
       "commit": "2c6d3c7ee23ee9eb51ea8e64f860a5131963e7eb"
     },
@@ -21,6 +18,9 @@
       "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
     },
     "eventemitter3/eventemitter3.d.ts": {
+      "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
+    },
+    "react/react.d.ts": {
       "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
     }
   }

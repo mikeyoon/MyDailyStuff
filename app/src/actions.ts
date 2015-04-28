@@ -1,7 +1,12 @@
+interface JournalEntry {
+    entries: string[]
+}
+
 var c = {
     ACCOUNT: {
         LOGIN: "ACCOUNT:LOGIN",
         PROFILE: "ACCOUNT:PROFILE",
+        REGISTER: "ACCOUNT:REGISTER",
         LOGOUT: "ACCOUNT:LOGOUT"
     },
 
@@ -15,21 +20,21 @@ var c = {
 
 var methods = {
     journal: {
-        add: function(entry) {
+        add: function(entry: JournalEntry) {
             this.dispatch(c.JOURNAL.ADD, entry);
         },
-        edit: function(entry) {
+        edit: function(entry: JournalEntry) {
             this.dispatch(c.JOURNAL.EDIT, entry);
         },
-        get: function(date) {
+        get: function(date: Date) {
             this.dispatch(c.JOURNAL.GET, date);
         },
-        delete: function(id) {
+        delete: function(id: string) {
             this.dispatch(c.JOURNAL.DELETE, id);
         }
     },
     account: {
-        login: function(email, password) {
+        login: function(email: string, password: string) {
             this.dispatch(c.ACCOUNT.LOGIN, {
                 email: email,
                 password: password

@@ -12,7 +12,7 @@ var less = require('gulp-less');
 gulp.task('browserify', function() {
     var bundler = browserify({ debug: true })
         .add('./src/index.ts')
-        .plugin(tsify, { noImplicitAny: true, target: 'es5' });
+        .plugin(tsify, { noImplicitAny: true, target: 'ES6' });
 
     return bundler.bundle()
         .pipe(source('app.js'))
