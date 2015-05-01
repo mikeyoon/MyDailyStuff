@@ -7,6 +7,7 @@ import mime = require('rest/interceptor/mime');
 import errorCode = require('rest/interceptor/errorCode');
 import Fluxxor = require('fluxxor');
 import actions = require('../actions');
+import Requests = require("../models/requests");
 
 var AuthStore = Fluxxor.createStore({
     initialize: function() {
@@ -23,7 +24,7 @@ var AuthStore = Fluxxor.createStore({
         this.client({
             method: "POST",
             path: "/api/account/register",
-            entity: params
+            entity: JSON.stringify(params)
         }).then(
             (response: rest.Response) => {
                 console.log(response);
@@ -47,14 +48,12 @@ var AuthStore = Fluxxor.createStore({
         );
     },
 
-    onLogin: function(email: string, password: string) {
+    onLogin: function(payload: Requests.Login) {
+        console.log(payload);
         this.client({
             method: "POST",
             path: "/api/account/login",
-            entity: {
-                email: email,
-                password: password
-            }
+            entity: JSON.stringify(payload)
         }).then(
             (response: rest.Response) => {
                 console.log(response);

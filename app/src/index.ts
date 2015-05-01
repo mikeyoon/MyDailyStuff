@@ -1,6 +1,5 @@
-/// <reference path='../typings/react/react.d.ts' />
 /// <reference path='../node_modules/typed-react/typed-react.d.ts' />
-/// <reference path='../typings/page/page.d.ts' />
+/// <reference path='../typings/tsd.d.ts' />
 
 import React = require('react');
 import TypedReact = require('typed-react');
@@ -31,7 +30,7 @@ flux.on("dispatch", function(type: string, payload: any) {
 page('/', () => {
     //Check if logged in, if not, route to /login
     //If logged in, route to journal/today's date
-    var routeElement = React.createElement(app, null);
+    var routeElement = React.createElement(app, { flux: flux });
     React.render(routeElement, document.getElementById('content-body'));
 });
 
@@ -40,7 +39,7 @@ page('/register', () => {
 });
 
 page('/login', () => {
-    var routeElement = React.createElement(LoginComponent, null);
+    var routeElement = React.createElement(LoginComponent, { flux: flux });
     React.render(routeElement, document.getElementById('content-body'));
 });
 

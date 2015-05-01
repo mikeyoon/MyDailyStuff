@@ -10,6 +10,7 @@
     "gulp-less": "^3.0.3",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-typescript": "^2.6.0",
+    "jsnox": "^1.0.0",
     "merge2": "^0.3.4",
     "page": "^1.6.3",
     "react": "^0.13.2",

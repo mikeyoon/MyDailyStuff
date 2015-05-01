@@ -22,6 +22,12 @@
     },
     "react/react.d.ts": {
       "commit": "00e7f3fede5f2df55b56c72f40a144824f0f0bfa"
+    },
+    "jsnox/jsnox.d.ts": {
+      "commit": "a61199a4684d70334795302f09fb2a6b8ca016db"
+    },
+    "react/react-global.d.ts": {
+      "commit": "a61199a4684d70334795302f09fb2a6b8ca016db"
     }
   }
 }

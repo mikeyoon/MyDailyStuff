@@ -1,6 +1,4 @@
-interface JournalEntry {
-    entries: string[]
-}
+import Requests = require("./models/requests");
 
 var c = {
     ACCOUNT: {
@@ -20,10 +18,10 @@ var c = {
 
 var methods = {
     journal: {
-        add: function(entry: JournalEntry) {
+        add: function(entry: Requests.JournalEntry) {
             this.dispatch(c.JOURNAL.ADD, entry);
         },
-        edit: function(entry: JournalEntry) {
+        edit: function(entry: Requests.JournalEntry) {
             this.dispatch(c.JOURNAL.EDIT, entry);
         },
         get: function(date: Date) {
@@ -34,11 +32,8 @@ var methods = {
         }
     },
     account: {
-        login: function(email: string, password: string) {
-            this.dispatch(c.ACCOUNT.LOGIN, {
-                email: email,
-                password: password
-            });
+        login: function(payload: Requests.Login) {
+            this.dispatch(c.ACCOUNT.LOGIN, payload);
         },
         profile: function() {
             this.dispatch(c.ACCOUNT.PROFILE);
