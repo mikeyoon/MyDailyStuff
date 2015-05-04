@@ -18,10 +18,10 @@ var c = {
 
 var methods = {
     journal: {
-        add: function(entry: Requests.JournalEntry) {
+        add: function(entry: string) {
             this.dispatch(c.JOURNAL.ADD, entry);
         },
-        edit: function(entry: Requests.JournalEntry) {
+        edit: function(entry: Requests.EditJournalEntry) {
             this.dispatch(c.JOURNAL.EDIT, entry);
         },
         get: function(date: Date) {

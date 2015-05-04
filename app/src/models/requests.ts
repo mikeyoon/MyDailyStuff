@@ -2,12 +2,13 @@
  * Created by myoon on 4/30/2015.
  */
 
-export class JournalEntry {
-    entries: string[];
-    date: Date;
-    constructor(entries: string[], date: Date) {
-        this.entries = entries;
-        this.date = date;
+export class EditJournalEntry {
+    entry: string;
+    index: number;
+
+    constructor(entry: string, index: number) {
+        this.entry = entry;
+        this.index = index;
     }
 }
 

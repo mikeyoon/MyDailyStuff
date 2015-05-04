@@ -23,13 +23,23 @@ var Journal = React.createClass({
         this.getFlux().actions.journal.get(date);
     },
 
-    handleAddEntry: function()
+    handleAddEntry: function(entry: string, ev: any) {
+        this.getFlux().actions.journal.add(entry);
+    },
+
+    handleEditEntry: function(entry: string, index: number, ev: any) {
+        this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(entry, index));
+    },
+
+    handleDeleteEntry: function(index: number, ev: any) {
+
+    },
 
     renderEntries: function() {
         console.log(this.state.journal.hasEntry);
         if (this.state.journal.hasEntry) {
-            return this.state.journal.entry.entries.map((e: Responses.JournalEntry) => {
-                return d("div", e);
+            return this.state.journal.entries.map((e: Responses.JournalEntry, index: number) => {
+                return d("div", { key: index }, e);
             });
         }
     },
