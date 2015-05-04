@@ -10,7 +10,6 @@ import (
 	"github.com/martini-contrib/sessions"
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	"log"
-	"net/http"
 )
 
 var (

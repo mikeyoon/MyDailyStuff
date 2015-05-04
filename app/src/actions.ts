@@ -40,6 +40,9 @@ var methods = {
         },
         logout: function() {
             this.dispatch(c.ACCOUNT.LOGOUT);
+        },
+        register: function(payload: Requests.Register) {
+            this.dispatch(c.ACCOUNT.REGISTER, payload);
         }
     }
 };

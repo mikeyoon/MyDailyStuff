@@ -5,10 +5,13 @@ import React = require('react');
 import TypedReact = require('typed-react');
 import page = require('page');
 import AuthStore = require('./stores/Auth');
+import JournalStore = require('./stores/Journal');
 import Fluxxor = require('fluxxor');
 import actions = require('./actions');
 
 import LoginComponent = require('./components/Login');
+import SignupComponent = require('./components/Signup');
+import JournalComponent = require('./components/Journal');
 
 class App extends TypedReact.Component<{}, {}> {
     render() {
@@ -19,13 +22,14 @@ class App extends TypedReact.Component<{}, {}> {
 var app = TypedReact.createClass(App);
 
 var stores = {
-    auth: new AuthStore()
+    auth: new AuthStore(),
+    journal: new JournalStore()
 };
 
 var flux = new Fluxxor.Flux(stores, actions.methods);
-flux.on("dispatch", function(type: string, payload: any) {
-    console.log("Dispatch:", type, payload);
-});
+//flux.on("dispatch", function(type: string, payload: any) {
+//    console.log("Dispatch:", type, payload);
+//});
 
 page('/', () => {
     //Check if logged in, if not, route to /login
@@ -35,7 +39,8 @@ page('/', () => {
 });
 
 page('/register', () => {
-    console.log('register');
+    var routeElement = React.createElement(SignupComponent, { flux: flux });
+    React.render(routeElement, document.getElementById('content-body'));
 });
 
 page('/login', () => {
@@ -48,7 +53,8 @@ page('/account', () => {
 });
 
 page('/journal/:date', (ctx) => {
-    console.log(ctx.params.date);
+    var routeElement = React.createElement(JournalComponent, { flux: flux, date: ctx.params.date });
+    React.render(routeElement, document.getElementById('content-body'));
 });
 
 page();

@@ -20,3 +20,13 @@ export class Login {
         this.password = password;
     }
 }
+
+export class Register {
+    email: string;
+    password: string;
+
+    constructor(email: string, password: string) {
+        this.email = email;
+        this.password = password;
+    }
+}

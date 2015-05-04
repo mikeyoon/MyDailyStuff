@@ -18,20 +18,26 @@ var AuthStore = Fluxxor.createStore({
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
+        this.isLoggedIn = false;
     },
 
-    onRegister: function(params: any) {
+    onRegister: function(params: Requests.Register) {
         this.client({
             method: "POST",
             path: "/api/account/register",
             entity: JSON.stringify(params)
         }).then(
             (response: rest.Response) => {
-                console.log(response);
+                this.registerResult = response.entity;
+                this.emit("change");
             },
             (response: rest.Response) => {
-                console.log("Error");
                 console.log(response);
+                this.registerResult = {
+                    success: false,
+                    message: "Failed"
+                };
+                this.emit("change");
             }
         );
     },
@@ -39,7 +45,10 @@ var AuthStore = Fluxxor.createStore({
     onLogout: function() {
         this.client({ path: "/api/account/logout" }).then(
             (response: rest.Response) => {
-                console.log(response);
+                if (response.entity.success) {
+                    this.isLoggedIn = false;
+                }
+                this.emit("change");
             },
             (response: rest.Response) => {
                 console.log("Error");
@@ -56,11 +65,15 @@ var AuthStore = Fluxxor.createStore({
             entity: JSON.stringify(payload)
         }).then(
             (response: rest.Response) => {
-                console.log(response);
+                if (response.entity.success) {
+                    this.isLoggedIn = true;
+                }
+                this.loginResult = response.entity;
+                this.emit("change");
             },
             (response: rest.Response) => {
-                console.log("Error");
-                console.log(response);
+                this.loginResult = response.entity;
+                this.emit("change");
             }
         );
     }

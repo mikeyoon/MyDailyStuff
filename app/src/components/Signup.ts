@@ -7,7 +7,7 @@ import Requests = require("../models/requests");
 
 var d = jsnox(React);
 
-var Login = React.createClass({
+var Signup = React.createClass({
     mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")],
 
     getStateFromFlux: function() {
@@ -18,7 +18,7 @@ var Login = React.createClass({
 
     onSubmit: function(ev: any) {
         ev.preventDefault();
-        this.getFlux().actions.account.login(new Requests.Login(this.state.email, this.state.password));
+        this.getFlux().actions.account.register(new Requests.Register(this.state.email, this.state.password));
     },
 
     handleTextChange: function(name: string, ev: any) {
@@ -27,9 +27,9 @@ var Login = React.createClass({
         this.setState(state);
     },
 
-    renderLoginError: function() {
-        if (this.state.auth.loginResult && !this.state.auth.loginResult.success) {
-            return d("div.alert.alert-danger", this.state.auth.loginResult.error);
+    renderSignupError: function() {
+        if (this.state.auth.registerResult && !this.state.auth.registerResult.success) {
+            return d("div.alert.alert-danger", this.state.auth.registerResult.error);
         }
 
         return null;
@@ -38,7 +38,7 @@ var Login = React.createClass({
     render: function() {
         return d("div.row", {}, [
             d("div.col-md-12", {}, [
-                this.renderLoginError(),
+                this.renderSignupError(),
                 d("form", { onSubmit: this.onSubmit }, [
                     d("div.form-group", { key: "1" }, [
                         d("label", { htmlFor: "email" }, "Email:"),
@@ -48,11 +48,11 @@ var Login = React.createClass({
                         d("label", { htmlFor: "password" }, "Password:"),
                         d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") })
                     ]),
-                    d("button.btn.btn-default[type=submit]", "Login")
+                    d("button.btn.btn-default[type=submit]", "Register")
                 ])
             ])
         ]);
     }
 });
 
-export = Login;
+export = Signup;
