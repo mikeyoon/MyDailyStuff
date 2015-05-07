@@ -7,3 +7,12 @@ export interface JournalEntry {
     userId: string;
     date: Date;
 }
+
+export interface EmptyResponse {
+    success: boolean;
+    message: string;
+}
+
+export interface DataResponse<TResult> extends EmptyResponse {
+    result: TResult;
+}

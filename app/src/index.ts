@@ -1,5 +1,6 @@
 /// <reference path='../node_modules/typed-react/typed-react.d.ts' />
 /// <reference path='../typings/tsd.d.ts' />
+/// <reference path='./components/Login.ts' />
 
 import React = require('react');
 import TypedReact = require('typed-react');
@@ -9,9 +10,9 @@ import JournalStore = require('./stores/Journal');
 import Fluxxor = require('fluxxor');
 import actions = require('./actions');
 
-import LoginComponent = require('./components/Login');
-import SignupComponent = require('./components/Signup');
-import JournalComponent = require('./components/Journal');
+import Login = require('./components/Login');
+import Signup = require('./components/Signup');
+import Journal = require('./components/Journal');
 
 class App extends TypedReact.Component<{}, {}> {
     render() {
@@ -39,12 +40,12 @@ page('/', () => {
 });
 
 page('/register', () => {
-    var routeElement = React.createElement(SignupComponent, { flux: flux });
+    var routeElement = React.createElement(Signup.Component, { flux: flux });
     React.render(routeElement, document.getElementById('content-body'));
 });
 
 page('/login', () => {
-    var routeElement = React.createElement(LoginComponent, { flux: flux });
+    var routeElement = React.createElement(Login.Component, { flux: flux });
     React.render(routeElement, document.getElementById('content-body'));
 });
 
@@ -53,7 +54,7 @@ page('/account', () => {
 });
 
 page('/journal/:date', (ctx) => {
-    var routeElement = React.createElement(JournalComponent, { flux: flux, date: ctx.params.date });
+    var routeElement = React.createElement(Journal.Component, { flux: flux, date: new Date(ctx.params.date) });
     React.render(routeElement, document.getElementById('content-body'));
 });
 

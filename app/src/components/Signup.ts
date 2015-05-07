@@ -4,38 +4,51 @@ import React = require('react');
 import Fluxxor = require('fluxxor');
 import jsnox = require('jsnox');
 import Requests = require("../models/requests");
+import TypedReact = require('typed-react');
 
 var d = jsnox(React);
 
-var Signup = React.createClass({
-    mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")],
+interface SignupProps {
+    flux: any;
+}
 
-    getStateFromFlux: function() {
+interface SignupState {
+    auth: any;
+    email: string;
+    password: string;
+}
+
+export class SignupComponent extends TypedReact.Component<SignupProps, SignupState>
+    implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
+
+    getFlux: () => Fluxxor.Flux;
+
+    getStateFromFlux() {
         return {
-            auth: this.getFlux().store("auth")
+            journal: this.getFlux().store("auth")
         };
-    },
+    }
 
-    onSubmit: function(ev: any) {
+    onSubmit(ev: any) {
         ev.preventDefault();
         this.getFlux().actions.account.register(new Requests.Register(this.state.email, this.state.password));
-    },
+    }
 
-    handleTextChange: function(name: string, ev: any) {
+    handleTextChange(name: string, ev: any) {
         var state: any = {};
         state[name] = ev.target.value;
         this.setState(state);
-    },
+    }
 
-    renderSignupError: function() {
+    renderSignupError() {
         if (this.state.auth.registerResult && !this.state.auth.registerResult.success) {
             return d("div.alert.alert-danger", this.state.auth.registerResult.error);
         }
 
         return null;
-    },
+    }
 
-    render: function() {
+    render() {
         return d("div.row", {}, [
             d("div.col-md-12", {}, [
                 this.renderSignupError(),
@@ -53,6 +66,6 @@ var Signup = React.createClass({
             ])
         ]);
     }
-});
+}
 
-export = Signup;
+export var Component = TypedReact.createClass(SignupComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);

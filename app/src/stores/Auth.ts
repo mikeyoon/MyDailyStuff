@@ -8,6 +8,7 @@ import errorCode = require('rest/interceptor/errorCode');
 import Fluxxor = require('fluxxor');
 import actions = require('../actions');
 import Requests = require("../models/requests");
+import Responses = require("../models/responses");
 
 var AuthStore = Fluxxor.createStore({
     initialize: function() {
@@ -65,10 +66,11 @@ var AuthStore = Fluxxor.createStore({
             entity: JSON.stringify(payload)
         }).then(
             (response: rest.Response) => {
-                if (response.entity.success) {
+                this.loginResult = response.entity;
+                if (this.loginResult.success) {
                     this.isLoggedIn = true;
                 }
-                this.loginResult = response.entity;
+
                 this.emit("change");
             },
             (response: rest.Response) => {
