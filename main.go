@@ -91,12 +91,22 @@ func main() {
 		user, err := service.GetUserByLogin(req.Email, req.Password)
 
 		if err != nil {
-			r.Status(404)
+			r.JSON(200, ErrorResponse("User not found"))
 			return
 		}
 
 		session.Set("userId", user.UserId)
 		r.JSON(200, SuccessResponse(nil))
+	})
+
+	//Logout
+	m.Post("/api/account/logout", func(req LoginRequest, session sessions.Session, r render.Render) {
+		if (session.Get("userId") != nil) {
+			session.Delete("userId")
+			r.JSON(200, SuccessResponse(nil))
+		} else {
+			r.JSON(200, ErrorResponse("User not logged in"))
+		}
 	})
 
 	//Get user account information
