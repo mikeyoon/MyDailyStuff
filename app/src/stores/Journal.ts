@@ -27,7 +27,26 @@ var JournalStore = Fluxxor.createStore({
     },
 
     onAdd: function(entry: string) {
-
+        console.log(this.date);
+        this.client({
+            method: "POST",
+            path: "/api/journal",
+            entity: JSON.stringify({
+                entries: [ entry ],
+                date: this.date.getUTCFullYear() + "-" + (this.date.getUTCMonth() + 1) + "-" + this.date.getUTCDate()
+            })
+        }).then(
+            (response: rest.Response) => {
+                if (response.entity.success) {
+                    this.current = response.entity.result;
+                    this.hasEntry = true;
+                    this.emit('change');
+                }
+            },
+            (response: rest.Response) => {
+                console.log(response);
+            }
+        )
     },
 
     onEdit: function(req: Requests.EditJournalEntry) {
@@ -37,7 +56,7 @@ var JournalStore = Fluxxor.createStore({
             this.current.entries[req.index] = req.entry;
         }
 
-        console.log(this.current.entries);
+        //console.log(this.current.entries);
         this.client({
             method: "PUT",
             path: "/api/journal/" + this.current.id,
@@ -46,7 +65,10 @@ var JournalStore = Fluxxor.createStore({
             })
         }).then(
             (response: rest.Response) => {
-                this.emit("change");
+                if (response.entity.success) {
+                    //We're relying on the current to be updated client-side due to delays in indexing in ES
+                    this.emit("change");
+                }
             },
             (response: rest.Response) => {
                 console.log(response);
@@ -72,6 +94,8 @@ var JournalStore = Fluxxor.createStore({
 
     onGet: function(date: Date) {
         console.log("onGet " + date);
+        this.date = date;
+
         this.client({
             method: "GET",
             //TODO: Use momentjs or something
@@ -80,19 +104,20 @@ var JournalStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 if (response.entity.success) {
                     this.current = response.entity.result;
-
-                    this.date = new Date(this.current.create_date);
                     this.hasEntry = true;
 
                 } else {
                     this.hasEntry = false;
                     this.current = null;
-                    this.date = date;
                 }
+
                 this.emit("change");
             },
             (response: rest.Response) => {
                 console.log(response);
+                this.hasEntry = false;
+                this.current = null;
+
                 this.emit("change");
             }
         );

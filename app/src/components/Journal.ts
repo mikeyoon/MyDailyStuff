@@ -6,7 +6,7 @@ import jsnox = require('jsnox');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 import TypedReact = require('typed-react');
-
+import moment = require('moment');
 var d = jsnox(React);
 
 export interface JournalProps {
@@ -38,7 +38,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     componentDidMount() {
         var date: Date = this.props.date ? this.props.date : new Date();
-        console.log(date);
+        //console.log(date);
         this.getFlux().actions.journal.get(date);
     }
 
@@ -59,7 +59,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     handleDeleteAll(ev: any) {
-
+        this.getFlux().actions.journal.delete();
     }
 
     handleTextChange(name:string, ev:any) {
@@ -83,6 +83,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     render() {
         return d("div.row", {}, [
             d("div.col-md-12", {}, [
+                d('h2', moment(this.props.date).format("MMM Do YYYY")),
                 d("ul.list-group", {}, [
                     this.state.hasEntry ? this.renderEntries() : null,
                     d("li.list-group-item", {},
@@ -94,7 +95,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                         ])
                     )
                 ]),
-                d("button.btn.btn-danger", "Delete All")
+                d("button.btn.btn-danger", { onClick: this.handleDeleteAll }, "Delete All")
             ])
         ]);
     }

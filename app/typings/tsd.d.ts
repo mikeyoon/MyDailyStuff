@@ -4,4 +4,4 @@
 /// <reference path="rest/rest.d.ts" />
 /// <reference path="page/page.d.ts" />
 /// <reference path="when/when.d.ts" />
-/// <reference path="react/react-global.d.ts" />
+/// <reference path="moment/moment.d.ts" />

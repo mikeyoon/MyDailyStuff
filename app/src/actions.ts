@@ -31,8 +31,8 @@ var methods = {
         get: function(date: Date) {
             this.dispatch(c.JOURNAL.GET, date);
         },
-        delete: function(id: string) {
-            this.dispatch(c.JOURNAL.DELETE, id);
+        delete: function() {
+            this.dispatch(c.JOURNAL.DELETE);
         }
     },
     account: {

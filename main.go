@@ -171,12 +171,13 @@ func main() {
 	//Create a journal entry
 	m.Post("/api/journal", binding.Json(CreateEntryRequest{}),
 		func(entry CreateEntryRequest, session sessions.Session, r render.Render) {
-			err := service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
+			result, err := service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
 
 			if err != nil {
 				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
-				r.JSON(200, SuccessResponse(nil))
+				//Need to return the result because there's a delay before the entry gets indexed into elastic search
+				r.JSON(200, SuccessResponse(result))
 			}
 		})
 

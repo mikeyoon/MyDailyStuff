@@ -28,6 +28,9 @@
     },
     "react/react-global.d.ts": {
       "commit": "a61199a4684d70334795302f09fb2a6b8ca016db"
+    },
+    "moment/moment.d.ts": {
+      "commit": "b3834d886a95789e6ab56e8244775ec10c5293d0"
     }
   }
 }

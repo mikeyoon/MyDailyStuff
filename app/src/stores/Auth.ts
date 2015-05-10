@@ -32,6 +32,10 @@ var AuthStore = Fluxxor.createStore({
         }).then(
             (response: rest.Response) => {
                 this.registerResult = response.entity;
+                if (this.registerResult.success) {
+                    this.isLoggedIn = true;
+                    page.redirect('/');
+                }
                 this.emit("change");
             },
             (response: rest.Response) => {

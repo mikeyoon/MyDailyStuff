@@ -37,9 +37,14 @@ gulp.task('copy-bootstrap', function() {
         .pipe(gulp.dest('../public'));
 });
 
+gulp.task('copy-fonts', function() {
+    return gulp.src('./node_modules/bootstrap/dist/fonts/*', { base: './node_modules/bootstrap/dist/' })
+        .pipe(gulp.dest('../public'));
+});
+
 gulp.task('copy-html', function() {
     return gulp.src('./index.html')
         .pipe(gulp.dest('../public'));
 });
 
-gulp.task('build', ['browserify', 'less', 'copy-jquery', 'copy-bootstrap', 'copy-html']);
+gulp.task('build', ['browserify', 'less', 'copy-jquery', 'copy-fonts', 'copy-bootstrap', 'copy-html']);

@@ -26,10 +26,11 @@ type User struct {
 }
 
 type JournalEntry struct {
-	UserId  string    `json:"user_id"`
-	Entries []string  `json:"entries"`
-	Date    time.Time `json:"create_date"`
-	Id      string    `json:"id"`
+	UserId     string    `json:"user_id"`
+	Entries    []string  `json:"entries"`
+	Date       time.Time `json:"date"`
+	CreateDate time.Time `json:"create_date"`
+	Id         string    `json:"id"`
 }
 
 type JournalQuery struct {
@@ -111,6 +112,9 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
 
                         },
                         "create_date": {
+                            "type": "date"
+                        },
+                        "date": {
                             "type": "date"
                         }
                     }
@@ -297,23 +301,25 @@ func (s *Service) CreateUser(email string, password string) error {
 
 //Journal Functions
 
-func (s *Service) CreateJournalEntry(userId string, entries []string, date time.Time) error {
+func (s *Service) CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error) {
+	var entry JournalEntry
+
 	if userId == "" {
-		return UserUnauthorized
+		return entry, UserUnauthorized
 	}
 
 	_, err := s.GetJournalEntryByDate(userId, date)
 	if err != NoJournalWithDate {
-		return EntryAlreadyExists
+		return entry, EntryAlreadyExists
 	}
 
-	createDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+	entryDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 
 	id := uuid.New()
-	entry := JournalEntry{Id: id, UserId: userId, Date: createDate, Entries: entries}
+	entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
 
 	_, err = s.es.Index(EsIndex, JournalIndex, id, nil, entry)
-	return err
+	return entry, err
 }
 
 func (s *Service) UpdateJournalEntry(id string, userId string, entries []string) error {
@@ -368,7 +374,7 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 		All().
 		Filter(elastigo.Filter().
 		And(elastigo.Filter().Term("user_id", userId)).
-		And(elastigo.Filter().Term("create_date", createDate)))
+		And(elastigo.Filter().Term("date", createDate)))
 
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, JournalIndex, nil, search)
@@ -399,7 +405,7 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	query := elastigo.Query()
 
 	if jq.Query != "" {
-		query = query.Fields("entries,create_date", jq.Query, "", "").SetLenient(true)
+		query = query.Fields("entries,date", jq.Query, "", "").SetLenient(true)
 	} else {
 		query = query.All()
 	}
@@ -408,11 +414,11 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, end, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("date", start, nil, end, nil, ""))
 	} else if !jq.Start.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, nil, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
 	} else if !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("create_date", nil, nil, end, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
 	}
 
 	search := elastigo.Search(EsIndex).Query(query)
@@ -456,7 +462,7 @@ func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, 
 	query := elastigo.Query()
 
 	if jq.Query != "" {
-		query = query.Fields("entries,create_date", jq.Query, "", "").SetLenient(true)
+		query = query.Fields("entries,date", jq.Query, "", "").SetLenient(true)
 	} else {
 		query = query.All()
 	}
@@ -465,14 +471,14 @@ func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, 
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, end, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("date", start, nil, end, nil, ""))
 	} else if !jq.Start.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("create_date", start, nil, nil, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
 	} else if !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("create_date", nil, nil, end, nil, ""))
+		query = query.Filter(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
 	}
 
-	search := elastigo.Search(EsIndex).Type(JournalIndex).Query(query).Fields("create_date")
+	search := elastigo.Search(EsIndex).Type(JournalIndex).Query(query).Fields("date")
 
 	result, err := search.Result(s.es)
 
@@ -495,7 +501,7 @@ func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, 
 			panic(err)
 		}
 
-		retval[index] = fields["create_date"][0].(string)
+		retval[index] = fields["date"][0].(string)
 	}
 
 	return retval, nil
