@@ -9,6 +9,7 @@ import Fluxxor = require('fluxxor');
 import actions = require('../actions');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
+import page = require('page');
 
 var AuthStore = Fluxxor.createStore({
     initialize: function() {
@@ -20,6 +21,7 @@ var AuthStore = Fluxxor.createStore({
 
         this.client = rest.wrap(mime).wrap(errorCode);
         this.isLoggedIn = false;
+        this.loginResult = {};
     },
 
     onRegister: function(params: Requests.Register) {
@@ -44,10 +46,11 @@ var AuthStore = Fluxxor.createStore({
     },
 
     onLogout: function() {
-        this.client({ path: "/api/account/logout" }).then(
+        this.client({ path: "/api/account/logout", method: "POST" }).then(
             (response: rest.Response) => {
                 if (response.entity.success) {
                     this.isLoggedIn = false;
+                    page.redirect('/');
                 }
                 this.emit("change");
             },
@@ -69,12 +72,18 @@ var AuthStore = Fluxxor.createStore({
                 this.loginResult = response.entity;
                 if (this.loginResult.success) {
                     this.isLoggedIn = true;
+                    page.redirect('/');
                 }
 
                 this.emit("change");
             },
             (response: rest.Response) => {
-                this.loginResult = response.entity;
+                console.log(response);
+                this.loginResult = {
+                    success: false,
+                    message: "Unexpected error authenticating with server."
+                };
+
                 this.emit("change");
             }
         );

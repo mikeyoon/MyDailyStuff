@@ -7,20 +7,15 @@ import TypedReact = require('typed-react');
 import page = require('page');
 import AuthStore = require('./stores/Auth');
 import JournalStore = require('./stores/Journal');
+//import RouteStore = require('./stores/Route');
 import Fluxxor = require('fluxxor');
 import actions = require('./actions');
+import jsnox = require('jsnox');
 
 import Login = require('./components/Login');
 import Signup = require('./components/Signup');
 import Journal = require('./components/Journal');
-
-class App extends TypedReact.Component<{}, {}> {
-    render() {
-        return React.DOM.div(null, "Hello World 2");
-    }
-}
-
-var app = TypedReact.createClass(App);
+import App = require('./components/App');
 
 var stores = {
     auth: new AuthStore(),
@@ -32,30 +27,35 @@ var flux = new Fluxxor.Flux(stores, actions.methods);
 //    console.log("Dispatch:", type, payload);
 //});
 
+function renderApp(component: React.ComponentClass<{}>, options: any) {
+    var routeElement = React.createElement(App.Component, { flux: flux, component: component, componentOptions: options });
+    React.render(routeElement, document.getElementById('content-root'));
+}
+
 page('/', () => {
     //Check if logged in, if not, route to /login
     //If logged in, route to journal/today's date
-    var routeElement = React.createElement(app, { flux: flux });
-    React.render(routeElement, document.getElementById('content-body'));
+    renderApp(Journal.Component, { flux: flux, date: new Date() });
 });
 
 page('/register', () => {
-    var routeElement = React.createElement(Signup.Component, { flux: flux });
-    React.render(routeElement, document.getElementById('content-body'));
+    renderApp(Signup.Component, { flux: flux });
 });
 
 page('/login', () => {
-    var routeElement = React.createElement(Login.Component, { flux: flux });
-    React.render(routeElement, document.getElementById('content-body'));
+    renderApp(Login.Component, { flux: flux });
 });
 
 page('/account', () => {
     console.log('account');
 });
 
+page('/journal', (ctx) => {
+    renderApp(Journal.Component, { flux: flux, date: new Date() });
+});
+
 page('/journal/:date', (ctx) => {
-    var routeElement = React.createElement(Journal.Component, { flux: flux, date: new Date(ctx.params.date) });
-    React.render(routeElement, document.getElementById('content-body'));
+    renderApp(Journal.Component, { flux: flux, date: new Date(ctx.params.date) });
 });
 
 page();

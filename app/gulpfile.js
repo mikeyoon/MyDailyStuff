@@ -26,3 +26,20 @@ gulp.task('less', function() {
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('../public'));
 });
+
+gulp.task('copy-jquery', function() {
+    return gulp.src('./node_modules/jquery/dist/jquery.min.js')
+        .pipe(gulp.dest('../public'));
+});
+
+gulp.task('copy-bootstrap', function() {
+    return gulp.src('./node_modules/bootstrap/dist/js/bootstrap.min.js')
+        .pipe(gulp.dest('../public'));
+});
+
+gulp.task('copy-html', function() {
+    return gulp.src('./index.html')
+        .pipe(gulp.dest('../public'));
+});
+
+gulp.task('build', ['browserify', 'copy-jquery', 'copy-bootstrap', 'copy-html']);

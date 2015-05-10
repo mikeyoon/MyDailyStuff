@@ -25,7 +25,7 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
 
     getStateFromFlux() {
         return {
-            journal: this.getFlux().store("auth")
+            auth: this.getFlux().store("auth")
         };
     }
 

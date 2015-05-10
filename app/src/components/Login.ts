@@ -6,6 +6,7 @@ import Fluxxor = require('fluxxor');
 import jsnox = require('jsnox');
 import Requests = require("../models/requests");
 import TypedReact = require('typed-react');
+import page = require('page');
 
 var d = jsnox(React);
 
@@ -25,9 +26,11 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
     getFlux: () => Fluxxor.Flux;
 
     getStateFromFlux() {
-        return {
-            auth: this.getFlux().store("auth")
+        var result = {
+            auth: this.getFlux().store("auth"),
         };
+
+        return result;
     }
 
     onSubmit(ev:any) {
@@ -42,7 +45,7 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
     }
 
     renderLoginError() {
-        if (this.state.auth.loginResult && !this.state.auth.loginResult.success) {
+        if (this.state.auth.loginResult && this.state.auth.loginResult.success == false) {
             return d("div.alert.alert-danger", this.state.auth.loginResult.error);
         }
 

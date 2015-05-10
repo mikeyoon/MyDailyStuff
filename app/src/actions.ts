@@ -13,6 +13,10 @@ var c = {
         ADD: "JOURNAL:ADD",
         EDIT: "JOURNAL:EDIT",
         DELETE: "JOURNAL:DELETE"
+    },
+
+    ROUTE: {
+        HOME: "ROUTE:HOME"
     }
 };
 
@@ -43,6 +47,11 @@ var methods = {
         },
         register: function(payload: Requests.Register) {
             this.dispatch(c.ACCOUNT.REGISTER, payload);
+        }
+    },
+    routes: {
+        home: function() {
+            this.dispatch(c.ROUTE.HOME);
         }
     }
 };

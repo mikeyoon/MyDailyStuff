@@ -100,7 +100,7 @@ func main() {
 	})
 
 	//Logout
-	m.Post("/api/account/logout", func(req LoginRequest, session sessions.Session, r render.Render) {
+	m.Post("/api/account/logout", func(session sessions.Session, r render.Render) {
 		if (session.Get("userId") != nil) {
 			session.Delete("userId")
 			r.JSON(200, SuccessResponse(nil))
