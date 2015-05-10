@@ -15,7 +15,10 @@ export interface JournalProps {
 }
 
 export interface JournalState {
-    journal: any;
+    current: Responses.JournalEntry;
+    date: Date;
+    hasEntry: boolean;
+    newEntry: string;
 }
 
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
@@ -23,9 +26,13 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     getFlux: () => Fluxxor.Flux;
 
-    getStateFromFlux() {
+    getStateFromFlux(): JournalState {
+        var journal = this.getFlux().store("journal");
         return {
-            journal: this.getFlux().store("journal")
+            current: journal.current,
+            date: journal.date,
+            hasEntry: journal.hasEntry,
+            newEntry: ''
         };
     }
 
@@ -35,8 +42,12 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         this.getFlux().actions.journal.get(date);
     }
 
-    handleAddEntry(entry: string, ev: any) {
-        this.getFlux().actions.journal.add(entry);
+    handleAddEntry(ev: any) {
+        if (this.state.hasEntry) {
+            this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(this.state.newEntry, this.state.current.entries.length));
+        } else {
+            this.getFlux().actions.journal.add(this.state.newEntry);
+        }
     }
 
     handleEditEntry(entry: string, index: number, ev: any) {
@@ -44,14 +55,27 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     handleDeleteEntry(index: number, ev: any) {
+        this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(null, index));
+    }
+
+    handleDeleteAll(ev: any) {
 
     }
 
+    handleTextChange(name:string, ev:any) {
+        var state:any = {};
+        state[name] = ev.target.value;
+        this.setState(state);
+    }
+
     renderEntries() {
-        console.log(this.state.journal.hasEntry);
-        if (this.state.journal.hasEntry) {
-            return this.state.journal.entries.map((e: Responses.JournalEntry, index: number) => {
-                return d("div", { key: index }, e);
+        if (this.state.hasEntry) {
+            return this.state.current.entries.map((e: string, index: number) => {
+                return d("li.list-group-item", { key: index }, [
+                    d('span', e),
+                    d('button.btn.btn-default.pull-right', { onClick: this.handleDeleteEntry.bind(this, index) },
+                        d('span.glyphicon.glyphicon-remove'))
+                ]);
             });
         }
     }
@@ -59,7 +83,18 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     render() {
         return d("div.row", {}, [
             d("div.col-md-12", {}, [
-                this.renderEntries()
+                d("ul.list-group", {}, [
+                    this.state.hasEntry ? this.renderEntries() : null,
+                    d("li.list-group-item", {},
+                        d('div.input-group', {}, [
+                            d('input.form-control[placeholder=New entry...][type=text]', { onChange: this.handleTextChange.bind(this, "newEntry") }),
+                            d('span.input-group-btn', {}, [
+                                d('button.btn.btn-default[type=button]', { onClick: this.handleAddEntry }, "Add")
+                            ])
+                        ])
+                    )
+                ]),
+                d("button.btn.btn-danger", "Delete All")
             ])
         ]);
     }

@@ -38,7 +38,6 @@ type CreateEntryRequest struct {
 }
 
 type ModifyEntryRequest struct {
-	Date    string   `json:"date" binding:"required"`
 	Entries []string `json:"entries" binding:"required"`
 }
 
@@ -182,8 +181,8 @@ func main() {
 		})
 
 	//Update a journal entry
-	m.Put("/api/journal/:id", binding.Json(CreateEntryRequest{}),
-		func(entry CreateEntryRequest, session sessions.Session, args martini.Params, r render.Render) {
+	m.Put("/api/journal/:id", binding.Json(ModifyEntryRequest{}),
+		func(entry ModifyEntryRequest, session sessions.Session, args martini.Params, r render.Render) {
 			err := service.UpdateJournalEntry(args["id"], session.Get("userId").(string), entry.Entries)
 
 			if err != nil {

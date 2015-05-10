@@ -4,8 +4,8 @@
 
 export interface JournalEntry {
     entries: string[];
-    userId: string;
-    date: Date;
+    user_id: string;
+    create_date: string;
 }
 
 export interface EmptyResponse {

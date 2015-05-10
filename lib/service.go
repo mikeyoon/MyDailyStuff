@@ -29,6 +29,7 @@ type JournalEntry struct {
 	UserId  string    `json:"user_id"`
 	Entries []string  `json:"entries"`
 	Date    time.Time `json:"create_date"`
+	Id      string    `json:"id"`
 }
 
 type JournalQuery struct {
@@ -309,7 +310,7 @@ func (s *Service) CreateJournalEntry(userId string, entries []string, date time.
 	createDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 
 	id := uuid.New()
-	entry := JournalEntry{UserId: userId, Date: createDate, Entries: entries}
+	entry := JournalEntry{Id: id, UserId: userId, Date: createDate, Entries: entries}
 
 	_, err = s.es.Index(EsIndex, JournalIndex, id, nil, entry)
 	return err

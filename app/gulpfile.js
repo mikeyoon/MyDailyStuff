@@ -42,4 +42,4 @@ gulp.task('copy-html', function() {
         .pipe(gulp.dest('../public'));
 });
 
-gulp.task('build', ['browserify', 'copy-jquery', 'copy-bootstrap', 'copy-html']);
+gulp.task('build', ['browserify', 'less', 'copy-jquery', 'copy-bootstrap', 'copy-html']);
