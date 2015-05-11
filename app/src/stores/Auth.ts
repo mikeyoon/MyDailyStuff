@@ -42,8 +42,9 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log("Error");
                 console.log(response);
+                this.isLoggedIn = false;
+                this.emit("change");
             })
     },
 
@@ -78,7 +79,7 @@ var AuthStore = Fluxxor.createStore({
                 if (response.entity.success) {
                     this.isLoggedIn = false;
                     this.user = null;
-                    page.redirect('/');
+                    page.redirect('/login');
                 }
                 this.emit("change");
             },

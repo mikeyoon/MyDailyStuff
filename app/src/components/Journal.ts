@@ -36,13 +36,18 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         };
     }
 
+    componentWillReceiveProps(nextProps: JournalProps) {
+        this.getFlux().actions.journal.get(nextProps.date);
+    }
+
     componentDidMount() {
-        var date: Date = this.props.date ? this.props.date : new Date();
+        //var date: Date = this.props.date ? this.props.date : new Date();
         //console.log(date);
-        this.getFlux().actions.journal.get(date);
+        //this.getFlux().actions.journal.get(date);
     }
 
     handleAddEntry(ev: any) {
+        ev.preventDefault();
         if (this.state.hasEntry) {
             this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(this.state.newEntry, this.state.current.entries.length));
         } else {
@@ -55,7 +60,11 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     handleDeleteEntry(index: number, ev: any) {
-        this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(null, index));
+        if (this.state.current.entries.length > 1) {
+            this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(null, index));
+        } else {
+            this.getFlux().actions.journal.delete();
+        }
     }
 
     handleDeleteAll(ev: any) {
@@ -68,34 +77,91 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         this.setState(state);
     }
 
+    handlePrev(ev: any) {
+        ev.preventDefault();
+        //this.getFlux().actions.journal.get(new Date('1/1/2001'))
+    }
+
+    handleNext(ev: any) {
+        ev.preventDefault();
+        //this.getFlux().actions.journal.get(new Date('1/1/2002'))
+    }
+
     renderEntries() {
         if (this.state.hasEntry) {
             return this.state.current.entries.map((e: string, index: number) => {
-                return d("li.list-group-item", { key: index }, [
-                    d('span', e),
-                    d('button.btn.btn-default.pull-right', { onClick: this.handleDeleteEntry.bind(this, index) },
-                        d('span.glyphicon.glyphicon-remove'))
-                ]);
+                return d("div.panel.panel-default", { key: index },
+                    d("div.panel-body", {}, [
+                        d('span', e),
+                        d('button.btn.btn-default.pull-right', { onClick: this.handleDeleteEntry.bind(this, index) },
+                            d('span.glyphicon.glyphicon-remove'))
+                    ])
+                );
+                //return d("li.list-group-item", { key: index }, [
+                //    d('span', e),
+                //    d('button.btn.btn-default.pull-right', { onClick: this.handleDeleteEntry.bind(this, index) },
+                //        d('span.glyphicon.glyphicon-remove'))
+                //]);
             });
         }
     }
 
     render() {
+        var today = moment(this.props.date).format("MMM Do YYYY");
+        var next = moment(this.props.date).add(1, 'day').format("YYYY-M-D");
+        var prev = moment(this.props.date).add(-1, 'day').format("YYYY-M-D");
+
         return d("div.row", {}, [
-            d("div.col-md-12", {}, [
-                d('h2', moment(this.props.date).format("MMM Do YYYY")),
-                d("ul.list-group", {}, [
-                    this.state.hasEntry ? this.renderEntries() : null,
-                    d("li.list-group-item", {},
-                        d('div.input-group', {}, [
-                            d('input.form-control[placeholder=New entry...][type=text]', { onChange: this.handleTextChange.bind(this, "newEntry") }),
-                            d('span.input-group-btn', {}, [
-                                d('button.btn.btn-default[type=button]', { onClick: this.handleAddEntry }, "Add")
-                            ])
-                        ])
-                    )
+            d("div.col-md-8.col-md-offset-2", {}, [
+                d('h2.text-center', {}, [
+                    d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev + ']', { onClick: this.handlePrev }, "prev")),
+                    today,
+                    d('small.margin-small', { key: "next" }, d('a[href=/journal/' + next + ']', { onClick: this.handleNext }, "next"))
                 ]),
-                d("button.btn.btn-danger", { onClick: this.handleDeleteAll }, "Delete All")
+                //d('div', {}, [
+                //    d('div-col-md-2', 'prev'),
+                //    d('div-col-md-4', {},
+                //        ,
+                //    d('div-col-md-2', 'next')
+                //]),
+
+                this.state.hasEntry ? this.renderEntries() : null,
+
+                d("form", { onSubmit: this.handleAddEntry }, [
+                    d("div.form-group", {}, [
+                        d("label", "Add a new entry"),
+                        d("textarea[placeholder=New entry...]", {
+                            rows: 4,
+                            style: { width: "100%" },
+                            value: this.state.newEntry,
+                            onChange: this.handleTextChange.bind(this, "newEntry") })
+                    ]),
+                    d('button.btn.btn-primary[type=submit]', { onClick: this.handleAddEntry }, "Add")
+                ])
+
+                //d('div.panel.panel-default', {},
+//                    d('div.panel-body', {},
+//                        d('div.input-group', {}, [
+//                            d('input.form-control[placeholder=New entry...][type=text]', { onChange: this.handleTextChange.bind(this, "newEntry") }),
+//                            d('span.input-group-btn', {}, [
+//                                d('button.btn.btn-default[type=button]', { onClick: this.handleAddEntry }, "Add")
+//                            ])
+//                        ]),
+//                    )),
+
+                //d("ul.list-group", {}, [
+                //    this.state.hasEntry ? this.renderEntries() : null,
+                //    d("li.list-group-item", {},
+                //        d('div.input-group', {}, [
+                //            d('input.form-control[placeholder=New entry...][type=text]', { onChange: this.handleTextChange.bind(this, "newEntry") }),
+                //            d('span.input-group-btn', {}, [
+                //                d('button.btn.btn-default[type=button]', { onClick: this.handleAddEntry }, "Add")
+                //            ])
+                //        ])
+                //    )
+                //]),
+                //d("button.btn.btn-danger", { onClick: this.handleDeleteAll }, "Delete All")
+
             ])
         ]);
     }

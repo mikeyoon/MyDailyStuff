@@ -7,6 +7,7 @@ import mime = require('rest/interceptor/mime');
 import errorCode = require('rest/interceptor/errorCode');
 import Fluxxor = require('fluxxor');
 import actions = require('../actions');
+import moment = require('moment');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 
@@ -33,7 +34,7 @@ var JournalStore = Fluxxor.createStore({
             path: "/api/journal",
             entity: JSON.stringify({
                 entries: [ entry ],
-                date: this.date.getUTCFullYear() + "-" + (this.date.getUTCMonth() + 1) + "-" + this.date.getUTCDate()
+                date: moment(this.date).format("YYYY-M-D")
             })
         }).then(
             (response: rest.Response) => {
@@ -98,8 +99,7 @@ var JournalStore = Fluxxor.createStore({
 
         this.client({
             method: "GET",
-            //TODO: Use momentjs or something
-            path: "/api/journal/" + date.getUTCFullYear() + "-" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate()
+            path: "/api/journal/" + moment(this.date).format("YYYY-M-D")
         }).then(
             (response: rest.Response) => {
                 if (response.entity.success) {
