@@ -54,7 +54,9 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
 
     render() {
         return d("div.row", {}, [
-            d("div.col-md-12", {}, [
+            d("div.col-md-6.col-md-offset-3", {}, [
+                d("h3", "Login to your account"),
+                d("br"),
                 this.renderLoginError(),
                 d("form", {onSubmit: this.onSubmit}, [
                     d("div.form-group", {key: "1"}, [
@@ -71,7 +73,9 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
                             onChange: this.handleTextChange.bind(this, "password")
                         })
                     ]),
-                    d("button.btn.btn-default[type=submit]", "Login")
+                    d("button.btn.btn-primary[type=submit]", "Login"),
+                    d("span.margin-small", "or"),
+                    d("a[href=/register]", "Register for a new account")
                 ])
             ])
         ]);

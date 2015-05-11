@@ -29,7 +29,7 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
     render() {
         return d('div', [
             d(TopNav.Component),
-            d('div.container-fluid', {}, d(this.props.component, this.props.componentOptions))
+            d('div.container', {}, d(this.props.component, this.props.componentOptions))
         ]);
     }
 }

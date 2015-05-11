@@ -31,7 +31,7 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
         return d('nav.navbar.navbar-default', {},
             d('div.container-fluid', {}, [
                 d('div.navbar-header', {}, [
-                    d('button.navbar-toggle.collapsed[type=button][data-toggle=collapse]', {}, [
+                    d('button.navbar-toggle.collapsed[type=button][data-toggle=collapse][data-target=#navbar]', {}, [
                         d('span.sr-only', 'Toggle Navigation'),
                         d('span.icon-bar', { key: 1 }),
                         d('span.icon-bar', { key: 2 }),
@@ -40,11 +40,12 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                     d('a.navbar-brand[href=/]', 'My Daily Three')
                 ]),
 
-                d('div.collapse.navbar-collapse', {}, [
+                d('div.collapse.navbar-collapse#navbar', {}, [
                     d('ul.nav.navbar-nav.navbar-right', {}, [
                         this.state.isLoggedIn ? d('li', {},
                             d('a[href=#]', { onClick: this.handleLogout }, "Logout")) :
-                            d('li', {}, d('a[href=/login]', "Login"))
+                            d('li', { key: 'Login' }, d('a[href=/login]', "Login")),
+                        this.state.isLoggedIn ? null : d('li', { key: 'Register' }, d('a[href=/register]', "Register"))
                     ])
                 ])
             ])

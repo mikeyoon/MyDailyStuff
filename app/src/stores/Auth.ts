@@ -22,6 +22,29 @@ var AuthStore = Fluxxor.createStore({
         this.client = rest.wrap(mime).wrap(errorCode);
         this.isLoggedIn = false;
         this.loginResult = {};
+        this.user = {}
+
+        this.onGetAccount();
+    },
+
+    onGetAccount: function() {
+        this.client({
+            method: "GET",
+            path: "/api/account"
+        }).then(
+            (response: rest.Response) => {
+                if (response.entity.success) {
+                    this.isLoggedIn = true;
+                    this.user = response.entity.result
+                } else {
+                    this.isLoggedIn = false;
+                }
+                this.emit("change");
+            },
+            (response: rest.Response) => {
+                console.log("Error");
+                console.log(response);
+            })
     },
 
     onRegister: function(params: Requests.Register) {
@@ -54,6 +77,7 @@ var AuthStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 if (response.entity.success) {
                     this.isLoggedIn = false;
+                    this.user = null;
                     page.redirect('/');
                 }
                 this.emit("change");

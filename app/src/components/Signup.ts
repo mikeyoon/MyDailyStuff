@@ -50,7 +50,9 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
 
     render() {
         return d("div.row", {}, [
-            d("div.col-md-12", {}, [
+            d("div.col-md-6.col-md-offset-3", {}, [
+                d("h3", "Register for an account"),
+                d("br"),
                 this.renderSignupError(),
                 d("form", { onSubmit: this.onSubmit }, [
                     d("div.form-group", { key: "1" }, [
@@ -61,7 +63,9 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
                         d("label", { htmlFor: "password" }, "Password:"),
                         d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") })
                     ]),
-                    d("button.btn.btn-default[type=submit]", "Register")
+                    d("button.btn.btn-primary[type=submit]", "Register"),
+                    d("span.margin-small", "or"),
+                    d("a[href=/login]", "Login with an existing account")
                 ])
             ])
         ]);

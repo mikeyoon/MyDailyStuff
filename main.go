@@ -113,9 +113,9 @@ func main() {
 		user, err := service.GetUserById(session.Get("userId").(string))
 		if (err != nil) {
 			r.JSON(200, SuccessResponse(map[string]interface{}{
-				"UserId": user.UserId,
-				"CreateDate": user.CreateDate,
-				"LastLoginDate": user.LastLoginDate,
+				"user_id": user.UserId,
+				"create_date": user.CreateDate,
+				"last_login_date": user.LastLoginDate,
 			}))
 		} else {
 			r.JSON(404, ErrorResponse(err.Error()))
