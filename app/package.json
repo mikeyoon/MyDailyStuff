@@ -12,6 +12,7 @@
     "gulp-typescript": "^2.6.0",
     "jquery": "^2.1.4",
     "jsnox": "^1.0.0",
+    "marked": "^0.3.3",
     "merge2": "^0.3.4",
     "moment": "^2.10.2",
     "page": "^1.6.3",

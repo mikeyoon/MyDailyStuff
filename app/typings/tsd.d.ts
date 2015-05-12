@@ -5,3 +5,4 @@
 /// <reference path="page/page.d.ts" />
 /// <reference path="when/when.d.ts" />
 /// <reference path="moment/moment.d.ts" />
+/// <reference path="marked/marked.d.ts" />
