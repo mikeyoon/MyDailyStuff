@@ -51,7 +51,9 @@ page('/account', () => {
 });
 
 page('/journal', (ctx) => {
-    renderApp(Journal.Component, { flux: flux, date: new Date() });
+    var date = new Date();
+    date.setHours(0,0,0,0);
+    renderApp(Journal.Component, { flux: flux, date: date });
 });
 
 page('/journal/:date', (ctx) => {
