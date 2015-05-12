@@ -83,10 +83,6 @@ func main() {
 
 	//Login
 	m.Post("/api/account/login", binding.Json(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
-		if (session.Get("userId") != nil) {
-
-		}
-
 		user, err := service.GetUserByLogin(req.Email, req.Password)
 
 		if err != nil {

@@ -11,6 +11,7 @@ import JournalStore = require('./stores/Journal');
 import Fluxxor = require('fluxxor');
 import actions = require('./actions');
 import jsnox = require('jsnox');
+import moment = require('moment');
 
 import Login = require('./components/Login');
 import Signup = require('./components/Signup');
@@ -33,9 +34,13 @@ function renderApp(component: React.ComponentClass<{}>, options: any) {
 }
 
 page('/', () => {
-    //Check if logged in, if not, route to /login
-    //If logged in, route to journal/today's date
-    renderApp(Journal.Component, { flux: flux, date: new Date() });
+    if (!stores.auth.isLoggedIn) {
+        page.redirect('/login');
+    } else {
+        //Check if logged in, if not, route to /login
+        //If logged in, route to journal/today's date
+        renderApp(Journal.Component, {flux: flux, date: new Date()});
+    }
 });
 
 page('/register', () => {
@@ -51,13 +56,27 @@ page('/account', () => {
 });
 
 page('/journal', (ctx) => {
-    var date = new Date();
-    date.setHours(0,0,0,0);
-    renderApp(Journal.Component, { flux: flux, date: date });
+    if (!stores.auth.isLoggedIn) {
+        page.redirect('/login');
+    } else {
+        var date = new Date();
+        date.setHours(0,0,0,0);
+        renderApp(Journal.Component, { flux: flux, date: date });
+    }
 });
 
 page('/journal/:date', (ctx) => {
-    renderApp(Journal.Component, { flux: flux, date: new Date(ctx.params.date) });
+    if (!stores.auth.isLoggedIn) {
+        page.redirect('/login');
+    } else {
+        renderApp(Journal.Component, {flux: flux, date: moment(ctx.params.date, 'YYYY-M-D').toDate() });
+    }
 });
 
-page();
+if (stores.auth.isLoggedIn != null) {
+    page();
+} else {
+    stores.auth.once('change', () => {
+        page();
+    });
+}

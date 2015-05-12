@@ -41,10 +41,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         this.getFlux().actions.journal.get(nextProps.date);
     }
 
-    componentDidMount() {
-        //var date: Date = this.props.date ? this.props.date : new Date();
-        //console.log(date);
-        //this.getFlux().actions.journal.get(date);
+    componentWillMount() {
+        this.getFlux().actions.journal.get(this.props.date);
     }
 
     handleAddEntry(ev: any) {
@@ -110,25 +108,23 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     render() {
-        var today = moment(this.props.date).format("MMM Do YYYY");
-        var next = moment(this.props.date).add(1, 'day').format("YYYY-M-D");
-        var prev = moment(this.props.date).add(-1, 'day').format("YYYY-M-D");
-
-        var nextDate = new Date(next);
+        var today = moment(this.props.date);
+        var next = moment(this.props.date).add(1, 'day');//.format("YYYY-M-D");
+        var prev = moment(this.props.date).add(-1, 'day');//.format("YYYY-M-D");
 
         return d("div.row", {}, [
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
-                    d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev + ']', { onClick: this.handlePrev }, "prev")),
-                    today,
-                    d('small.margin-small', { style: { visibility: new Date() >= nextDate ? 'visible' : 'hidden' }, key: "next" },
-                        d('a[href=/journal/' + next + ']', { onClick: this.handleNext }, "next"))
+                    d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: this.handlePrev }, "< prev")),
+                    today.format("MMM Do YYYY"),
+                    d('small.margin-small', { style: { visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden' }, key: "next" },
+                        d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: this.handleNext }, "next >"))
                 ]),
 
                 this.state.hasEntry ? this.renderEntries() : d('h3.text-center', "No entries for the day..."),
 
                 d('hr'),
-                
+
                 d("form", { onSubmit: this.handleAddEntry }, [
                     d("div.form-group", {}, [
                         d("label", "Add a new entry (markdown)"),

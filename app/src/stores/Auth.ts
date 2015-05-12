@@ -20,7 +20,7 @@ var AuthStore = Fluxxor.createStore({
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
-        this.isLoggedIn = false;
+        this.isLoggedIn = null;
         this.loginResult = {};
         this.user = {}
 

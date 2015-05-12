@@ -8,6 +8,7 @@ import (
 	elastigo "github.com/mikeyoon/elastigo/lib"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -82,6 +83,18 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
             "mapper": {
                 "dynamic": false
             },
+            "settings": {
+			    "index": {
+			        "analysis": {
+			            "analyzer": {
+			                "keyword_lowercase": {
+			                    "tokenizer":"keyword",
+			                    "filter":"lowercase"
+			                }
+						}
+			        }
+			    }
+			},
             "mappings": {
                 "user": {
                     "properties": {
@@ -96,10 +109,10 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
                         "password_hash": {
                             "type": "binary"
                         },
-                            "create_date": {"type": "date"},
-                            "last_login_date": {"type": "date"}
-                        }
-                    },
+                        "create_date": {"type": "date"},
+                        "last_login_date": {"type": "date"}
+                    }
+                },
                 "journal": {
                     "properties": {
                         "user_id": {
@@ -171,7 +184,7 @@ func (s *Service) GetUserByEmail(email string) (User, error) {
 
 	query := elastigo.Query().
 		All().
-		Filter(elastigo.Filter().Term("email", email))
+		Filter(elastigo.Filter().Term("email", strings.ToLower(email)))
 
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
@@ -197,7 +210,7 @@ func (s *Service) GetUserByLogin(email string, password string) (User, error) {
 
 	query := elastigo.Query().
 		All().
-		Filter(elastigo.Filter().Term("email", email))
+		Filter(elastigo.Filter().Term("email", strings.ToLower(email)))
 
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
@@ -254,7 +267,7 @@ func (s *Service) UpdateUser(id string, email string, password string) error {
 	user.UserId = id
 
 	if len(email) > 0 {
-		user.Email = email
+		user.Email = strings.ToLower(email)
 	}
 
 	if len(password) > 0 {

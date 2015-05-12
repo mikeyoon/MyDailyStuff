@@ -28,7 +28,6 @@ var JournalStore = Fluxxor.createStore({
     },
 
     onAdd: function(entry: string) {
-        console.log(this.date);
         this.client({
             method: "POST",
             path: "/api/journal",
@@ -94,7 +93,6 @@ var JournalStore = Fluxxor.createStore({
     },
 
     onGet: function(date: Date) {
-        console.log("onGet " + date);
         this.date = date;
 
         this.client({
