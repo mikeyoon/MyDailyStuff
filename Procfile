@@ -1,2 +1,1 @@
-web: MyDailyStuff
-worker: build.sh
+web: start.sh
