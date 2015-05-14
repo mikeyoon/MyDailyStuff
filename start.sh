@@ -1,4 +1,4 @@
-cd app 
+cd app
 npm install
 gulp build
 cd ..
