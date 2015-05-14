@@ -1,5 +1,5 @@
-pushd app
+cd app
 npm install
 gulp build
-popd
-go run web.go
+cd ..
+MyDailyStuff
