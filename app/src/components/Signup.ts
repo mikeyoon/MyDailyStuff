@@ -16,6 +16,7 @@ interface SignupState {
     auth: any;
     email: string;
     password: string;
+    confirm: string;
 }
 
 export class SignupComponent extends TypedReact.Component<SignupProps, SignupState>
@@ -31,7 +32,9 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
 
     onSubmit(ev: any) {
         ev.preventDefault();
-        this.getFlux().actions.account.register(new Requests.Register(this.state.email, this.state.password));
+        if (this.state.confirm == this.state.password) {
+            this.getFlux().actions.account.register(new Requests.Register(this.state.email, this.state.password));
+        }
     }
 
     handleTextChange(name: string, ev: any) {
@@ -62,6 +65,10 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
                     d("div.form-group", { key: "2" }, [
                         d("label", { htmlFor: "password" }, "Password:"),
                         d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") })
+                    ]),
+                    d("div.form-group", { key: "3" }, [
+                        d("label", { htmlFor: "confirm" }, "Confirm Password:"),
+                        d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") })
                     ]),
                     d("button.btn.btn-primary[type=submit]", "Register"),
                     d("span.margin-small", "or"),
