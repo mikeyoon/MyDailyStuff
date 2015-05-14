@@ -10,6 +10,8 @@ import (
 	"log"
 	"strings"
 	"time"
+	"net/url"
+	"net"
 )
 
 const (
@@ -53,13 +55,28 @@ type IndexSettings struct {
 
 type ElasticOptions struct {
 	Host string
-	Port int
+	Port string
 }
 
-func (s *Service) InitDataStore(esopts *ElasticOptions) error {
+func (s *Service) InitDataStore(esUrl string) error {
 	conn := elastigo.NewConn()
-	if esopts != nil {
-		conn.SetPort(string(esopts.Port))
+
+	u, err := url.Parse(esUrl)
+	if err != nil {
+		return err
+	}
+
+	host, port, err := net.SplitHostPort(u.Host)
+	if err != nil {
+		return err
+	}
+
+	conn.SetHosts([]string{host})
+	conn.SetPort(port)
+	conn.Protocol = u.Scheme
+	if u.User != nil {
+		conn.Username = u.User.Username()
+		conn.Password, _ = u.User.Password()
 	}
 
 	s.createIndexes(conn)

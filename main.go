@@ -10,11 +10,12 @@ import (
 	"github.com/martini-contrib/sessions"
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	"log"
+	"os"
 )
 
 var (
-	eshost        *string = flag.String("host", "localhost", "Elasticsearch Server Host Address")
-	sessionSecret *string = flag.String("sessionSecret", "secret123", "Session Secret Key")
+	DEFAULT_ES_URL         *string = flag.String("esurl", "http://localhost:9200", "Elasticsearch Server Url")
+	DEFAULT_SESSION_SECRET *string = flag.String("sessionSecret", "secret123", "Session Secret Key")
 )
 
 type LoginRequest struct {
@@ -67,19 +68,29 @@ func SuccessResponse(result interface{}) Response {
 }
 
 func main() {
+	esurl := os.Getenv("ESURL")
+	if esurl == "" {
+		esurl = *DEFAULT_ES_URL
+	}
+
 	service := lib.Service{}
-	err := service.InitDataStore(nil)
+	err := service.InitDataStore(esurl)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	store := sessions.NewCookieStore([]byte(*sessionSecret))
+	secret := os.Getenv("SESSION_SECRET")
+	if secret == "" {
+		secret = *DEFAULT_SESSION_SECRET
+	}
+
+	store := sessions.NewCookieStore([]byte(secret))
 
 	m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Use(sessions.Sessions("my_session", store))
-	m.Use(martini.Static("public", martini.StaticOptions{Fallback:"index.html", Exclude:"/api"}))
+	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "index.html", Exclude: "/api"}))
 
 	//Login
 	m.Post("/api/account/login", binding.Json(LoginRequest{}), func(req LoginRequest, session sessions.Session, r render.Render) {
@@ -96,7 +107,7 @@ func main() {
 
 	//Logout
 	m.Post("/api/account/logout", func(session sessions.Session, r render.Render) {
-		if (session.Get("userId") != nil) {
+		if session.Get("userId") != nil {
 			session.Delete("userId")
 			r.JSON(200, SuccessResponse(nil))
 		} else {
@@ -107,10 +118,10 @@ func main() {
 	//Get user account information
 	m.Get("/api/account", func(session sessions.Session, r render.Render) {
 		user, err := service.GetUserById(session.Get("userId").(string))
-		if (err == nil) {
+		if err == nil {
 			r.JSON(200, SuccessResponse(map[string]interface{}{
-				"user_id": user.UserId,
-				"create_date": user.CreateDate,
+				"user_id":         user.UserId,
+				"create_date":     user.CreateDate,
 				"last_login_date": user.LastLoginDate,
 			}))
 		} else {
