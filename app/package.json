@@ -1,6 +1,9 @@
 {
   "name": "MyDailyStuff.js",
   "version": "0.0.1",
+  "scripts": {
+    "postinstall": "node ./node_modules/gulp/bin/gulp.js build"
+  },
   "devDependencies": {
     "bootstrap": "^3.3.4",
     "browserify": "^9.0.8",
