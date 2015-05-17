@@ -15,9 +15,10 @@ export interface LoginProps {
 }
 
 export interface LoginState {
-    email: string;
-    password: string;
-    auth: any;
+    email?: string;
+    password?: string;
+    auth?: any;
+    errors?: string[];
 }
 
 export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
@@ -25,9 +26,25 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
 
     getFlux: () => Fluxxor.Flux;
 
+    isValid(): boolean {
+        return !this.state.errors;
+    }
+
+    validate(): boolean {
+        var errors: string[] = [];
+
+        if (this.state.auth.loginResult && this.state.auth.loginResult.success == false) {
+            errors.push(this.state.auth.loginResult.error)
+        }
+
+        this.setState({ errors: errors });
+
+        return !errors
+    }
+
     getStateFromFlux() {
         var result = {
-            auth: this.getFlux().store("auth"),
+            auth: this.getFlux().store("auth")
         };
 
         return result;
@@ -45,9 +62,15 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
     }
 
     renderLoginError() {
+        var errors: string[] = this.state.errors ? this.state.errors : [];
+
         if (this.state.auth.loginResult && this.state.auth.loginResult.success == false) {
-            return d("div.alert.alert-danger", this.state.auth.loginResult.error);
+            errors.push(this.state.auth.loginResult.error)
         }
+
+        if (errors.length) return d("div.alert.alert-danger", {}, d('ul', {}, errors.map((err, ii) => {
+            return d('li', { key: ii }, err)
+        })));
 
         return null;
     }

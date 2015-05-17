@@ -35,7 +35,7 @@ function renderApp(component: React.ComponentClass<{}>, options: any) {
 
 page('/', () => {
     if (!stores.auth.isLoggedIn) {
-        page.redirect('/login');
+        page('/login');
     } else {
         //Check if logged in, if not, route to /login
         //If logged in, route to journal/today's date
@@ -57,7 +57,7 @@ page('/account', () => {
 
 page('/journal', (ctx) => {
     if (!stores.auth.isLoggedIn) {
-        page.redirect('/login');
+        page('/login');
     } else {
         var date = new Date();
         date.setHours(0,0,0,0);
@@ -67,11 +67,16 @@ page('/journal', (ctx) => {
 
 page('/journal/:date', (ctx) => {
     if (!stores.auth.isLoggedIn) {
-        page.redirect('/login');
+        page('/login');
     } else {
         renderApp(Journal.Component, {flux: flux, date: moment(ctx.params.date, 'YYYY-M-D').toDate() });
     }
 });
+
+//page.exit((ctx, next) => {
+//    console.log(ctx);
+//    next();
+//});
 
 if (stores.auth.isLoggedIn != null) {
     page();

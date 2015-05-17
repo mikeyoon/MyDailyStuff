@@ -8,6 +8,7 @@ import Responses = require("../models/responses");
 import TypedReact = require('typed-react');
 import moment = require('moment');
 import marked = require('marked');
+import Pikaday = require('pikaday');
 var d = jsnox(React);
 
 export interface JournalProps {
@@ -25,6 +26,8 @@ export interface JournalState {
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
     implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
 
+    calendar: Pikaday;
+
     getFlux: () => Fluxxor.Flux;
 
     getStateFromFlux(): JournalState {
@@ -38,6 +41,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     componentWillReceiveProps(nextProps: JournalProps) {
+        console.log('receiving props');
         this.getFlux().actions.journal.get(nextProps.date);
     }
 
@@ -45,8 +49,19 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         this.getFlux().actions.journal.get(this.props.date);
     }
 
+    componentDidMount() {
+        //this.calendar = new Pikaday({
+        //    container: document.getElementById('calendar'), //this.refs['calendar']
+        //    field: document.getElementById('asdf')
+        //});
+        //
+        //this.calendar.show();
+    }
+
     handleAddEntry(ev: any) {
         ev.preventDefault();
+        if (!this.state.newEntry) return;
+
         if (this.state.hasEntry) {
             this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(this.state.newEntry, this.state.current.entries.length));
         } else {
@@ -95,13 +110,13 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     renderEntries() {
         if (this.state.hasEntry) {
             return this.state.current.entries.map((e: string, index: number) => {
-                return d("div.panel.panel-default", { key: index }, [
+                return d("div.well", { key: index }, [
                     d('button.btn.btn-clear.pull-right', { key: "delete", onClick: this.handleDeleteEntry.bind(this, index) },
                         d('span.glyphicon.glyphicon-remove')),
                     //d('button.btn.btn-default.pull-right', { key: "edit", onClick: this.handleEditEntry.bind(this, index) },
                     //    d('span.glyphicon.glyphicon-edit')),
 
-                    d("div.panel-body.journal-entry", { dangerouslySetInnerHTML: { __html: marked(e) }})
+                    d("div.journal-entry", { dangerouslySetInnerHTML: { __html: marked(e) }})
                 ]);
             });
         }
@@ -135,9 +150,11 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                             onKeyDown: this.handleKeyDown,
                             onChange: this.handleTextChange.bind(this, "newEntry") })
                     ]),
-                    d('button.btn.btn-primary[type=submit]', { onClick: this.handleAddEntry }, "Add"),
+                    d('button.btn.btn-primary[type=submit]' + (!this.state.newEntry ? '.disabled' : ''),
+                        { onClick: this.handleAddEntry }, "Add"),
                     d('span.margin-small', "(or press ctrl + enter)")
-                ])
+                ]),
+                //d("div#calendar", { ref: 'calendar'}, d('input#asdf'))
             ])
         ]);
     }

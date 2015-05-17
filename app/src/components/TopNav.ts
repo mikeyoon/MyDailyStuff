@@ -23,7 +23,8 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
         };
     }
 
-    handleLogout() {
+    handleLogout(ev: any) {
+        ev.preventDefault();
         this.getFlux().actions.account.logout();
     }
 
@@ -41,6 +42,10 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                 ]),
 
                 d('div.collapse.navbar-collapse#navbar', {}, [
+                    //d('ul.nav.navbar-nav', {}, [
+                    //    d('li', {}, d('a.glyphicon.glyphicon-calendar[href=#]'))
+                    //]),
+
                     d('ul.nav.navbar-nav.navbar-right', {}, [
                         this.state.isLoggedIn ? d('li', {},
                             d('a[href=#]', { onClick: this.handleLogout }, "Logout")) :

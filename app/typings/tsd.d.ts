@@ -6,3 +6,4 @@
 /// <reference path="when/when.d.ts" />
 /// <reference path="moment/moment.d.ts" />
 /// <reference path="marked/marked.d.ts" />
+/// <reference path="pikaday/pikaday.d.ts" />

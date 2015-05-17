@@ -58,7 +58,7 @@ var AuthStore = Fluxxor.createStore({
                 this.registerResult = response.entity;
                 if (this.registerResult.success) {
                     this.isLoggedIn = true;
-                    page.redirect('/');
+                    page('/');
                 }
                 this.emit("change");
             },
@@ -79,19 +79,19 @@ var AuthStore = Fluxxor.createStore({
                 if (response.entity.success) {
                     this.isLoggedIn = false;
                     this.user = null;
-                    page.redirect('/login');
+                    page('/login');
                 }
                 this.emit("change");
             },
             (response: rest.Response) => {
                 console.log("Error");
                 console.log(response);
+                this.emit("change");
             }
         );
     },
 
     onLogin: function(payload: Requests.Login) {
-        console.log(payload);
         this.client({
             method: "POST",
             path: "/api/account/login",
@@ -101,7 +101,7 @@ var AuthStore = Fluxxor.createStore({
                 this.loginResult = response.entity;
                 if (this.loginResult.success) {
                     this.isLoggedIn = true;
-                    page.redirect('/');
+                    page('/');
                 }
 
                 this.emit("change");

@@ -117,15 +117,20 @@ func main() {
 
 	//Get user account information
 	m.Get("/api/account", func(session sessions.Session, r render.Render) {
-		user, err := service.GetUserById(session.Get("userId").(string))
-		if err == nil {
-			r.JSON(200, SuccessResponse(map[string]interface{}{
-				"user_id":         user.UserId,
-				"create_date":     user.CreateDate,
-				"last_login_date": user.LastLoginDate,
-			}))
+		if (session.Get("userId") != nil) {
+			user, err := service.GetUserById(session.Get("userId").(string))
+
+			if err == nil {
+				r.JSON(200, SuccessResponse(map[string]interface{}{
+					"user_id":         user.UserId,
+					"create_date":     user.CreateDate,
+					"last_login_date": user.LastLoginDate,
+				}))
+			} else {
+				r.JSON(404, ErrorResponse(err.Error()))
+			}
 		} else {
-			r.JSON(404, ErrorResponse(err.Error()))
+			r.JSON(200, ErrorResponse(""))
 		}
 	})
 

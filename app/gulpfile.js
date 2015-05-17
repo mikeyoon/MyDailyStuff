@@ -33,8 +33,10 @@ gulp.task('copy-jquery', function() {
 });
 
 gulp.task('copy-bootstrap', function() {
-    return gulp.src('./node_modules/bootstrap/dist/js/bootstrap.min.js')
-        .pipe(gulp.dest('../public'));
+    return gulp.src([
+        './node_modules/bootstrap/dist/js/bootstrap.min.js',
+        './node_modules/pikaday/css/pikaday.css'
+    ]).pipe(gulp.dest('../public'));
 });
 
 gulp.task('copy-fonts', function() {

@@ -15,6 +15,11 @@ var c = {
         DELETE: "JOURNAL:DELETE"
     },
 
+    SEARCH: {
+        DATE: "SEARCH:DATE",
+        QUERY: "SEARCH:QUERY"
+    },
+
     ROUTE: {
         HOME: "ROUTE:HOME"
     }
@@ -33,6 +38,14 @@ var methods = {
         },
         delete: function() {
             this.dispatch(c.JOURNAL.DELETE);
+        }
+    },
+    search: {
+        date: function(month: number, year: number) {
+            this.dispatch(c.SEARCH.DATE, month, year);
+        },
+        query: function(query: string) {
+            this.dispatch(c.SEARCH.QUERY, query);
         }
     },
     account: {
