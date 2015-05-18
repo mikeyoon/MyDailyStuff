@@ -8,16 +8,18 @@ import (
 	elastigo "github.com/mikeyoon/elastigo/lib"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"net"
+	"net/url"
 	"strings"
 	"time"
-	"net/url"
-	"net"
 )
 
 const (
 	EsIndex      = "mds"
-	UserIndex    = "user"
-	JournalIndex = "journal"
+	UserType = "user"
+	ResetType = "pwreset"
+	VerifyType = "verify"
+	JournalType = "journal"
 )
 
 type User struct {
@@ -26,6 +28,19 @@ type User struct {
 	PasswordHash  string    `json:"password_hash"`
 	CreateDate    time.Time `json:"create_date"`
 	LastLoginDate time.Time `json:"last_login_date"`
+}
+
+type UserVerification struct {
+	Email        string    `json:"email"`
+	Token        string    `json:"token"`
+	PasswordHash string    `json:"password_hash"`
+	CreateDate   time.Time `json"create_date"`
+}
+
+type PasswordReset struct {
+	UserId     string    `json:"user_id"`
+	Token      string    `json:"token"`
+	CreateDate time.Time `json:"create_date"`
 }
 
 type JournalEntry struct {
@@ -148,6 +163,39 @@ func (service *Service) createIndexes(c *elastigo.Conn) error {
                             "type": "date"
                         }
                     }
+                },
+                "verify": {
+                	"properties": {
+                		"email": {
+                			"type": "string",
+                			"index": "not_analyzed"
+                		},
+                		"token": {
+                			"type": "string",
+                			"index": "not_analyzed"
+                		},
+                		"password_hash": {
+                			"type": "binary"
+                		},
+                		"create_date": {
+                			"type": "date"
+                		}
+                	}
+                },
+                "pwreset": {
+                	"properties": {
+                		"user_id": {
+                			"type": "string",
+                			"index": "not_analyzed"
+                		},
+                		"token": {
+                			"type": "string",
+                			"index": "not_analyzed"
+                		},
+                		"create_date": {
+                			"type": "date"
+                		}
+                	}
                 }
             }
         }`)
@@ -204,7 +252,7 @@ func (s *Service) GetUserByEmail(email string) (User, error) {
 		Filter(elastigo.Filter().Term("email", strings.ToLower(email)))
 
 	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
+	result, err := s.es.Search(EsIndex, UserType, nil, search)
 
 	if err != nil {
 		if err == elastigo.RecordNotFound {
@@ -230,7 +278,7 @@ func (s *Service) GetUserByLogin(email string, password string) (User, error) {
 		Filter(elastigo.Filter().Term("email", strings.ToLower(email)))
 
 	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, UserIndex, nil, search)
+	result, err := s.es.Search(EsIndex, UserType, nil, search)
 
 	if err != nil {
 		if err == elastigo.RecordNotFound {
@@ -262,7 +310,7 @@ func (s *Service) GetUserByLogin(email string, password string) (User, error) {
 
 func (s *Service) GetUserById(id string) (User, error) {
 	var retval User
-	err := s.es.GetSource(EsIndex, UserIndex, id, nil, &retval)
+	err := s.es.GetSource(EsIndex, UserType, id, nil, &retval)
 
 	if err != nil {
 		log.Println("User " + id + " not found")
@@ -293,7 +341,7 @@ func (s *Service) UpdateUser(id string, email string, password string) error {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
 		}
 
-		_, err = s.es.Index(EsIndex, UserIndex, id, nil, user)
+		_, err = s.es.Index(EsIndex, UserType, id, nil, user)
 		if err != nil {
 			return err
 		}
@@ -302,31 +350,144 @@ func (s *Service) UpdateUser(id string, email string, password string) error {
 	return nil
 }
 
-func (s *Service) CreateUser(email string, password string) error {
+func (s *Service) GetUserVerification(token string) (UserVerification, error) {
+	var retval UserVerification
 
+	query := elastigo.Query().
+		All().
+		Filter(elastigo.Filter().Term("token", token))
+
+	search := elastigo.Search(EsIndex).Query(query)
+	result, err := s.es.Search(EsIndex, VerifyType, nil, search)
+
+	if err == nil {
+		err = getSingleResult(result, &retval)
+	}
+
+	if err != nil {
+		if err != elastigo.RecordNotFound {
+			fmt.Println("Error GetUserVerification: " + err.Error())
+		}
+
+		return retval, VerificationNotFound
+	}
+
+	return retval, err
+}
+
+func (s *Service) CreateUserVerification(email string, password string) error {
 	_, err := s.GetUserByEmail(email)
+
 	if err == UserNotFound {
+		//Generate token
 		id := uuid.New()
 
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+
+		if err == nil {
+			verify := UserVerification{
+				Email:        email,
+				CreateDate:   time.Now(),
+				PasswordHash: base64.StdEncoding.EncodeToString(pass),
+				Token:        id}
+
+			_, err = s.es.Index(EsIndex, VerifyType, id, nil, verify)
+		}
+
 		if err != nil {
 			panic(err)
 		}
 
-		_, err = s.es.Index(EsIndex, UserIndex, id, nil, User{
-			UserId:       id,
-			Email:        email,
-			CreateDate:   time.Now(),
-			PasswordHash: base64.StdEncoding.EncodeToString(pass)})
-
-		if err != nil {
-			panic(err)
-		}
+		//TODO: Send email
 
 		return err
 	} else {
 		return UserAlreadyExists
 	}
+}
+
+func (s *Service) CreateUser(verificationToken string) (string, error) {
+	verify, err := s.GetUserVerification(verificationToken)
+	if err == nil {
+		id := uuid.New()
+
+		_, err = s.es.Index(EsIndex, UserType, id, nil, User{
+			UserId:       id,
+			Email:        verify.Email,
+			CreateDate:   time.Now(),
+			PasswordHash: verify.PasswordHash})
+
+		if err == nil {
+			_, err = s.es.Delete(EsIndex, VerifyType, verify.Token, nil)
+		}
+
+		return id, err
+	} else {
+		fmt.Println(err.Error())
+		return "", VerificationNotFound
+	}
+}
+
+func (s *Service) GetResetPassword(token string) (PasswordReset, error) {
+	var retval PasswordReset
+
+	query := elastigo.Query().
+		All().
+		Filter(elastigo.Filter().Term("token", token))
+
+	search := elastigo.Search(EsIndex).Query(query)
+	result, err := s.es.Search(EsIndex, ResetType, nil, search)
+
+	if err != nil {
+		if err == elastigo.RecordNotFound {
+			return retval, ResetNotFound
+		}
+
+		return retval, err
+	}
+
+	err = getSingleResult(result, &retval)
+	if err != nil {
+		return retval, ResetNotFound
+	}
+
+	return retval, nil
+}
+
+func (s *Service) CreateAndSendResetPassword(email string) error {
+	user, err := s.GetUserByEmail(email)
+	if err == nil {
+		id := uuid.New()
+		reset := PasswordReset{UserId: user.UserId, Token: id, CreateDate: time.Now()}
+
+		_, err = s.es.Index(EsIndex, ResetType, id, nil, reset)
+
+		if err == nil {
+			fmt.Println("Sending reset password to " + user.UserId)
+			//TODO: Send email
+		}
+	}
+
+	return err
+}
+
+func (s *Service) ResetPassword(token string, password string) error {
+	reset, err := s.GetResetPassword(token)
+
+	if len(password) < 6 || len(password) > 50 {
+		err = PasswordInvalid
+	}
+
+	if err == nil {
+		fmt.Println("Resetting password for " + reset.UserId)
+		err = s.UpdateUser(reset.UserId, "", password)
+	}
+
+	if err == nil {
+		_, err = s.es.Delete(EsIndex, ResetType, token, nil)
+	}
+
+	return err
 }
 
 //Journal Functions
@@ -348,7 +509,7 @@ func (s *Service) CreateJournalEntry(userId string, entries []string, date time.
 	id := uuid.New()
 	entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
 
-	_, err = s.es.Index(EsIndex, JournalIndex, id, nil, entry)
+	_, err = s.es.Index(EsIndex, JournalType, id, nil, entry)
 	return entry, err
 }
 
@@ -359,7 +520,7 @@ func (s *Service) UpdateJournalEntry(id string, userId string, entries []string)
 
 	var entry JournalEntry
 
-	err := s.es.GetSource(EsIndex, JournalIndex, id, nil, &entry)
+	err := s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
 
 	if err != nil {
 		return err
@@ -370,7 +531,7 @@ func (s *Service) UpdateJournalEntry(id string, userId string, entries []string)
 	}
 
 	entry.Entries = entries
-	_, err = s.es.Index(EsIndex, JournalIndex, id, nil, entry)
+	_, err = s.es.Index(EsIndex, JournalType, id, nil, entry)
 
 	return err
 }
@@ -381,13 +542,13 @@ func (s *Service) DeleteJournalEntry(id string, userId string) error {
 	}
 
 	var entry JournalEntry
-	err := s.es.GetSource(EsIndex, JournalIndex, id, nil, &entry)
+	err := s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
 
 	if err != nil || userId != entry.UserId {
 		return EntryNotFound
 	}
 
-	_, err = s.es.Delete(EsIndex, JournalIndex, id, nil)
+	_, err = s.es.Delete(EsIndex, JournalType, id, nil)
 	return err
 }
 
@@ -407,7 +568,7 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 		And(elastigo.Filter().Term("date", createDate)))
 
 	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, JournalIndex, nil, search)
+	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -452,15 +613,13 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	}
 
 	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, JournalIndex, nil, search)
+	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
 	if err != nil {
 		return nil, err
 	}
 
-	asdf, err := query.MarshalJSON()
-
-	fmt.Printf("%s", asdf)
+	_, err = query.MarshalJSON()
 
 	retval := make([]JournalEntry, result.Hits.Total)
 
@@ -483,7 +642,7 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	return retval, nil
 }
 
-//Search journal entries
+//Find dates with journal entries
 func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, error) {
 	if userId == "" {
 		return nil, UserUnauthorized
@@ -508,7 +667,7 @@ func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, 
 		query = query.Filter(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
 	}
 
-	search := elastigo.Search(EsIndex).Type(JournalIndex).Query(query).Fields("date")
+	search := elastigo.Search(EsIndex).Type(JournalType).Query(query).Fields("date")
 
 	result, err := search.Result(s.es)
 

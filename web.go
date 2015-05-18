@@ -53,6 +53,11 @@ type FindDaysRequest struct {
 	End   string `form:end`
 }
 
+type ResetPasswordRequest struct {
+	Token    string `json:"token" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 type Response struct {
 	Success bool        `json:"success"`
 	Error   string      `json:"error,omitempty"`
@@ -117,7 +122,7 @@ func main() {
 
 	//Get user account information
 	m.Get("/api/account", func(session sessions.Session, r render.Render) {
-		if (session.Get("userId") != nil) {
+		if session.Get("userId") != nil {
 			user, err := service.GetUserById(session.Get("userId").(string))
 
 			if err == nil {
@@ -137,7 +142,7 @@ func main() {
 	//Submit registration
 	m.Post("/api/account/register", binding.Json(RegisterRequest{}),
 		func(reg RegisterRequest, r render.Render) {
-			err := service.CreateUser(reg.Email, reg.Password)
+			err := service.CreateUserVerification(reg.Email, reg.Password)
 			if err != nil {
 				r.JSON(200, ErrorResponse(err.Error()))
 			} else {
@@ -146,7 +151,7 @@ func main() {
 		})
 
 	//Modify user account
-	m.Post("/api/account/:id", binding.Json(ModifyAccountRequest{}),
+	m.Put("/api/account/:id", binding.Json(ModifyAccountRequest{}),
 		func(req ModifyAccountRequest, args martini.Params, r render.Render) {
 			log.Println("Modifying user " + args["id"])
 
@@ -157,6 +162,54 @@ func main() {
 				r.JSON(200, SuccessResponse(nil))
 			}
 		})
+
+	//Send reset password link
+	m.Post("/api/account/forgot/:email", func(args martini.Params, session sessions.Session, r render.Render) {
+		err := service.CreateAndSendResetPassword(args["email"])
+
+		if err == nil {
+			r.JSON(200, SuccessResponse(nil))
+		} else {
+			r.JSON(200, ErrorResponse(err.Error()))
+		}
+	})
+
+	//Check if reset link is valid
+	m.Get("/api/account/reset/:token", func(args martini.Params, session sessions.Session, r render.Render) {
+		_, err := service.GetResetPassword(args["token"])
+
+		//TODO: Check if token has expired
+		if err != nil {
+			r.JSON(200, ErrorResponse(err.Error()))
+		} else {
+			r.JSON(200, SuccessResponse(nil))
+		}
+	})
+
+	//Reset password
+	m.Post("/api/account/reset/", binding.Json(ResetPasswordRequest{}), func(req ResetPasswordRequest,
+		session sessions.Session, r render.Render) {
+
+		err := service.ResetPassword(req.Token, req.Password)
+
+		if err != nil {
+			r.JSON(200, ErrorResponse(err.Error()))
+		} else {
+			r.JSON(200, SuccessResponse(nil))
+		}
+	})
+
+	//Verify an account
+	m.Get("/api/account/verify/:token", func(args martini.Params, session sessions.Session, r render.Render) {
+		id, err := service.CreateUser(args["token"])
+
+		if err == nil {
+			session.Set("userId", id)
+			r.JSON(200, SuccessResponse(nil))
+		} else {
+			r.JSON(200, ErrorResponse(err.Error()))
+		}
+	})
 
 	//Get a journal entry
 	m.Get("/api/journal/:date", func(r render.Render, args martini.Params, session sessions.Session) {
