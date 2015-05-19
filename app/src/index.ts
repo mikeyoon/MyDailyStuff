@@ -16,6 +16,8 @@ import moment = require('moment');
 import Login = require('./components/Login');
 import Signup = require('./components/Signup');
 import Journal = require('./components/Journal');
+import Forgot = require('./components/Forgot');
+import Reset = require('./components/ResetPassword');
 import App = require('./components/App');
 
 var stores = {
@@ -53,6 +55,20 @@ page('/login', () => {
 
 page('/account', () => {
     console.log('account');
+});
+
+page('/forgot-password', () => {
+    renderApp(Forgot.Component, { flux: flux });
+});
+
+page('/account/reset/:token', (ctx) => {
+    //console.log(ctx.params.token);
+    renderApp(Reset.Component, { flux: flux, token: ctx.params.token });
+});
+
+page('/account/verify/:token', (ctx) => {
+    //console.log(ctx.params.token);
+    flux.actions.account.verify(ctx.params.token);
 });
 
 page('/journal', (ctx) => {

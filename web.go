@@ -11,11 +11,14 @@ import (
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	"log"
 	"os"
+	"fmt"
 )
 
 var (
 	DEFAULT_ES_URL         *string = flag.String("esurl", "http://localhost:9200", "Elasticsearch Server Url")
 	DEFAULT_SESSION_SECRET *string = flag.String("sessionSecret", "secret123", "Session Secret Key")
+	DEFAULT_SG_USERNAME    *string = flag.String("sg_name", "", "Sendgrid Username")
+	DEFAULT_SG_PASSWORD    *string = flag.String("sg_pw", "", "Sendgrid Password")
 )
 
 type LoginRequest struct {
@@ -78,8 +81,23 @@ func main() {
 		esurl = *DEFAULT_ES_URL
 	}
 
+	sgUsername := os.Getenv("SENDGRID_USERNAME")
+	if sgUsername == "" {
+		sgUsername = *DEFAULT_SG_USERNAME
+	}
+
+	sgPassword := os.Getenv("SENDGRID_PASSWORD")
+	if sgPassword == "" {
+		sgPassword = *DEFAULT_SG_PASSWORD
+	}
+
+	fmt.Println(sgUsername)
+
 	service := lib.Service{}
-	err := service.InitDataStore(esurl)
+	err := service.Init(lib.ServiceOptions{
+		ElasticUrl:       esurl,
+		SendGridUsername: sgUsername,
+		SendGridPassword: sgPassword})
 
 	if err != nil {
 		log.Fatal(err)
@@ -167,11 +185,11 @@ func main() {
 	m.Post("/api/account/forgot/:email", func(args martini.Params, session sessions.Session, r render.Render) {
 		err := service.CreateAndSendResetPassword(args["email"])
 
-		if err == nil {
-			r.JSON(200, SuccessResponse(nil))
-		} else {
-			r.JSON(200, ErrorResponse(err.Error()))
+		if err != nil {
+			fmt.Println(err.Error() + " " + args["email"])
 		}
+
+		r.JSON(200, SuccessResponse(nil))
 	})
 
 	//Check if reset link is valid

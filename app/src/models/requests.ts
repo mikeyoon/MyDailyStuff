@@ -31,3 +31,13 @@ export class Register {
         this.password = password;
     }
 }
+
+export class PasswordReset {
+    token: string;
+    password: string;
+
+    constructor(token: string, password: string) {
+        this.token = token;
+        this.password = password;
+    }
+}

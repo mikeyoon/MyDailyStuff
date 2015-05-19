@@ -8,13 +8,13 @@ import TypedReact = require('typed-react');
 
 var d = jsnox(React);
 
-interface SignupProps {
+interface ForgotProps {
     flux: any;
+    token: string;
 }
 
-interface SignupState {
+interface ForgotState {
     auth?: any;
-    email?: string;
     password?: string;
     confirm?: string;
     errors?: string[];
@@ -23,8 +23,8 @@ interface SignupState {
 
 var emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
-export class SignupComponent extends TypedReact.Component<SignupProps, SignupState>
-    implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
+export class ForgotComponent extends TypedReact.Component<ForgotProps, ForgotState>
+implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
 
     getFlux: () => Fluxxor.Flux;
 
@@ -44,9 +44,7 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
     onSubmit(ev: any) {
         ev.preventDefault();
         if (this.validate()) {
-            if (this.state.confirm == this.state.password) {
-                this.getFlux().actions.account.register(new Requests.Register(this.state.email, this.state.password));
-            }
+            this.getFlux().actions.account.resetPassword(new Requests.PasswordReset(this.props.token, this.state.password));
         }
     }
 
@@ -76,20 +74,15 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
             fields["password"] = true;
         }
 
-        if (!emailRegex.test(this.state.email)) {
-            errors.push('Email is invalid');
-            fields["email"] = true;
-        }
-
         this.setState({ errors: errors, errorFields: fields });
 
         return !errors.length;
     }
 
-    renderSignupError() {
+    renderErrors() {
         var errors: string[] = this.state.errors ? this.state.errors.slice() : [];
-        if (this.state.auth && this.state.auth.registerResult && this.state.auth.registerResult.success == false) {
-            errors.push(this.state.auth.registerResult.error);
+        if (this.state.auth && this.state.auth.resetPasswordResult && this.state.auth.resetPasswordResult.success == false) {
+            errors.push(this.state.auth.resetPasswordResult.error);
         }
 
         if (errors.length) return d("div.alert.alert-danger", {}, d('ul', {}, errors.map((err, ii) => {
@@ -102,34 +95,32 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
     render() {
         return d("div.row", {}, [
             d("div.col-md-6.col-md-offset-3", {}, [
-                d("h3.text-center", "Register for an account"),
+                d("h3.text-center", "Reset your Password"),
                 d("br"),
-                this.renderSignupError(),
+                this.renderErrors(),
 
-                this.state.auth.registerResult.success ?
-                d('div', "Verification email sent") :
-                d("form", { onSubmit: this.onSubmit }, [
-                    d("div.form-group" + (this.state.errorFields["email"] ? '.has-error' : ''), { key: "1" }, [
-                        d("label.control-label", { htmlFor: "email" }, "Email:"),
-                        d("input.form-control#email[name=email]", { value: this.state.email, onChange: this.handleTextChange.bind(this, "email") })
-                    ]),
-                    d("div.form-group" + (this.state.errorFields["password"] ? '.has-error' : ''), { key: "2" }, [
-                        d("label.control-label", { htmlFor: "password" }, "Password:"),
-                        d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") })
-                    ]),
-                    d("div.form-group" + (this.state.errorFields["confirm"] ? '.has-error' : ''), { key: "3" }, [
-                        d("label.control-label", { htmlFor: "confirm" }, "Confirm Password:"),
-                        d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") })
-                    ]),
-                    d("div.text-center", {}, [
-                        d("button.btn.btn-primary[type=submit]", "Register"),
-                        d("span.margin-small", "or"),
-                        d("a[href=/login]", "Login with an existing account")
+                this.state.auth.resetPasswordResult.success ?
+                    d('div', {}, [
+                        "Your password has been reset. Click ",
+                        d("a[href=/login]", "here"),
+                        " to login."
+                    ]) :
+                    d("form", { onSubmit: this.onSubmit }, [
+                        d("div.form-group" + (this.state.errorFields["password"] ? '.has-error' : ''), { key: "2" }, [
+                            d("label.control-label", { htmlFor: "password" }, "Password:"),
+                            d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") })
+                        ]),
+                        d("div.form-group" + (this.state.errorFields["confirm"] ? '.has-error' : ''), { key: "3" }, [
+                            d("label.control-label", { htmlFor: "confirm" }, "Confirm Password:"),
+                            d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") })
+                        ]),
+                        d("div.text-center", d("button.btn.btn-primary[type=submit]", "Reset Password"))
+                        //d("span.margin-small", "or"),
+                        //d("a[href=/login]", "Login with an existing account")
                     ])
-                ])
             ])
         ]);
     }
 }
 
-export var Component = TypedReact.createClass(SignupComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);
+export var Component = TypedReact.createClass(ForgotComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);

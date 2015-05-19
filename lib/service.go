@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	elastigo "github.com/mikeyoon/elastigo/lib"
+	"github.com/sendgrid/sendgrid-go"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net"
@@ -15,10 +16,10 @@ import (
 )
 
 const (
-	EsIndex      = "mds"
-	UserType = "user"
-	ResetType = "pwreset"
-	VerifyType = "verify"
+	EsIndex     = "mds"
+	UserType    = "user"
+	ResetType   = "pwreset"
+	VerifyType  = "verify"
 	JournalType = "journal"
 )
 
@@ -61,6 +62,7 @@ type JournalQuery struct {
 
 type Service struct {
 	es *elastigo.Conn
+	sg *sendgrid.SGClient
 }
 
 type IndexSettings struct {
@@ -68,36 +70,38 @@ type IndexSettings struct {
 	Mappings map[string]interface{} `json:"mappings"`
 }
 
-type ElasticOptions struct {
-	Host string
-	Port string
+type ServiceOptions struct {
+	ElasticUrl       string
+	SendGridUsername string
+	SendGridPassword string
 }
 
-func (s *Service) InitDataStore(esUrl string) error {
+func (s *Service) Init(options ServiceOptions) error {
 	conn := elastigo.NewConn()
 
-	u, err := url.Parse(esUrl)
-	if err != nil {
-		return err
+	u, err := url.Parse(options.ElasticUrl)
+
+	if err == nil {
+		host, port, e := net.SplitHostPort(u.Host)
+		err = e //Why go, why?
+
+		conn.SetHosts([]string{host})
+		conn.SetPort(port)
+		conn.Protocol = u.Scheme
+		if u.User != nil {
+			conn.Username = u.User.Username()
+			conn.Password, _ = u.User.Password()
+		}
 	}
 
-	host, port, err := net.SplitHostPort(u.Host)
-	if err != nil {
-		return err
+	err = s.createIndexes(conn)
+
+	if err == nil {
+		s.es = conn
+		s.sg = sendgrid.NewSendGridClient(options.SendGridUsername, options.SendGridPassword)
 	}
 
-	conn.SetHosts([]string{host})
-	conn.SetPort(port)
-	conn.Protocol = u.Scheme
-	if u.User != nil {
-		conn.Username = u.User.Username()
-		conn.Password, _ = u.User.Password()
-	}
-
-	s.createIndexes(conn)
-
-	s.es = conn
-	return nil
+	return err
 }
 
 func (service *Service) createIndexes(c *elastigo.Conn) error {
@@ -398,7 +402,30 @@ func (s *Service) CreateUserVerification(email string, password string) error {
 			panic(err)
 		}
 
-		//TODO: Send email
+		message := sendgrid.NewMail()
+		message.AddTo(email)
+		message.SetSubject("Activate your MyDailyStuff.com account")
+		message.SetFrom("no-reply@mydailystuff.com")
+		message.SetHTML(`<html>
+<head>
+	<title></title>
+</head>
+<body>
+<p>Welcome to MyDailyStuff!</p>
+
+<p>To activate your account, please click on the following link below.</p>
+
+<p>https://www.mydailystuff.com/account/verify/` + id + `</p>
+
+<p>Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.</p>
+
+<p>Thanks You,</p>
+
+<p>MyDailyStuff.com</p>
+</body>
+</html>`)
+
+		err = s.sg.Send(message)
 
 		return err
 	} else {
@@ -464,7 +491,32 @@ func (s *Service) CreateAndSendResetPassword(email string) error {
 
 		if err == nil {
 			fmt.Println("Sending reset password to " + user.UserId)
-			//TODO: Send email
+
+			message := sendgrid.NewMail()
+			message.AddTo(email)
+			message.SetSubject("Reset your MyDailyStuff.com password")
+			message.SetFrom("no-reply@mydailystuff.com")
+			message.SetHTML(`<html>
+<head>
+	<title></title>
+</head>
+<body>
+<p>Reset your MyDailyStuff.com password</p>
+
+<p>We sent you this email because you requested to reset your password.
+Click the link below to reset your password. It will be valid for 24 hours.</p>
+
+<p>https://www.mydailystuff.com/account/reset/` + id + `</p>
+
+<p>If this is incorrect, please ignore this email.</p>
+
+<p>Thanks You,</p>
+
+<p>MyDailyStuff.com</p>
+</body>
+</html>`)
+
+			err = s.sg.Send(message)
 		}
 	}
 

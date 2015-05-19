@@ -9,7 +9,7 @@
 		},
 		{
 			"ImportPath": "github.com/araddon/gou",
-			"Rev": "2c3ebe13a9748b26bd2c1050a7933da9dab34e99"
+			"Rev": "cf9cf25f52be174c5878920a8021bd224cbe32c7"
 		},
 		{
 			"ImportPath": "github.com/bitly/go-hostpool",
@@ -17,8 +17,8 @@
 		},
 		{
 			"ImportPath": "github.com/boj/redistore",
-			"Comment": "v1",
-			"Rev": "9d1554b400d726c7aa54b6e4a836f273b72b97f7"
+			"Comment": "v1-2-g0cd5558",
+			"Rev": "0cd55584b172cefd31c4cb84e2904585d898c7b2"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/inject",
@@ -27,16 +27,16 @@
 		},
 		{
 			"ImportPath": "github.com/garyburd/redigo/internal",
-			"Rev": "785e0ca9319196b94fd61abd4c9eab5c11777377"
+			"Rev": "535138d7bcd717d6531c701ef5933d98b1866257"
 		},
 		{
 			"ImportPath": "github.com/garyburd/redigo/redis",
-			"Rev": "785e0ca9319196b94fd61abd4c9eab5c11777377"
+			"Rev": "535138d7bcd717d6531c701ef5933d98b1866257"
 		},
 		{
 			"ImportPath": "github.com/go-martini/martini",
-			"Comment": "v1.0-93-g1fa63f1",
-			"Rev": "1fa63f1c64ff0e05a5b923c6506224ad3db803c2"
+			"Comment": "v1.0-124-gd398859",
+			"Rev": "d39885924ac22dcafaa9fd452a3af1261107799d"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -44,11 +44,11 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/securecookie",
-			"Rev": "f0559d009e6943011cd1ba6eb16195cf5e0ed326"
+			"Rev": "8e98dd730fc43f1383f19615db6f2e702c9738e8"
 		},
 		{
 			"ImportPath": "github.com/gorilla/sessions",
-			"Rev": "13c86220d944600e7a6e3de6c87418896ccfbe77"
+			"Rev": "f61c3ec2cf65d69e7efedfd4d060fe128882c951"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/now",
@@ -56,7 +56,7 @@
 		},
 		{
 			"ImportPath": "github.com/martini-contrib/binding",
-			"Rev": "1928ed2850e7d65507ea4198d935597e43612c7d"
+			"Rev": "8aaceec3b52c275477f32c95ea5c6e8ccaba04c5"
 		},
 		{
 			"ImportPath": "github.com/martini-contrib/render",
@@ -73,15 +73,25 @@
 		},
 		{
 			"ImportPath": "github.com/oxtoacart/bpool",
-			"Rev": "923fab21d0624a469b877a05bbfc562c1c26c663"
+			"Rev": "754d38fccfc6e52083355014b6abc8d626445dfd"
+		},
+		{
+			"ImportPath": "github.com/sendgrid/sendgrid-go",
+			"Comment": "v2.0.0-1-gd25755f",
+			"Rev": "d25755fac6ab40d066ef175b36b79c664bb74aa2"
+		},
+		{
+			"ImportPath": "github.com/sendgrid/smtpapi-go",
+			"Comment": "v0.3.0",
+			"Rev": "aef812c905eba82b7da419b8ae08acc04b3af8a4"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
-			"Rev": "7db43667c77d5d330c359ffd03f5789cf390e973"
+			"Rev": "c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/blowfish",
-			"Rev": "7db43667c77d5d330c359ffd03f5789cf390e973"
+			"Rev": "c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3"
 		}
 	]
 }

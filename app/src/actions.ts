@@ -5,7 +5,10 @@ var c = {
         LOGIN: "ACCOUNT:LOGIN",
         PROFILE: "ACCOUNT:PROFILE",
         REGISTER: "ACCOUNT:REGISTER",
-        LOGOUT: "ACCOUNT:LOGOUT"
+        LOGOUT: "ACCOUNT:LOGOUT",
+        VERIFY: "ACCOUNT:VERIFY",
+        RESET_PASSWORD: "ACCOUNT:RESET_PASSWORD",
+        SEND_RESET: "ACCOUNT:SEND_RESET"
     },
 
     JOURNAL: {
@@ -60,6 +63,15 @@ var methods = {
         },
         register: function(payload: Requests.Register) {
             this.dispatch(c.ACCOUNT.REGISTER, payload);
+        },
+        verify: function(token: string) {
+            this.dispatch(c.ACCOUNT.VERIFY, token);
+        },
+        sendReset: function(email: string) {
+            this.dispatch(c.ACCOUNT.SEND_RESET, email);
+        },
+        resetPassword: function(payload: Requests.PasswordReset) {
+            this.dispatch(c.ACCOUNT.RESET_PASSWORD, payload);
         }
     },
     routes: {

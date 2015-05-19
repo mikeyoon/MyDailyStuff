@@ -131,7 +131,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
                     d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: this.handlePrev }, "< prev")),
-                    today.format("MMM Do YYYY"),
+                    today.format("dddd, MMMM Do YYYY"),
                     d('small.margin-small', { style: { visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden' }, key: "next" },
                         d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: this.handleNext }, "next >"))
                 ]),

@@ -16,13 +16,19 @@ var AuthStore = Fluxxor.createStore({
         this.bindActions(
             actions.constants.ACCOUNT.LOGIN, this.onLogin,
             actions.constants.ACCOUNT.LOGOUT, this.onLogout,
-            actions.constants.ACCOUNT.REGISTER, this.onRegister
+            actions.constants.ACCOUNT.REGISTER, this.onRegister,
+            actions.constants.ACCOUNT.VERIFY, this.onVerify,
+            actions.constants.ACCOUNT.SEND_RESET, this.onResetSend,
+            actions.constants.ACCOUNT.RESET_PASSWORD, this.onPasswordReset
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
         this.isLoggedIn = null;
         this.loginResult = {};
-        this.user = {}
+        this.registerResult = {};
+        this.sendResetResult = {};
+        this.resetPasswordResult = {};
+        this.user = {};
 
         this.onGetAccount();
     },
@@ -48,6 +54,53 @@ var AuthStore = Fluxxor.createStore({
             })
     },
 
+    onResetSend: function(email: string) {
+        this.client({
+            method: "POST",
+            path: "/api/account/forgot/" + email
+        }).then(
+            (response: rest.Response) => {
+                this.sendResetResult = response.entity;
+                if (this.sendResetResult.success) {
+                    console.log('Reset email sent');
+                }
+                this.emit("change");
+            },
+            (response: rest.Response) => {
+                console.log(response);
+                this.sendResetResult = {
+                    success: false,
+                    message: "Failed"
+                };
+                this.emit("change");
+            }
+        );
+    },
+
+    onPasswordReset: function(req: Requests.PasswordReset) {
+        this.client({
+            method: "POST",
+            path: "/api/account/reset/",
+            entity: JSON.stringify(req)
+        }).then(
+            (response: rest.Response) => {
+                this.resetPasswordResult = response.entity;
+                if (this.resetPasswordResult.success) {
+                    console.log('Reset email sent');
+                }
+                this.emit("change");
+            },
+            (response: rest.Response) => {
+                console.log(response);
+                this.resetPasswordResult = {
+                    success: false,
+                    message: "Failed"
+                };
+                this.emit("change");
+            }
+        );
+    },
+
     onRegister: function(params: Requests.Register) {
         this.client({
             method: "POST",
@@ -57,8 +110,9 @@ var AuthStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 this.registerResult = response.entity;
                 if (this.registerResult.success) {
-                    this.isLoggedIn = true;
-                    page('/');
+                    console.log('Verify email sent');
+                    //this.isLoggedIn = true;
+                    //page('/register/verify');
                 }
                 this.emit("change");
             },
@@ -112,6 +166,28 @@ var AuthStore = Fluxxor.createStore({
                     success: false,
                     message: "Unexpected error authenticating with server."
                 };
+
+                this.emit("change");
+            }
+        );
+    },
+
+    onVerify: function(token: string) {
+        this.client({
+            method: "GET",
+            path: "/api/account/verify/" + token
+        }).then(
+            (response: rest.Response) => {
+                if (response.entity.success) {
+                    this.isLoggedIn = true;
+                    page('/');
+                }
+
+                this.emit("change");
+            },
+            (response: rest.Response) => {
+                console.log(response);
+                page('/login');
 
                 this.emit("change");
             }
