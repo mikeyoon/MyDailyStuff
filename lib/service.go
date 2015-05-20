@@ -406,6 +406,18 @@ func (s *Service) CreateUserVerification(email string, password string) error {
 		message.AddTo(email)
 		message.SetSubject("Activate your MyDailyStuff.com account")
 		message.SetFrom("no-reply@mydailystuff.com")
+		message.SetText(`Welcome to MyDailyStuff!
+
+To activate your account, please click on the following link below.
+
+https://www.mydailystuff.com/account/verify/` + id + `
+
+Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.
+
+Thank You,
+
+MyDailyStuff.com`)
+
 		message.SetHTML(`<html>
 <head>
 	<title></title>
@@ -496,6 +508,18 @@ func (s *Service) CreateAndSendResetPassword(email string) error {
 			message.AddTo(email)
 			message.SetSubject("Reset your MyDailyStuff.com password")
 			message.SetFrom("no-reply@mydailystuff.com")
+			message.SetText(`Reset your MyDailyStuff.com password
+
+We sent you this email because you requested to reset your password. Click the link below to reset your password. It will be valid for 24 hours.
+
+https://www.mydailystuff.com/account/reset/` + id + `
+
+If this is incorrect, please ignore this email.
+
+Thank You,
+
+MyDailyStuff.com`)
+
 			message.SetHTML(`<html>
 <head>
 	<title></title>
@@ -510,7 +534,7 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 
 <p>If this is incorrect, please ignore this email.</p>
 
-<p>Thanks You,</p>
+<p>Thank You,</p>
 
 <p>MyDailyStuff.com</p>
 </body>
