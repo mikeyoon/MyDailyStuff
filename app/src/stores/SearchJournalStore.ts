@@ -20,34 +20,41 @@ var SearchJournalStore = Fluxxor.createStore({
 
         this.searchResults = [];
         this.dates = [];
+        this.monthYear = null;
         this.client = rest.wrap(mime).wrap(errorCode);
     },
 
-    onDateSearch: function(month: number, year: number) {
-        this.client({
-            method: "GET",
-            path: "/api/search/date",
-            entity: JSON.stringify({
-                start: year + '-' + month + '-1',
-                end: moment(year + '-' + month + '-1', 'YYYY-M-D').add(1, 'months').format('YYYY-M-D')
-            })
-        }).then(
-            (response: rest.Response) => {
-                if (response.entity.success) {
-                    this.dates = response.entity.result;
-                    this.emit('change');
+    onDateSearch: function(date: Date) {
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+
+        if (this.monthYear != (month + '-' + year)) {
+            this.client({
+                method: "POST",
+                path: "/api/search/date",
+                entity: JSON.stringify({
+                    start: year + '-' + month + '-1',
+                    end: moment(year + '-' + month + '-1', 'YYYY-M-D').add(1, 'months').format('YYYY-M-D')
+                })
+            }).then(
+                (response: rest.Response) => {
+                    if (response.entity.success) {
+                        this.dates = response.entity.result;
+                        this.monthYear = month + '-' + year;
+                        this.emit('change');
+                    }
+                },
+                (response: rest.Response) => {
+                    console.log(response);
                 }
-            },
-            (response: rest.Response) => {
-                console.log(response);
-            }
-        )
+            )
+        }
     },
 
     onQuerySearch: function(query: string) {
         //console.log(this.current.entries);
         this.client({
-            method: "PUT",
+            method: "POST",
             path: "/api/search/",
             entity: JSON.stringify({
                 query: query
@@ -82,4 +89,4 @@ var SearchJournalStore = Fluxxor.createStore({
     }
 });
 
-export = JournalStore;
+export = SearchJournalStore;

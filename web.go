@@ -277,7 +277,7 @@ func main() {
 		})
 
 	//Search journal entries
-	m.Get("/api/search", binding.Bind(SearchJournalRequest{}),
+	m.Post("/api/search", binding.Json(SearchJournalRequest{}),
 		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
 			var query lib.JournalQuery
 			query.Query = req.Query
@@ -300,7 +300,7 @@ func main() {
 		})
 
 	//Find dates that have entries in month
-	m.Get("/api/search/date", binding.Bind(SearchJournalRequest{}),
+	m.Post("/api/search/date", binding.Json(SearchJournalRequest{}),
 		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
 			var query lib.JournalQuery
 			query.Query = req.Query

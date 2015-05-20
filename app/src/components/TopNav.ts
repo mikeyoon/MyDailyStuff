@@ -38,7 +38,7 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                         d('span.icon-bar', { key: 2 }),
                         d('span.icon-bar', { key: 3 })
                     ]),
-                    d('a.navbar-brand[href=/]', 'My Daily Three')
+                    d('a.navbar-brand[href=/]', 'My Daily Stuff')
                 ]),
 
                 d('div.collapse.navbar-collapse#navbar', {}, [

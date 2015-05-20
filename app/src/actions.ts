@@ -44,8 +44,8 @@ var methods = {
         }
     },
     search: {
-        date: function(month: number, year: number) {
-            this.dispatch(c.SEARCH.DATE, month, year);
+        date: function(date: Date) {
+            this.dispatch(c.SEARCH.DATE, date);
         },
         query: function(query: string) {
             this.dispatch(c.SEARCH.QUERY, query);

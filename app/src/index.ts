@@ -5,8 +5,6 @@
 import React = require('react');
 import TypedReact = require('typed-react');
 import page = require('page');
-import AuthStore = require('./stores/Auth');
-import JournalStore = require('./stores/Journal');
 //import RouteStore = require('./stores/Route');
 import Fluxxor = require('fluxxor');
 import actions = require('./actions');
@@ -20,9 +18,14 @@ import Forgot = require('./components/Forgot');
 import Reset = require('./components/ResetPassword');
 import App = require('./components/App');
 
+import AuthStore = require('./stores/Auth');
+import JournalStore = require('./stores/Journal');
+import SearchStore = require('./stores/SearchJournalStore');
+
 var stores = {
     auth: new AuthStore(),
-    journal: new JournalStore()
+    journal: new JournalStore(),
+    search: new SearchStore()
 };
 
 var flux = new Fluxxor.Flux(stores, actions.methods);
