@@ -114,7 +114,7 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
                             d("label.control-label", { htmlFor: "confirm" }, "Confirm Password:"),
                             d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") })
                         ]),
-                        d("div.text-center", d("button.btn.btn-primary[type=submit]", "Reset Password"))
+                        d("div.text-center", {}, d("button.btn.btn-primary[type=submit]", "Reset Password"))
                         //d("span.margin-small", "or"),
                         //d("a[href=/login]", "Login with an existing account")
                     ])
