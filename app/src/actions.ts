@@ -24,7 +24,8 @@ var c = {
     },
 
     ROUTE: {
-        HOME: "ROUTE:HOME"
+        HOME: "ROUTE:HOME",
+        SEARCH: "ROUTE:SEARCH"
     }
 };
 
@@ -77,6 +78,9 @@ var methods = {
     routes: {
         home: function() {
             this.dispatch(c.ROUTE.HOME);
+        },
+        search: function(query: string) {
+            this.dispatch(c.ROUTE.SEARCH, query);
         }
     }
 };

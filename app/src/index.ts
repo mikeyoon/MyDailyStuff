@@ -5,7 +5,6 @@
 import React = require('react');
 import TypedReact = require('typed-react');
 import page = require('page');
-//import RouteStore = require('./stores/Route');
 import Fluxxor = require('fluxxor');
 import actions = require('./actions');
 import jsnox = require('jsnox');
@@ -17,15 +16,18 @@ import Journal = require('./components/Journal');
 import Forgot = require('./components/Forgot');
 import Reset = require('./components/ResetPassword');
 import App = require('./components/App');
+import Search = require('./components/Search');
 
 import AuthStore = require('./stores/Auth');
 import JournalStore = require('./stores/Journal');
 import SearchStore = require('./stores/SearchJournalStore');
+import RouteStore = require('./stores/Route');
 
 var stores = {
     auth: new AuthStore(),
     journal: new JournalStore(),
-    search: new SearchStore()
+    search: new SearchStore(),
+    route: new RouteStore()
 };
 
 var flux = new Fluxxor.Flux(stores, actions.methods);
@@ -72,6 +74,14 @@ page('/account/reset/:token', (ctx) => {
 page('/account/verify/:token', (ctx) => {
     //console.log(ctx.params.token);
     flux.actions.account.verify(ctx.params.token);
+});
+
+page('/search/:query', (ctx) => {
+    if (!stores.auth.isLoggedIn) {
+        page('/login');
+    } else {
+        renderApp(Search.Component, { flux: flux, query: ctx.params.query });
+    }
 });
 
 page('/journal', (ctx) => {

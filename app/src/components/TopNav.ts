@@ -3,13 +3,13 @@ import Fluxxor = require('fluxxor');
 import jsnox = require('jsnox');
 import Requests = require("../models/requests");
 import TypedReact = require('typed-react');
-import AuthStore = require('../stores/Auth');
 import actions = require('../actions');
 
 var d = jsnox(React);
 
 interface TopNavState {
     isLoggedIn: boolean;
+    query?: string;
 }
 
 export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
@@ -28,9 +28,26 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
         this.getFlux().actions.account.logout();
     }
 
+    handleSearch(ev: any) {
+        ev.preventDefault();
+        if (this.state.query) this.getFlux().actions.routes.search(this.state.query);
+    }
+
+    handleTextChange(name:string, ev:any) {
+        var state:any = {};
+        state[name] = ev.target.value;
+        this.setState(state);
+    }
+
+    handleSearchKeyDown(ev: any) {
+        if ((ev.keyCode == 10 || ev.keyCode == 13) && ev.ctrlKey) {
+            this.handleSearch(ev);
+        }
+    }
+
     render() {
         return d('nav.navbar.navbar-default', {},
-            d('div.container-fluid', {}, [
+            d('div.container', {}, [
                 d('div.navbar-header', {}, [
                     d('button.navbar-toggle.collapsed[type=button][data-toggle=collapse][data-target=#navbar]', {}, [
                         d('span.sr-only', 'Toggle Navigation'),
@@ -41,10 +58,20 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                     d('a.navbar-brand[href=/]', 'My Daily Stuff')
                 ]),
 
-                d('div.collapse.navbar-collapse#navbar', {}, [
+                d('div.collapse.navbar-collapse.navbar-ex1-collapse#navbar', {}, [
                     //d('ul.nav.navbar-nav', {}, [
                     //    d('li', {}, d('a.glyphicon.glyphicon-calendar[href=#]'))
                     //]),
+                    this.state.isLoggedIn ? d('form.navbar-form.navbar-left[role=search]', { onSubmit: this.handleSearch }, [
+                        d('div.input-group', [
+                            d('input.form-control[type=text][placeholder=Search]', {
+                                onChange: this.handleTextChange.bind(this, "query"),
+                                onKeyDown: this.handleSearchKeyDown
+                            }),
+                            d('div.input-group-btn', {}, d('button[type=submit].btn.btn-primary', {}, d('i.glyphicon.glyphicon-search')))
+                        ]),
+
+                    ]) : null,
 
                     d('ul.nav.navbar-nav.navbar-right', {}, [
                         this.state.isLoggedIn ? d('li', {},

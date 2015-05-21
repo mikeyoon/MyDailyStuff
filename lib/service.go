@@ -680,15 +680,27 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
+	var filter *elastigo.FilterOp = nil
+
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("date", start, nil, end, nil, ""))
+		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, end, nil, ""))
 	} else if !jq.Start.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
+		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
 	} else if !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
+		filter = elastigo.Filter().And(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
 	}
 
+	//Filter by the user id, add to and query if there's a date range
+	if filter == nil {
+		filter = elastigo.Filter().Term("user_id", userId)
+	} else {
+		filter = filter.And(elastigo.Filter().Term("user_id", userId))
+	}
+
+	query = query.Filter(filter)
+
 	search := elastigo.Search(EsIndex).Query(query)
+
 	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
 	if err != nil {
@@ -699,6 +711,7 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 
 	retval := make([]JournalEntry, result.Hits.Total)
 
+	//TODO: Maybe only take the fields we need
 	for index, hit := range result.Hits.Hits {
 		bytes, err := hit.Source.MarshalJSON()
 		if err != nil {
@@ -735,13 +748,18 @@ func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, 
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
+	//Filter by user id, assume we can do an and because this query must have a date
+	filter := elastigo.Filter().And(elastigo.Filter().Term("user_id", userId))
+
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("date", start, nil, end, nil, ""))
+		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, end, nil, ""))
 	} else if !jq.Start.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
+		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
 	} else if !jq.End.IsZero() {
-		query = query.Filter(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
+		filter = elastigo.Filter().And(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
 	}
+
+	query = query.Filter(filter)
 
 	search := elastigo.Search(EsIndex).Type(JournalType).Query(query).Fields("date")
 

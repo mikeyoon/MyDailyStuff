@@ -41,8 +41,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     componentWillReceiveProps(nextProps: JournalProps) {
-        console.log('receiving props');
         this.getFlux().actions.journal.get(nextProps.date);
+        this.getFlux().actions.search.date(nextProps.date);
     }
 
     componentWillMount() {
@@ -131,12 +131,12 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
                     d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: this.handlePrev }, "< prev")),
-                    today.format("dddd, MMMM Do YYYY"),
+                    today.format("ddd, MMMM Do YYYY"),
                     d('small.margin-small', { style: { visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden' }, key: "next" },
                         d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: this.handleNext }, "next >"))
                 ]),
 
-                this.state.hasEntry ? this.renderEntries() : d('h3.text-center', "No entries for the day..."),
+                this.state.hasEntry ? this.renderEntries() : d('h3.text-center', "No entries...try to remember!"),
 
                 d('hr'),
 

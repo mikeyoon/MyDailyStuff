@@ -5,7 +5,15 @@
 export interface JournalEntry {
     entries: string[];
     user_id: string;
-    create_date: string;
+    create_date: Date;
+    date: Date;
+    id: string;
+}
+
+export interface QuerySearchResult {
+    entries: string[];
+    date: Date;
+    id: string;
 }
 
 export interface EmptyResponse {

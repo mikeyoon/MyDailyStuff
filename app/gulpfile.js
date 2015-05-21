@@ -10,7 +10,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var less = require('gulp-less');
 
 gulp.task('browserify', function() {
-    var bundler = browserify({ debug: true })
+    var bundler = browserify({ debug: process.env.NODE_ENV !== 'production' })
         .add('./src/index.ts')
         .plugin(tsify, { noImplicitAny: true, target: 'ES6' });
 

@@ -53,6 +53,7 @@ var SearchJournalStore = Fluxxor.createStore({
 
     onQuerySearch: function(query: string) {
         //console.log(this.current.entries);
+
         this.client({
             method: "POST",
             path: "/api/search/",
@@ -62,7 +63,13 @@ var SearchJournalStore = Fluxxor.createStore({
         }).then(
             (response: rest.Response) => {
                 if (response.entity.success) {
-                    this.searchResults = response.entity.result;
+                    this.searchResults = response.entity.result.map(function(r: Responses.JournalEntry) {
+                        return {
+                            entries: r.entries.filter((s, i) => new RegExp(query.replace(' ', '|'), "i").test(s)), //Ghetto filtering
+                            id: r.id,
+                            date: r.date
+                        };
+                    });
                     this.emit("change");
                 }
             },
