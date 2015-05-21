@@ -41,7 +41,7 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
     render() {
         return d('div.row', {}, [
             d('div.col-md-8.col-md-offset-2', {}, [
-                d('h4', this.state.results.length + " results"),
+                d('h4', this.state.results.length + " results for \"" + this.props.query + "\""),
                 d('div', {},
                     this.state.results.map((result, index) => {
                         return d('div.panel.panel-default', { key: index }, [
