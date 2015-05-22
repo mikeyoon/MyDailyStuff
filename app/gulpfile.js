@@ -4,15 +4,17 @@ var gulp = require('gulp');
 var browserify = require('browserify');
 var tsify = require('tsify');
 var ts = require('gulp-typescript');
-var merge = require('merge2');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var less = require('gulp-less');
+var nop = require('gulp-nop');
+
+var isProd = process.env.NODE_ENV === 'production';
 
 gulp.task('browserify', function() {
-    var bundler = browserify({ debug: process.env.NODE_ENV !== 'production' })
+    var bundler = browserify({ debug: !isProd })
         .add('./src/index.ts')
-        .plugin(tsify, { noImplicitAny: true, target: 'ES6' });
+        .plugin(tsify, { noImplicitAny: true, target: 'ES5' });
 
     return bundler.bundle()
         .pipe(source('app.js'))
@@ -21,9 +23,9 @@ gulp.task('browserify', function() {
 
 gulp.task('less', function() {
     return gulp.src('./less/main.less')
-      .pipe(sourcemaps.init())
+      .pipe(isProd ? nop() : sourcemaps.init())
       .pipe(less())
-      .pipe(sourcemaps.write('./'))
+      .pipe(isProd ? nop() : sourcemaps.write('./'))
       .pipe(gulp.dest('../public'));
 });
 

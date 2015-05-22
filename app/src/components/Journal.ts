@@ -91,12 +91,12 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         this.setState(state);
     }
 
-    handlePrev(ev: any) {
+    static handlePrev(ev: any) {
         ev.preventDefault();
         //this.getFlux().actions.journal.get(new Date('1/1/2001'))
     }
 
-    handleNext(ev: any) {
+    static handleNext(ev: any) {
         ev.preventDefault();
         //this.getFlux().actions.journal.get(new Date('1/1/2002'))
     }
@@ -124,16 +124,16 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     render() {
         var today = moment(this.props.date);
-        var next = moment(this.props.date).add(1, 'day');//.format("YYYY-M-D");
-        var prev = moment(this.props.date).add(-1, 'day');//.format("YYYY-M-D");
+        var next = moment(this.props.date).add(1, 'day');
+        var prev = moment(this.props.date).add(-1, 'day');
 
         return d("div.row", {}, [
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
-                    d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: this.handlePrev }, "< prev")),
+                    d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: JournalComponent.handlePrev }, "< prev")),
                     today.format("ddd, MMMM Do YYYY"),
                     d('small.margin-small', { style: { visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden' }, key: "next" },
-                        d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: this.handleNext }, "next >"))
+                        d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: JournalComponent.handleNext }, "next >"))
                 ]),
 
                 this.state.hasEntry ? this.renderEntries() : d('h3.text-center', "No entries...try to remember!"),
