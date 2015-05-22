@@ -29,7 +29,15 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
     render() {
         return d('div', [
             d(TopNav.Component),
-            d('div.container', {}, d(this.props.component, this.props.componentOptions))
+            d('div.container', {}, d(this.props.component, this.props.componentOptions)),
+            d('footer.footer', {},
+                d('div.container', {},
+                    d('p.text-muted', {}, [
+                        "Created by ",
+                        d('a[href=https://github.com/mikeyoon/]', "Mike Yoon")
+                    ])
+                )
+            )
         ]);
     }
 }
