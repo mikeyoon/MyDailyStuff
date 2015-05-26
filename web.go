@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/now"
 	"github.com/martini-contrib/binding"
@@ -11,7 +12,6 @@ import (
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	"log"
 	"os"
-	"fmt"
 )
 
 var (
@@ -148,6 +148,7 @@ func main() {
 					"user_id":         user.UserId,
 					"create_date":     user.CreateDate,
 					"last_login_date": user.LastLoginDate,
+					"email":           user.Email,
 				}))
 			} else {
 				r.JSON(404, ErrorResponse(err.Error()))
