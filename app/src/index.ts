@@ -17,6 +17,7 @@ import Forgot = require('./components/Forgot');
 import Reset = require('./components/ResetPassword');
 import App = require('./components/App');
 import Search = require('./components/Search');
+import Profile = require('./components/Profile');
 
 import AuthStore = require('./stores/Auth');
 import JournalStore = require('./stores/Journal');
@@ -58,8 +59,8 @@ page('/login', () => {
     renderApp(Login.Component, { flux: flux });
 });
 
-page('/account', () => {
-    console.log('account');
+page('/profile', () => {
+    renderApp(Profile.Component, { flux: flux });
 });
 
 page('/forgot-password', () => {

@@ -10,6 +10,7 @@ var d = jsnox(React);
 interface TopNavState {
     isLoggedIn: boolean;
     query?: string;
+    email?: string;
 }
 
 export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
@@ -18,8 +19,11 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
     getFlux: () => Fluxxor.Flux;
 
     getStateFromFlux() {
+        var store = this.getFlux().store("auth");
+
         return {
-            isLoggedIn: this.getFlux().store("auth").isLoggedIn
+            isLoggedIn: store.isLoggedIn,
+            email: store.user ? store.user.email : null
         };
     }
 
@@ -74,9 +78,17 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                     ]) : null,
 
                     d('ul.nav.navbar-nav.navbar-right', {}, [
-                        this.state.isLoggedIn ? d('li', {},
-                            d('a[href=#]', { onClick: this.handleLogout }, "Logout")) :
-                            d('li', { key: 'Login' }, d('a[href=/login]', "Login")),
+                        this.state.isLoggedIn ? d('li.dropdown', {}, [
+                            d('a.dropdown-toggle[data-toggle=dropdown][role=button]', {}, [
+                                this.state.email,
+                                d('span.caret')
+                            ]),
+                            d('ul.dropdown-menu[role=menu]', {}, [
+                                d('li', { key: 1 }, d('a[href=/profile]', "My Profile")),
+                                d('li', { key: 2 }, d('a[href=#]', { onClick: this.handleLogout }, "Logout")),
+                            ])
+                        ]) : d('li', { key: 'Login' }, d('a[href=/login]', "Login")),
+
                         this.state.isLoggedIn ? null : d('li', { key: 'Register' }, d('a[href=/register]', "Register"))
                     ])
                 ])

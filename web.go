@@ -170,11 +170,10 @@ func main() {
 		})
 
 	//Modify user account
-	m.Put("/api/account/:id", binding.Json(ModifyAccountRequest{}),
-		func(req ModifyAccountRequest, args martini.Params, r render.Render) {
-			log.Println("Modifying user " + args["id"])
+	m.Put("/api/account", binding.Json(ModifyAccountRequest{}),
+		func(req ModifyAccountRequest, session sessions.Session, r render.Render) {
 
-			err := service.UpdateUser(args["id"], req.Email, req.Password)
+			err := service.UpdateUser(session.Get("userId").(string), "", req.Password)
 			if err != nil {
 				r.JSON(200, ErrorResponse(err.Error()))
 			} else {

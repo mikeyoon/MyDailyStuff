@@ -19,7 +19,8 @@ var AuthStore = Fluxxor.createStore({
             actions.constants.ACCOUNT.REGISTER, this.onRegister,
             actions.constants.ACCOUNT.VERIFY, this.onVerify,
             actions.constants.ACCOUNT.SEND_RESET, this.onResetSend,
-            actions.constants.ACCOUNT.RESET_PASSWORD, this.onPasswordReset
+            actions.constants.ACCOUNT.RESET_PASSWORD, this.onPasswordReset,
+            actions.constants.ACCOUNT.SAVE_PROFILE, this.onSaveProfile
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
@@ -28,6 +29,7 @@ var AuthStore = Fluxxor.createStore({
         this.registerResult = {};
         this.sendResetResult = {};
         this.resetPasswordResult = {};
+        this.saveProfileResult = {};
         this.user = {};
 
         this.onGetAccount();
@@ -155,6 +157,7 @@ var AuthStore = Fluxxor.createStore({
                 this.loginResult = response.entity;
                 if (this.loginResult.success) {
                     this.isLoggedIn = true;
+                    this.onGetAccount();
                     page('/');
                 }
 
@@ -192,6 +195,26 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             }
         );
+    },
+
+    onSaveProfile: function(req: Requests.SaveProfile) {
+        this.client({
+            method: 'PUT',
+            path: '/api/account',
+            entity: JSON.stringify({
+                password: req.password
+            })
+        }).then(
+            (response: rest.Response) => {
+                this.saveProfileResult = response.entity;
+                this.emit("change");
+            },
+            (response: rest.Response) => {
+                console.log(response);
+
+                this.emit("change");
+            }
+        )
     }
 });
 

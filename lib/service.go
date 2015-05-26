@@ -327,28 +327,23 @@ func (s *Service) GetUserById(id string) (User, error) {
 func (s *Service) UpdateUser(id string, email string, password string) error {
 	user, err := s.GetUserById(id)
 
-	log.Println(user)
-
 	if err != nil {
 		return UserNotFound
 	}
-
-	user.UserId = id
 
 	if len(email) > 0 {
 		user.Email = strings.ToLower(email)
 	}
 
-	if len(password) > 0 {
+	if len(password) >= 6 {
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
+
+			_, err = s.es.Index(EsIndex, UserType, id, nil, user)
 		}
 
-		_, err = s.es.Index(EsIndex, UserType, id, nil, user)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	return nil

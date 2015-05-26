@@ -8,7 +8,8 @@ var c = {
         LOGOUT: "ACCOUNT:LOGOUT",
         VERIFY: "ACCOUNT:VERIFY",
         RESET_PASSWORD: "ACCOUNT:RESET_PASSWORD",
-        SEND_RESET: "ACCOUNT:SEND_RESET"
+        SEND_RESET: "ACCOUNT:SEND_RESET",
+        SAVE_PROFILE: "ACCOUNT:SAVE_PROFILE"
     },
 
     JOURNAL: {
@@ -73,6 +74,9 @@ var methods = {
         },
         resetPassword: function(payload: Requests.PasswordReset) {
             this.dispatch(c.ACCOUNT.RESET_PASSWORD, payload);
+        },
+        saveProfile: function(payload: Requests.SaveProfile) {
+            this.dispatch(c.ACCOUNT.SAVE_PROFILE, payload);
         }
     },
     routes: {

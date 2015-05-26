@@ -32,6 +32,14 @@ export class Register {
     }
 }
 
+export class SaveProfile {
+    password: string;
+
+    constructor(password: string) {
+        this.password = password;
+    }
+}
+
 export class PasswordReset {
     token: string;
     password: string;

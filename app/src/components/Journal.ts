@@ -8,7 +8,7 @@ import Responses = require("../models/responses");
 import TypedReact = require('typed-react');
 import moment = require('moment');
 import marked = require('marked');
-import Pikaday = require('pikaday');
+//import Pikaday = require('pikaday');
 var d = jsnox(React);
 
 export interface JournalProps {
@@ -26,7 +26,7 @@ export interface JournalState {
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
     implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
 
-    calendar: Pikaday;
+    //calendar: Pikaday;
 
     getFlux: () => Fluxxor.Flux;
 
