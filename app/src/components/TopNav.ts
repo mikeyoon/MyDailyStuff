@@ -63,12 +63,9 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                 ]),
 
                 d('div.collapse.navbar-collapse.navbar-ex1-collapse#navbar', {}, [
-                    //d('ul.nav.navbar-nav', {}, [
-                    //    d('li', {}, d('a.glyphicon.glyphicon-calendar[href=#]'))
-                    //]),
                     this.state.isLoggedIn ? d('form.navbar-form.navbar-left[role=search]', { onSubmit: this.handleSearch }, [
                         d('div.input-group', [
-                            d('input.form-control[type=text][placeholder=Search]', {
+                            d('input.form-control[type=search][placeholder=Search]', {
                                 onChange: this.handleTextChange.bind(this, "query"),
                                 onKeyDown: this.handleSearchKeyDown
                             }),

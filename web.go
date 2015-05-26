@@ -75,6 +75,14 @@ func SuccessResponse(result interface{}) Response {
 	return Response{Success: true, Result: result}
 }
 
+func LoginRequired(c martini.Context, r render.Render, session sessions.Session) {
+	if session.Get("userId") == nil {
+		r.JSON(401, ErrorResponse("User not logged in"))
+	} else {
+		c.Next()
+	}
+}
+
 func main() {
 	esurl := os.Getenv("ESURL")
 	if esurl == "" {
@@ -129,32 +137,24 @@ func main() {
 	})
 
 	//Logout
-	m.Post("/api/account/logout", func(session sessions.Session, r render.Render) {
-		if session.Get("userId") != nil {
-			session.Delete("userId")
-			r.JSON(200, SuccessResponse(nil))
-		} else {
-			r.JSON(200, ErrorResponse("User not logged in"))
-		}
+	m.Post("/api/account/logout", LoginRequired, func(session sessions.Session, r render.Render) {
+		session.Delete("userId")
+		r.JSON(200, SuccessResponse(nil))
 	})
 
 	//Get user account information
-	m.Get("/api/account", func(session sessions.Session, r render.Render) {
-		if session.Get("userId") != nil {
-			user, err := service.GetUserById(session.Get("userId").(string))
+	m.Get("/api/account", LoginRequired, func(session sessions.Session, r render.Render) {
+		user, err := service.GetUserById(session.Get("userId").(string))
 
-			if err == nil {
-				r.JSON(200, SuccessResponse(map[string]interface{}{
-					"user_id":         user.UserId,
-					"create_date":     user.CreateDate,
-					"last_login_date": user.LastLoginDate,
-					"email":           user.Email,
-				}))
-			} else {
-				r.JSON(404, ErrorResponse(err.Error()))
-			}
+		if err == nil {
+			r.JSON(200, SuccessResponse(map[string]interface{}{
+				"user_id":         user.UserId,
+				"create_date":     user.CreateDate,
+				"last_login_date": user.LastLoginDate,
+				"email":           user.Email,
+			}))
 		} else {
-			r.JSON(200, ErrorResponse(""))
+			r.JSON(404, ErrorResponse(err.Error()))
 		}
 	})
 
@@ -170,7 +170,7 @@ func main() {
 		})
 
 	//Modify user account
-	m.Put("/api/account", binding.Json(ModifyAccountRequest{}),
+	m.Put("/api/account", LoginRequired, binding.Json(ModifyAccountRequest{}),
 		func(req ModifyAccountRequest, session sessions.Session, r render.Render) {
 
 			err := service.UpdateUser(session.Get("userId").(string), "", req.Password)
@@ -230,7 +230,7 @@ func main() {
 	})
 
 	//Get a journal entry
-	m.Get("/api/journal/:date", func(r render.Render, args martini.Params, session sessions.Session) {
+	m.Get("/api/journal/:date", LoginRequired, func(r render.Render, args martini.Params, session sessions.Session) {
 		entry, err := service.GetJournalEntryByDate(session.Get("userId").(string), now.MustParse(args["date"]))
 
 		if err != nil {
@@ -240,7 +240,7 @@ func main() {
 		}
 	})
 
-	m.Delete("/api/journal/:id",
+	m.Delete("/api/journal/:id", LoginRequired,
 		func(args martini.Params, session sessions.Session, r render.Render) {
 			err := service.DeleteJournalEntry(args["id"], session.Get("userId").(string))
 
@@ -252,7 +252,7 @@ func main() {
 		})
 
 	//Create a journal entry
-	m.Post("/api/journal", binding.Json(CreateEntryRequest{}),
+	m.Post("/api/journal", LoginRequired, binding.Json(CreateEntryRequest{}),
 		func(entry CreateEntryRequest, session sessions.Session, r render.Render) {
 			result, err := service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
 
@@ -265,7 +265,7 @@ func main() {
 		})
 
 	//Update a journal entry
-	m.Put("/api/journal/:id", binding.Json(ModifyEntryRequest{}),
+	m.Put("/api/journal/:id", LoginRequired, binding.Json(ModifyEntryRequest{}),
 		func(entry ModifyEntryRequest, session sessions.Session, args martini.Params, r render.Render) {
 			err := service.UpdateJournalEntry(args["id"], session.Get("userId").(string), entry.Entries)
 
@@ -277,7 +277,7 @@ func main() {
 		})
 
 	//Search journal entries
-	m.Post("/api/search", binding.Json(SearchJournalRequest{}),
+	m.Post("/api/search", LoginRequired, binding.Json(SearchJournalRequest{}),
 		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
 			var query lib.JournalQuery
 			query.Query = req.Query
@@ -300,7 +300,7 @@ func main() {
 		})
 
 	//Find dates that have entries in month
-	m.Post("/api/search/date", binding.Json(SearchJournalRequest{}),
+	m.Post("/api/search/date", LoginRequired, binding.Json(SearchJournalRequest{}),
 		func(req SearchJournalRequest, session sessions.Session, r render.Render) {
 			var query lib.JournalQuery
 			query.Query = req.Query

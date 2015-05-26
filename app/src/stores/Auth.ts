@@ -20,7 +20,8 @@ var AuthStore = Fluxxor.createStore({
             actions.constants.ACCOUNT.VERIFY, this.onVerify,
             actions.constants.ACCOUNT.SEND_RESET, this.onResetSend,
             actions.constants.ACCOUNT.RESET_PASSWORD, this.onPasswordReset,
-            actions.constants.ACCOUNT.SAVE_PROFILE, this.onSaveProfile
+            actions.constants.ACCOUNT.SAVE_PROFILE, this.onSaveProfile,
+            actions.constants.ACCOUNT.CLEAR_STORE, this.onClearResults
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
@@ -33,6 +34,15 @@ var AuthStore = Fluxxor.createStore({
         this.user = {};
 
         this.onGetAccount();
+    },
+
+    onClearResults: function() {
+        this.loginResult = {};
+        this.registerResult = {};
+        this.sendResetResult = {};
+        this.resetPasswordResult = {};
+        this.saveProfileResult = {};
+        this.emit("change");
     },
 
     onGetAccount: function() {

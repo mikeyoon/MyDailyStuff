@@ -50,6 +50,10 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
         return result;
     }
 
+    componentDidMount() {
+        this.getFlux().actions.account.clearResults();
+    }
+
     onSubmit(ev:any) {
         ev.preventDefault();
         this.getFlux().actions.account.login(new Requests.Login(this.state.email, this.state.password));

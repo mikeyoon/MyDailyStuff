@@ -41,6 +41,10 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
         return result;
     }
 
+    componentDidMount() {
+        this.getFlux().actions.account.clearResults();
+    }
+
     onSubmit(ev: any) {
         ev.preventDefault();
         if (this.validate()) {

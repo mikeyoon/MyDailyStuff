@@ -30,6 +30,10 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
         return !this.state.errors;
     }
 
+    componentDidMount() {
+        this.getFlux().actions.account.clearResults();
+    }
+
     getStateFromFlux() {
         var store = this.getFlux().store("auth");
 

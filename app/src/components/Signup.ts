@@ -32,6 +32,10 @@ export class SignupComponent extends TypedReact.Component<SignupProps, SignupSta
         return !this.state.errors;
     }
 
+    componentDidMount() {
+        this.getFlux().actions.account.clearResults();
+    }
+
     getStateFromFlux() {
         var result = {
             auth: this.getFlux().store("auth"),

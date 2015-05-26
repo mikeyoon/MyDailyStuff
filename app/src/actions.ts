@@ -9,7 +9,8 @@ var c = {
         VERIFY: "ACCOUNT:VERIFY",
         RESET_PASSWORD: "ACCOUNT:RESET_PASSWORD",
         SEND_RESET: "ACCOUNT:SEND_RESET",
-        SAVE_PROFILE: "ACCOUNT:SAVE_PROFILE"
+        SAVE_PROFILE: "ACCOUNT:SAVE_PROFILE",
+        CLEAR_STORE: "ACCOUNT:CLEAR_STORE"
     },
 
     JOURNAL: {
@@ -77,6 +78,9 @@ var methods = {
         },
         saveProfile: function(payload: Requests.SaveProfile) {
             this.dispatch(c.ACCOUNT.SAVE_PROFILE, payload);
+        },
+        clearResults: function() {
+            this.dispatch(c.ACCOUNT.CLEAR_STORE);
         }
     },
     routes: {
