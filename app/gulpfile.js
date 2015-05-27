@@ -8,13 +8,39 @@ var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var less = require('gulp-less');
 var nop = require('gulp-nop');
+var watchify = require('watchify');
+var gutil = require('gulp-util');
 
 var isProd = process.env.NODE_ENV === 'production';
 
+var watching = false;
+
+gulp.task('enable-watch-mode', function() {
+    watching = true;
+});
+
 gulp.task('browserify', function() {
-    var bundler = browserify({ debug: !isProd })
+    var bundler = browserify({ debug: !isProd, packageCache: {} })
         .add('./src/index.ts')
         .plugin(tsify, { noImplicitAny: true, target: 'ES5' });
+
+    if (watching) {
+        bundler = watchify(bundler);
+        bundler.on('update', function(ids) {
+            gutil.log('Updating browserify bundle: ' + ids);
+
+            var stream = bundler.bundle()
+                .on('error', function(err) {
+                    gutil.log(err.message);
+                })
+                .pipe(source('app.js'))
+                .pipe(gulp.dest('../public'));
+        });
+
+        bundler.on('bytes', function(bytes) {
+            gutil.log('Updated browserify bundle: ' + bytes + " bytes written.");
+        });
+    }
 
     return bundler.bundle()
         .pipe(source('app.js'))
@@ -52,3 +78,5 @@ gulp.task('copy-html', function() {
 });
 
 gulp.task('build', ['browserify', 'less', 'copy-jquery', 'copy-fonts', 'copy-bootstrap', 'copy-html']);
+
+gulp.task('watch', ['enable-watch-mode', 'browserify']);
