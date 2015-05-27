@@ -15,10 +15,12 @@ export class EditJournalEntry {
 export class Login {
     email: string;
     password: string;
+    persist: boolean;
 
-    constructor(email: string, password: string) {
+    constructor(email: string, password: string, persist: boolean) {
         this.email = email;
         this.password = password;
+        this.persist = persist;
     }
 }
 

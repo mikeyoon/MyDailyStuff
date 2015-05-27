@@ -24,6 +24,7 @@ var (
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
+	Persist  bool   `json:"persist"`
 }
 
 type RegisterRequest struct {
@@ -99,8 +100,6 @@ func main() {
 		sgPassword = *DEFAULT_SG_PASSWORD
 	}
 
-	fmt.Println(sgUsername)
-
 	service := lib.Service{}
 	err := service.Init(lib.ServiceOptions{
 		ElasticUrl:       esurl,
@@ -132,6 +131,19 @@ func main() {
 			return
 		}
 
+		maxAge := 0
+		if req.Persist {
+			maxAge = 2592000 //30 days
+		}
+
+
+		session.Options(sessions.Options{
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   secret != *DEFAULT_SESSION_SECRET,
+			MaxAge:   maxAge,
+		})
+
 		session.Set("userId", user.UserId)
 		r.JSON(200, SuccessResponse(nil))
 	})
@@ -139,6 +151,10 @@ func main() {
 	//Logout
 	m.Post("/api/account/logout", LoginRequired, func(session sessions.Session, r render.Render) {
 		session.Delete("userId")
+		session.Options(sessions.Options{
+			MaxAge: -1,
+		})
+
 		r.JSON(200, SuccessResponse(nil))
 	})
 

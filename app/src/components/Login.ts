@@ -19,6 +19,7 @@ export interface LoginState {
     password?: string;
     auth?: any;
     errors?: string[];
+    persist?: boolean;
 }
 
 export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
@@ -56,12 +57,18 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
 
     onSubmit(ev:any) {
         ev.preventDefault();
-        this.getFlux().actions.account.login(new Requests.Login(this.state.email, this.state.password));
+        this.getFlux().actions.account.login(new Requests.Login(this.state.email, this.state.password, this.state.persist));
     }
 
     handleTextChange(name:string, ev:any) {
         var state:any = {};
         state[name] = ev.target.value;
+        this.setState(state);
+    }
+
+    handleCheckChange(name:string, ev:any) {
+        var state:any = {};
+        state[name] = ev.target.checked;
         this.setState(state);
     }
 
@@ -86,26 +93,35 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
                 d("br"),
                 this.renderLoginError(),
                 d("form", {onSubmit: this.onSubmit}, [
-                    d("div.form-group", {key: "1"}, [
+                    d("div.form-group", {key: 1}, [
                         d("label", {htmlFor: "email"}, "Email:"),
                         d("input.form-control#email[name=email]", {
                             value: this.state.email,
                             onChange: this.handleTextChange.bind(this, "email")
                         })
                     ]),
-                    d("div.form-group", {key: "2"}, [
+                    d("div.form-group", {key: 2}, [
                         d("label", {htmlFor: "password"}, "Password:"),
                         d("input.form-control#password[name=password][type=password]", {
                             value: this.state.password,
                             onChange: this.handleTextChange.bind(this, "password")
                         })
                     ]),
-                    d("div.text-center", { key: 3 }, [
+                    d("div.checkbox", {key: 3},
+                        d("label", {htmlFor: "rememberMe"}, [
+                            d("input#rememberMe[name=persist][type=checkbox]", {
+                                value: this.state.persist,
+                                onChange: this.handleCheckChange.bind(this, "persist")
+                            }),
+                            "Keep me logged in"
+                        ])
+                    ),
+                    d("div.text-center", { key: 4 }, [
                         d("button.btn.btn-primary[type=submit]", "Login"),
                         d("span.margin-small", "or"),
                         d("a[href=/register]", "Register for a new account")
                     ]),
-                    d("div.text-center", { key: 4 }, d("a.btn.btn-link[href=/forgot-password]", "I forgot my password"))
+                    d("div.text-center", { key: 5 }, d("a.btn.btn-link[href=/forgot-password]", "I forgot my password"))
                 ])
             ])
         ]);

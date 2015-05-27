@@ -239,8 +239,6 @@ func getSingleResult(result elastigo.SearchResult, output interface{}) error {
 
 		err = json.Unmarshal(bytes, output)
 
-		log.Println(output)
-
 		return err
 	} else {
 		return elastigo.RecordNotFound
