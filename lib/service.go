@@ -15,8 +15,9 @@ import (
 	"time"
 )
 
+var EsIndex = "mds"
+
 const (
-	EsIndex     = "mds"
 	UserType    = "user"
 	ResetType   = "pwreset"
 	VerifyType  = "verify"
@@ -61,8 +62,8 @@ type JournalQuery struct {
 }
 
 type Service struct {
-	es *elastigo.Conn
-	sg *sendgrid.SGClient
+	es      *elastigo.Conn
+	sg      *sendgrid.SGClient
 }
 
 type IndexSettings struct {
@@ -74,10 +75,15 @@ type ServiceOptions struct {
 	ElasticUrl       string
 	SendGridUsername string
 	SendGridPassword string
+	MainIndex        string
 }
 
 func (s *Service) Init(options ServiceOptions) error {
 	conn := elastigo.NewConn()
+
+	if options.MainIndex != "" {
+		EsIndex = options.MainIndex
+	}
 
 	u, err := url.Parse(options.ElasticUrl)
 
@@ -105,7 +111,7 @@ func (s *Service) Init(options ServiceOptions) error {
 }
 
 func (service *Service) createIndexes(c *elastigo.Conn) error {
-	indexExists, err := c.IndicesExists("mds")
+	indexExists, err := c.IndicesExists(EsIndex)
 
 	if err != nil {
 		log.Println("Error retriving user index: " + err.Error())
@@ -256,16 +262,11 @@ func (s *Service) GetUserByEmail(email string) (User, error) {
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, UserType, nil, search)
 
-	if err != nil {
-		if err == elastigo.RecordNotFound {
-			return retval, UserNotFound
-		}
-
-		return retval, err
+	if err == nil {
+		err = getSingleResult(result, &retval)
 	}
 
-	err = getSingleResult(result, &retval)
-	if err != nil {
+	if err == elastigo.RecordNotFound {
 		return retval, UserNotFound
 	}
 
@@ -282,44 +283,35 @@ func (s *Service) GetUserByLogin(email string, password string) (User, error) {
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, UserType, nil, search)
 
-	if err != nil {
-		if err == elastigo.RecordNotFound {
-			return retval, UserNotFound
-		}
-
-		return retval, err
+	if err == nil {
+		err = getSingleResult(result, &retval)
 	}
 
-	err = getSingleResult(result, &retval)
-	if err != nil {
-		return retval, UserNotFound
+	var hash []byte
+	if err == nil {
+		hash, err = base64.StdEncoding.DecodeString(retval.PasswordHash)
 	}
 
-	hash, err := base64.StdEncoding.DecodeString(retval.PasswordHash)
-
-	if err != nil {
-		panic(err)
+	if err == nil {
+		err = bcrypt.CompareHashAndPassword(hash, []byte(password))
 	}
 
-	err = bcrypt.CompareHashAndPassword(hash, []byte(password))
-	if err != nil {
-		log.Println("Password mismatch: " + retval.PasswordHash)
-		return retval, UserNotFound
+	if err == elastigo.RecordNotFound || err == bcrypt.ErrMismatchedHashAndPassword {
+		return User{}, UserNotFound
 	}
 
-	return retval, nil
+	return retval, err
 }
 
 func (s *Service) GetUserById(id string) (User, error) {
 	var retval User
 	err := s.es.GetSource(EsIndex, UserType, id, nil, &retval)
 
-	if err != nil {
-		log.Println("User " + id + " not found")
-		return retval, err
+	if err == elastigo.RecordNotFound {
+		return retval, UserNotFound
 	}
 
-	return retval, nil
+	return retval, err
 }
 
 func (s *Service) UpdateUser(id string, email string, password string) error {
