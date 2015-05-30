@@ -1,4 +1,6 @@
 language: go
+sudo: required
+
 go:
   - tip
 
