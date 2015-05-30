@@ -353,11 +353,8 @@ func (s *Service) GetUserVerification(token string) (UserVerification, error) {
 		err = getSingleResult(result, &retval)
 	}
 
-	if err != nil {
-		if err != elastigo.RecordNotFound {
-			fmt.Println("Error GetUserVerification: " + err.Error())
-		}
-
+	if err == elastigo.RecordNotFound {
+		fmt.Println("Error GetUserVerification: " + err.Error())
 		return retval, VerificationNotFound
 	}
 
@@ -426,7 +423,7 @@ MyDailyStuff.com`)
 
 		return err
 	} else {
-		return UserAlreadyExists
+		return EmailInUse
 	}
 }
 
@@ -462,20 +459,15 @@ func (s *Service) GetResetPassword(token string) (PasswordReset, error) {
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, ResetType, nil, search)
 
-	if err != nil {
-		if err == elastigo.RecordNotFound {
-			return retval, ResetNotFound
-		}
-
-		return retval, err
+	if err == nil {
+		err = getSingleResult(result, &retval)
 	}
 
-	err = getSingleResult(result, &retval)
-	if err != nil {
+	if err == elastigo.RecordNotFound {
 		return retval, ResetNotFound
 	}
 
-	return retval, nil
+	return retval, err
 }
 
 func (s *Service) CreateAndSendResetPassword(email string) error {
@@ -556,10 +548,6 @@ func (s *Service) ResetPassword(token string, password string) error {
 func (s *Service) CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error) {
 	var entry JournalEntry
 
-	if userId == "" {
-		return entry, UserUnauthorized
-	}
-
 	_, err := s.GetJournalEntryByDate(userId, date)
 	if err != NoJournalWithDate {
 		return entry, EntryAlreadyExists
@@ -583,16 +571,14 @@ func (s *Service) UpdateJournalEntry(id string, userId string, entries []string)
 
 	err := s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
 
-	if err != nil {
-		return err
+	if err == nil && entry.UserId == userId  {
+		entry.Entries = entries
+		_, err = s.es.IndexWithParameters(EsIndex, JournalType, id, "", 0, "", "", "", 0, "", "", true, nil, entry)
 	}
 
-	if entry.UserId != userId {
+	if err == elastigo.RecordNotFound || entry.UserId != userId {
 		return EntryNotFound
 	}
-
-	entry.Entries = entries
-	_, err = s.es.Index(EsIndex, JournalType, id, nil, entry)
 
 	return err
 }
@@ -631,20 +617,18 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
-	if err != nil {
-		log.Println(err.Error())
-		if err == elastigo.RecordNotFound {
+	if err == nil {
+		if result.Hits.Total == 0 {
 			return retval, NoJournalWithDate
 		}
 
-		return retval, err
+		err = getSingleResult(result, &retval)
 	}
 
-	if result.Hits.Total == 0 {
-		return retval, NoJournalWithDate
+	if err == elastigo.RecordNotFound {
+		err = NoJournalWithDate
 	}
 
-	err = getSingleResult(result, &retval)
 	return retval, err
 }
 

@@ -52,6 +52,22 @@ var _ = Describe("Service", func() {
 		Id: uuid.New(),
 	}
 
+	journal2 := lib.JournalEntry{
+		UserId: testUser1.UserId,
+		Entries: []string{"another entry 1", "another entry 2"},
+		Date: time.Date(2002, 5, 25, 0, 0, 0, 0, time.UTC),
+		CreateDate: time.Now(),
+		Id: uuid.New(),
+	}
+
+	journal3 := lib.JournalEntry{
+		UserId: testUser1.UserId,
+		Entries: []string{"some entry 1", "some entry 2"},
+		Date: time.Date(2002, 6, 20, 0, 0, 0, 0, time.UTC),
+		CreateDate: time.Now(),
+		Id: uuid.New(),
+	}
+
 	//Test Password Reset Data
 	reset1 := lib.PasswordReset{
 		UserId:     testUser1.UserId,
@@ -88,6 +104,9 @@ var _ = Describe("Service", func() {
 			})
 		})
 
+		Context("Where the user exists, but with upper case", func() {
+		})
+
 		Context("Where the user does not exist", func() {
 			It("should not return result", func() {
 				user, err := service.GetUserByEmail("nothing@nothing.com")
@@ -109,7 +128,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the login doesn't match", func() {
 			It("should not return the result", func() {
-				user, err := service.GetUserByLogin(testUser1.Email, "whatever")
+				user, err := service.GetUserByLogin(testUser1.Email, "Something")
 
 				Expect(err).To(Equal(lib.UserNotFound))
 				Expect(user).To(Equal(lib.User{}))
@@ -146,55 +165,366 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("Update user", func() {
+	Describe("Update user password", func() {
+		Context("Where the user exists", func() {
+			It("should modify the user password", func() {
+				service.UpdateUser(testUser1.UserId, "", "newpass")
+				var actual lib.User
+				err := conn.GetSource(TestIndex, lib.UserType, testUser1.UserId, nil, &actual)
 
+				Expect(err).To(BeNil(), "Updated user be found")
+
+				hash, _ := base64.StdEncoding.DecodeString(actual.PasswordHash)
+
+				err = bcrypt.CompareHashAndPassword(hash, []byte("newpass"))
+
+				Expect(err).To(BeNil(), "Password must be newpass")
+				Expect(actual.Email).To(Equal(testUser1.Email), "Email should be the same")
+			})
+		})
+
+		Context("Where the user does not exist", func() {
+			It("should return UserNotFound error", func() {
+				err := service.UpdateUser(uuid.New(), "", "newpass")
+				Expect(err).To(Equal(lib.UserNotFound))
+			})
+		})
 	})
 
 	Describe("Get user verification", func() {
+		Context("Where the verification exists", func() {
+			It("should find the verification", func() {
+				actual, err := service.GetUserVerification(verify1.Token)
 
+				Expect(err).To(BeNil())
+				Expect(actual.Email).To(Equal(verify1.Email))
+			})
+		})
+
+		Context("Where the verification does not exist", func() {
+			It("should return not found error", func() {
+				actual, err := service.GetUserVerification(uuid.New())
+
+				Expect(err).To(Equal(lib.VerificationNotFound))
+				Expect(actual).To(Equal(lib.UserVerification{}))
+			})
+		})
 	})
 
 	Describe("Create user verification", func() {
+		Context("Where the email address already in use", func() {
+			It("should return UserAlreadyExists error", func() {
+				err := service.CreateUserVerification(testUser1.Email, "Some password")
 
+				Expect(err).To(Equal(lib.EmailInUse))
+			})
+		})
+
+		Context("Where the email is new", func() {
+
+		})
 	})
 
 	Describe("Create user", func() {
+		Context("Where the token exists", func() {
+			It("should create the user and delete token", func() {
+				id, err := service.CreateUser(verify1.Token)
 
+				var user lib.User
+				conn.GetSource(TestIndex, lib.UserType, id, nil, &user)
+				resp, _ := conn.Exists(TestIndex, lib.VerifyType, verify1.Token, nil)
+
+				Expect(resp.Exists).To(BeFalse())
+				Expect(err).To(BeNil())
+				Expect(user.UserId).To(Equal(id))
+				Expect(user.Email).To(Equal(verify1.Email))
+			})
+		})
+
+		Context("Where the token does not exist", func() {
+			It("should return token not found error", func() {
+				_, err := service.CreateUser(uuid.New())
+
+				Expect(err).To(Equal(lib.VerificationNotFound))
+			})
+		})
 	})
 
 	Describe("Get reset password", func() {
+		Context("Where the reset token exists", func() {
+			It("should find the reset entry", func() {
+				reset, err := service.GetResetPassword(reset1.Token)
 
+				Expect(err).To(BeNil())
+				Expect(reset.UserId).To(Equal(reset1.UserId))
+			})
+		})
+
+		Context("Where the reset token isn't found", func() {
+			It("should return reset not found error", func() {
+				_, err := service.GetResetPassword(uuid.New())
+
+				Expect(err).To(Equal(lib.ResetNotFound))
+			})
+		})
 	})
 
 	Describe("Create and send reset password", func() {
+		Context("Where the reset token exists", func() {
 
+		})
+
+		Context("Where the email address not found", func() {
+			It("should return user not found error", func() {
+				err := service.CreateAndSendResetPassword("asdf@asdfasd.com")
+				Expect(err).To(Equal(lib.UserNotFound))
+			})
+		})
 	})
 
 	Describe("Reset user password", func() {
+		Context("Where the reset token exists", func() {
+			It("should reset the password", func() {
+				err := service.ResetPassword(reset1.Token, "stuffandthings")
 
+				Expect(err).To(BeNil(), "Reset token not found")
+
+				var actual lib.User
+				err = conn.GetSource(TestIndex, lib.UserType, reset1.UserId, nil, &actual)
+
+				Expect(err).To(BeNil(), "Updated user be found")
+
+				hash, _ := base64.StdEncoding.DecodeString(actual.PasswordHash)
+
+				err = bcrypt.CompareHashAndPassword(hash, []byte("stuffandthings"))
+
+				Expect(err).To(BeNil(), "Password must be stuffandthings")
+				Expect(actual.Email).To(Equal(testUser1.Email), "Email should be the same")
+			})
+		})
+
+		Context("Where the reset token exists, but password too short", func() {
+			It("should return invalid password error", func() {
+				err := service.ResetPassword(reset1.Token, "asdf")
+				Expect(err).To(Equal(lib.PasswordInvalid))
+			})
+		})
+
+		Context("Where the reset token exists, but password too long", func() {
+			It("should return invalid password error", func() {
+				err := service.ResetPassword(reset1.Token, "asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf")
+				Expect(err).To(Equal(lib.PasswordInvalid))
+			})
+		})
+
+		Context("Where the reset token isn't found", func() {
+			It("should return reset password not found error", func() {
+				err := service.ResetPassword(uuid.New(), "password")
+				Expect(err).To(Equal(lib.ResetNotFound))
+			})
+		})
 	})
 
 	Describe("Create journal entry", func() {
+		Context("Where there is no date conflict", func() {
+			It("should create the entry", func() {
+				current := time.Now()
+				entry, err := service.CreateJournalEntry(testUser1.UserId, []string{"something", "to look at"}, current)
+				date := time.Date(current.Year(), current.Month(), current.Day(), 0, 0, 0, 0, time.UTC)
 
+				Expect(entry.Date).To(Equal(date))
+				Expect(entry.Entries[0]).To(Equal("something"))
+				Expect(entry.Entries[1]).To(Equal("to look at"))
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Context("Where there is a date conflict", func() {
+			It("should return entry exists error", func() {
+				_, err := service.CreateJournalEntry(testUser1.UserId, []string{"hello", "world"}, journal1.Date)
+				Expect(err).To(Equal(lib.EntryAlreadyExists))
+			})
+		})
 	})
 
 	Describe("Update journal entry", func() {
+		Context("Where the entry exists", func() {
+			It("should update journal entry", func() {
+				err := service.UpdateJournalEntry(journal1.Id, journal1.UserId, []string{"test", "entry"})
+				Expect(err).To(BeNil())
 
+				var actual lib.JournalEntry
+				_ = conn.GetSource(TestIndex, lib.JournalType, journal1.Id, nil, &actual)
+
+				Expect(actual.Entries[0]).To(Equal("test"))
+				Expect(actual.Entries[1]).To(Equal("entry"))
+			})
+		})
+
+		Context("Where the entry does not exist", func() {
+			It("should return entry does not exist error", func() {
+				err := service.UpdateJournalEntry(uuid.New(), journal1.UserId, []string{"test", "entry"})
+				Expect(err).To(Equal(lib.EntryNotFound))
+			})
+		})
 	})
 
 	Describe("Delete journal entry", func() {
+		Context("Where the entry exists", func() {
+			It("should delete the entry", func() {
+				err := service.DeleteJournalEntry(journal1.Id, testUser1.UserId)
 
+				resp, _ := conn.Exists(TestIndex, lib.JournalType, journal1.Id, nil)
+
+				Expect(err).To(BeNil())
+				Expect(resp.Exists).To(BeFalse())
+			})
+		})
+
+		Context("Where the entry does not exist", func() {
+			It("should return entry does not exist error", func() {
+				err := service.DeleteJournalEntry(uuid.New(), testUser1.UserId)
+				Expect(err).To(Equal(lib.EntryNotFound))
+			})
+		})
 	})
 
 	Describe("Get journal entry by date", func() {
+		Context("Where the entry exists", func() {
+			It("should return entry", func() {
+				entry, err := service.GetJournalEntryByDate(journal1.UserId, journal1.Date)
 
+				Expect(err).To(BeNil())
+				Expect(entry.Id).To(Equal(journal1.Id))
+				Expect(entry.UserId).To(Equal(journal1.UserId))
+				Expect(entry.Entries[0]).To(Equal(journal1.Entries[0]))
+				Expect(entry.Entries[1]).To(Equal(journal1.Entries[1]))
+			})
+		})
+
+		Context("Where the entry does not exist on date", func() {
+			It("should return entry not found error", func() {
+				_, err := service.GetJournalEntryByDate(testUser1.UserId, time.Now())
+				Expect(err).To(Equal(lib.NoJournalWithDate))
+			})
+		})
+
+		Context("Where the user id doesn't exist", func() {
+			It("should return entry not found error", func() {
+				_, err := service.GetJournalEntryByDate(uuid.New(), journal1.Date)
+				Expect(err).To(Equal(lib.NoJournalWithDate))
+			})
+		})
 	})
 
 	Describe("Search journal entries", func() {
+		BeforeEach(func() {
+			conn.IndexWithParameters(TestIndex, lib.JournalType, journal2.Id, "", 0, "", "", "", 0, "", "", true, nil, journal2)
+			conn.IndexWithParameters(TestIndex, lib.JournalType, journal3.Id, "", 0, "", "", "", 0, "", "", true, nil, journal3)
+		})
 
+		Context("When searching with an exact word match query", func() {
+			It("should find matching entries", func() {
+				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+					Query: "test",
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(entries)).To(Equal(1))
+				Expect(entries[0].Id).To(Equal(journal1.Id))
+				Expect(entries[0].Entries[0]).To(Equal(journal1.Entries[0]))
+				Expect(entries[0].Entries[1]).To(Equal(journal1.Entries[1]))
+			})
+		})
+
+		Context("When searching with a start date and query", func() {
+			It("should find matching entries", func() {
+				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+					Query: "entry",
+					Start: time.Date(2002, 6, 10, 0, 0, 0, 0, time.UTC),
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(entries)).To(Equal(1))
+				Expect(entries[0].Id).To(Equal(journal3.Id))
+				Expect(entries[0].Entries[0]).To(Equal(journal3.Entries[0]))
+				Expect(entries[0].Entries[1]).To(Equal(journal3.Entries[1]))
+			})
+		})
+
+		Context("When searching with a end date and query", func() {
+			It("should find matching entries", func() {
+				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+					Query: "entry",
+					End: time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(entries)).To(Equal(1))
+				Expect(entries[0].Id).To(Equal(journal1.Id))
+				Expect(entries[0].Entries[0]).To(Equal(journal1.Entries[0]))
+				Expect(entries[0].Entries[1]).To(Equal(journal1.Entries[1]))
+			})
+		})
+
+		Context("When searching with a start and date and query", func() {
+			It("should find matching entries", func() {
+				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+					Query: "ent*",
+					Start: time.Date(2002, 4, 21, 0, 0, 0, 0, time.UTC),
+					End: time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(entries)).To(Equal(3))
+			})
+		})
 	})
 
 	Describe("Search journal dates", func() {
+		BeforeEach(func() {
+			conn.IndexWithParameters(TestIndex, lib.JournalType, journal2.Id, "", 0, "", "", "", 0, "", "", true, nil, journal2)
+			conn.IndexWithParameters(TestIndex, lib.JournalType, journal3.Id, "", 0, "", "", "", 0, "", "", true, nil, journal3)
+		})
 
+		Context("When searching with a start date", func() {
+			It("should return matching dates", func() {
+				dates, err := service.SearchJournalDates(testUser1.UserId, lib.JournalQuery{
+					Start: time.Date(2002, 4, 21, 0, 0, 0, 0, time.UTC),
+					End: time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(dates)).To(Equal(3))
+				Expect(dates).To(ContainElement("2002-05-25T00:00:00Z"))
+				Expect(dates).To(ContainElement("2002-05-20T00:00:00Z"))
+				Expect(dates).To(ContainElement("2002-06-20T00:00:00Z"))
+			})
+		})
+
+		Context("When searching with a end date", func() {
+			It("should return matching dates", func() {
+				dates, err := service.SearchJournalDates(testUser1.UserId, lib.JournalQuery{
+					End: time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(dates)).To(Equal(1))
+				Expect(dates).To(ContainElement("2002-05-20T00:00:00Z"))
+			})
+		})
+
+		Context("When searching with a start and date", func() {
+			It("should return matching dates", func() {
+				dates, err := service.SearchJournalDates(testUser1.UserId, lib.JournalQuery{
+					Start: time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
+				})
+
+				Expect(err).To(BeNil())
+				Expect(len(dates)).To(Equal(2))
+				Expect(dates).To(ContainElement("2002-05-25T00:00:00Z"))
+				Expect(dates).To(ContainElement("2002-06-20T00:00:00Z"))
+			})
+		})
 	})
 })
