@@ -6,11 +6,13 @@ import (
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	. "github.com/onsi/ginkgo"
 	//. "github.com/onsi/gomega"
+	"code.google.com/p/go-uuid/uuid"
+	"github.com/go-martini/martini"
+	"github.com/jinzhu/now"
 	"github.com/stretchr/testify/mock"
 	"html/template"
 	"net/http"
 	"time"
-	"code.google.com/p/go-uuid/uuid"
 )
 
 type MockService struct {
@@ -167,11 +169,19 @@ var _ = Describe("Controller", func() {
 	var render MockRender
 
 	mockUser1 := lib.User{
-		UserId: uuid.New(),
-		Email: "asdf@asdf.com",
-		PasswordHash: "hash",
-		CreateDate: time.Now(),
+		UserId:        uuid.New(),
+		Email:         "asdf@asdf.com",
+		PasswordHash:  "hash",
+		CreateDate:    time.Now(),
 		LastLoginDate: time.Now(),
+	}
+
+	mockEntry1 := lib.JournalEntry{
+		UserId:     mockUser1.UserId,
+		Entries:    []string{"entry1", "entry2"},
+		Date:       time.Now(),
+		CreateDate: time.Now(),
+		Id:         uuid.New(),
 	}
 
 	BeforeEach(func() {
@@ -198,10 +208,10 @@ var _ = Describe("Controller", func() {
 				service.On("GetUserByLogin", mockUser1.Email, "password").Return(mockUser1, nil)
 				render.On("JSON", 200, mock.Anything).Return()
 				session.On("Options", sessions.Options{
-					Path: "/",
+					Path:     "/",
 					HttpOnly: true,
-					Secure: false,
-					MaxAge: 0,
+					Secure:   false,
+					MaxAge:   0,
 				}).Return()
 				session.On("Set", "userId", mockUser1.UserId).Return()
 
@@ -217,10 +227,10 @@ var _ = Describe("Controller", func() {
 				service.On("GetUserByLogin", mockUser1.Email, "password").Return(mockUser1, nil)
 				render.On("JSON", 200, mock.Anything).Return()
 				session.On("Options", sessions.Options{
-					Path: "/",
+					Path:     "/",
 					HttpOnly: true,
-					Secure: true,
-					MaxAge: 2592000,
+					Secure:   true,
+					MaxAge:   2592000,
 				}).Return()
 				session.On("Set", "userId", mockUser1.UserId).Return()
 
@@ -228,6 +238,393 @@ var _ = Describe("Controller", func() {
 
 				controller.Login(lib.LoginRequest{Email: mockUser1.Email, Password: "password", Persist: true},
 					session, render)
+			})
+		})
+	})
+
+	Describe("Logout", func() {
+		Context("User is logged in", func() {
+			It("should log the user out", func() {
+				session.On("Delete", "userId").Return()
+				session.On("Options", sessions.Options{MaxAge: -1}).Return()
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				controller.SetOptions(service, false)
+
+				controller.Logout(session, render)
+			})
+		})
+	})
+
+	Describe("Get Profile", func() {
+		Context("User is valid", func() {
+			It("should return the user information", func() {
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				service.On("GetUserById", mockUser1.UserId).Return(mockUser1, nil)
+				render.On("JSON", 200, lib.SuccessResponse(map[string]interface{}{
+					"user_id":         mockUser1.UserId,
+					"create_date":     mockUser1.CreateDate,
+					"last_login_date": mockUser1.LastLoginDate,
+					"email":           mockUser1.Email,
+				})).Return()
+				controller.SetOptions(service, false)
+
+				controller.Profile(session, render)
+			})
+		})
+
+		Context("User does not exist", func() {
+			It("should return 404 response", func() {
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				service.On("GetUserById", mockUser1.UserId).Return(lib.User{}, lib.UserNotFound)
+				render.On("JSON", 404, lib.ErrorResponse(lib.UserNotFound.Error())).Return()
+				controller.SetOptions(service, false)
+
+				controller.Profile(session, render)
+			})
+		})
+	})
+
+	Describe("Register", func() {
+		Context("Where the email is unused", func() {
+			It("should return success response", func() {
+				service.On("CreateUserVerification", "test@test.com", "password").Return(nil)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+
+				controller.SetOptions(service, false)
+				controller.Register(lib.RegisterRequest{Email: "test@test.com", Password: "password"}, render)
+			})
+		})
+
+		Context("Where the email is in use", func() {
+			It("should return failure response", func() {
+				service.On("CreateUserVerification", "test@test.com", "password").Return(lib.EmailInUse)
+				render.On("JSON", 200, lib.ErrorResponse(lib.EmailInUse.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.Register(lib.RegisterRequest{Email: "test@test.com", Password: "password"}, render)
+			})
+		})
+	})
+
+	Describe("Update Profile", func() {
+		Context("Where there is no error", func() {
+			It("should return success response", func() {
+				session.On("Get", "userId").Return(mockUser1.Email)
+				service.On("UpdateUser", mockUser1.Email, "", "password").Return(nil)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+
+				controller.SetOptions(service, false)
+				controller.UpdateProfile(lib.ModifyAccountRequest{Password: "password"}, session, render)
+			})
+		})
+
+		Context("Where there is an error", func() {
+			It("should return failure response", func() {
+				session.On("Get", "userId").Return(mockUser1.Email)
+				service.On("UpdateUser", mockUser1.Email, "", "password").Return(lib.UserNotFound)
+				render.On("JSON", 200, lib.ErrorResponse(lib.UserNotFound.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.UpdateProfile(lib.ModifyAccountRequest{Password: "password"}, session, render)
+			})
+		})
+	})
+
+	Describe("Create Send Password Request", func() {
+		Context("When create request successful", func() {
+			It("should return success response", func() {
+				service.On("CreateAndSendResetPassword", "asdf@asdf.com").Return(nil)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				controller.SetOptions(service, false)
+
+				controller.CreateForgotPasswordRequest(martini.Params{"email": "asdf@asdf.com"}, session, render)
+			})
+		})
+
+		Context("When create request failed", func() {
+			It("should still return success response", func() {
+				service.On("CreateAndSendResetPassword", "asdf@asdf.com").Return(lib.UserNotFound)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				controller.SetOptions(service, false)
+
+				controller.CreateForgotPasswordRequest(martini.Params{"email": "asdf@asdf.com"}, session, render)
+			})
+		})
+	})
+
+	Describe("Get Reset Password Request", func() {
+		Context("Where reset token exists", func() {
+			It("should return success response", func() {
+				service.On("GetResetPassword", "token").Return(lib.PasswordReset{}, nil)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				controller.SetOptions(service, false)
+
+				controller.GetResetPasswordRequest(martini.Params{"token": "token"}, session, render)
+			})
+		})
+
+		Context("When service returns error", func() {
+			It("should return failure", func() {
+				service.On("GetResetPassword", "token").Return(lib.PasswordReset{}, lib.ResetNotFound)
+				render.On("JSON", 200, lib.ErrorResponse(lib.ResetNotFound.Error())).Return()
+				controller.SetOptions(service, false)
+
+				controller.GetResetPasswordRequest(martini.Params{"token": "token"}, session, render)
+			})
+		})
+	})
+
+	Describe("Reset Password", func() {
+		Context("Where reset service successful", func() {
+			It("should return success response", func() {
+				service.On("ResetPassword", "token", "password").Return(nil)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				controller.SetOptions(service, false)
+
+				controller.ResetPassword(lib.ResetPasswordRequest{Token: "token", Password: "password"}, session, render)
+			})
+		})
+
+		Context("When service returns error", func() {
+			It("should return failure", func() {
+				service.On("ResetPassword", "token", "password").Return(lib.ResetNotFound)
+				render.On("JSON", 200, lib.ErrorResponse(lib.ResetNotFound.Error())).Return()
+				controller.SetOptions(service, false)
+
+				controller.ResetPassword(lib.ResetPasswordRequest{Token: "token", Password: "password"}, session, render)
+			})
+		})
+	})
+
+	Describe("Verify Account", func() {
+		Context("Where create user service successful", func() {
+			It("should return success response", func() {
+				service.On("CreateUser", "token").Return("whatever", nil)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				session.On("Set", "userId", "whatever").Return()
+				controller.SetOptions(service, false)
+
+				controller.VerifyAccount(martini.Params{"token": "token"}, session, render)
+			})
+		})
+
+		Context("Where create user service failed", func() {
+			It("should return failure", func() {
+				service.On("CreateUser", "token").Return("", lib.VerificationNotFound)
+				render.On("JSON", 200, lib.ErrorResponse(lib.VerificationNotFound.Error())).Return()
+				controller.SetOptions(service, false)
+
+				controller.VerifyAccount(martini.Params{"token": "token"}, session, render)
+			})
+		})
+	})
+
+	Describe("Get Entry By Date", func() {
+		Context("Where entry is found", func() {
+			It("should return entry", func() {
+				service.On("GetJournalEntryByDate", mockUser1.UserId, now.MustParse("2005-5-1")).Return(lib.JournalEntry{}, nil)
+				render.On("JSON", 200, lib.SuccessResponse(lib.JournalEntry{})).Return()
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				controller.SetOptions(service, false)
+
+				controller.GetEntryByDate(render, martini.Params{"date": "2005-5-1"}, session)
+			})
+		})
+
+		Context("Where service returns failure", func() {
+			It("should return failure", func() {
+				service.On("GetJournalEntryByDate", mockUser1.UserId, now.MustParse("2005-5-1")).Return(lib.JournalEntry{}, lib.EntryNotFound)
+				render.On("JSON", 200, lib.ErrorResponse(lib.EntryNotFound.Error())).Return()
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				controller.SetOptions(service, false)
+
+				controller.GetEntryByDate(render, martini.Params{"date": "2005-5-1"}, session)
+			})
+		})
+	})
+
+	Describe("Delete Entry", func() {
+		Context("Where entry successfully deleted", func() {
+			It("should return success response", func() {
+				service.On("DeleteJournalEntry", mockEntry1.Id, mockUser1.UserId).Return(nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+
+				controller.SetOptions(service, false)
+				controller.DeleteEntry(martini.Params{"id": mockEntry1.Id}, session, render)
+			})
+		})
+
+		Context("Where entry failed to delete", func() {
+			It("should return failure response", func() {
+				service.On("DeleteJournalEntry", mockEntry1.Id, mockUser1.UserId).Return(lib.EntryNotFound)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.ErrorResponse(lib.EntryNotFound.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.DeleteEntry(martini.Params{"id": mockEntry1.Id}, session, render)
+			})
+		})
+	})
+
+	Describe("Create Entry", func() {
+		Context("Where entry successfully created", func() {
+			It("should return success response", func() {
+				service.On("CreateJournalEntry", mockUser1.UserId, mockEntry1.Entries, now.MustParse("2001-5-1")).Return(mockEntry1, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse(mockEntry1)).Return()
+
+				controller.SetOptions(service, false)
+				controller.CreateEntry(lib.CreateEntryRequest{Date: "2001-5-1", Entries: mockEntry1.Entries}, session, render)
+			})
+		})
+
+		Context("Where entry failed to create", func() {
+			It("should return failure response", func() {
+				service.On("CreateJournalEntry", mockUser1.UserId, mockEntry1.Entries, now.MustParse("2001-5-1")).
+					Return(lib.JournalEntry{}, lib.EntryAlreadyExists)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.ErrorResponse(lib.EntryAlreadyExists.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.CreateEntry(lib.CreateEntryRequest{Date: "2001-5-1", Entries: mockEntry1.Entries}, session, render)
+			})
+		})
+	})
+
+	Describe("Update Entry", func() {
+		Context("Where entry successfully created", func() {
+			It("should return success response", func() {
+				service.On("UpdateJournalEntry", "id", mockUser1.UserId, mockEntry1.Entries).Return(nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+
+				controller.SetOptions(service, false)
+				controller.UpdateEntry(lib.ModifyEntryRequest{Entries: mockEntry1.Entries}, session, martini.Params{"id": "id"}, render)
+			})
+		})
+
+		Context("Where entry failed to create", func() {
+			It("should return failure response", func() {
+				service.On("UpdateJournalEntry", "id", mockUser1.UserId, mockEntry1.Entries).
+					Return(lib.EntryNotFound)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.ErrorResponse(lib.EntryNotFound.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.UpdateEntry(lib.ModifyEntryRequest{Entries: mockEntry1.Entries}, session, martini.Params{"id": "id"}, render)
+			})
+		})
+	})
+
+	Describe("Search Journal", func() {
+		Context("With successful result with start date specified", func() {
+			It("should return entries", func() {
+				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
+					Query: "query",
+					Start: now.MustParse("2005-1-1"),
+				}).Return([]lib.JournalEntry{mockEntry1}, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournal(lib.SearchJournalRequest{
+					Query: "query",
+					Start: "2005-1-1",
+				}, session, render)
+			})
+		})
+
+		Context("With successful result with end date specified", func() {
+			It("should return entries", func() {
+				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
+					Query: "query",
+					End: now.MustParse("2005-2-1"),
+				}).Return([]lib.JournalEntry{mockEntry1}, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournal(lib.SearchJournalRequest{
+					Query: "query",
+					End: "2005-2-1",
+				}, session, render)
+			})
+		})
+
+		Context("With successful result with no date specified", func() {
+			It("should return entries", func() {
+				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
+					Query: "query",
+				}).Return([]lib.JournalEntry{mockEntry1}, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournal(lib.SearchJournalRequest{
+					Query: "query",
+				}, session, render)
+			})
+		})
+
+		Context("When search returns error", func() {
+			It("should return error response", func() {
+				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{}).Return([]lib.JournalEntry{}, lib.UserUnauthorized)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 500, lib.ErrorResponse(lib.UserUnauthorized.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournal(lib.SearchJournalRequest{}, session, render)
+			})
+		})
+	})
+
+	Describe("Search Journal Dates", func() {
+		Context("With successful result with start date specified", func() {
+			It("should return dates", func() {
+				service.On("SearchJournalDates", mockUser1.UserId, lib.JournalQuery{
+					Start: now.MustParse("2005-1-1"),
+				}).Return([]string{"2010-1-1"}, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse([]string{"2010-1-1"})).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournalDates(lib.SearchJournalRequest{Start: "2005-1-1"}, session, render)
+			})
+		})
+
+		Context("With successful result with end date specified", func() {
+			It("should return dates", func() {
+				service.On("SearchJournalDates", mockUser1.UserId, lib.JournalQuery{
+					End: now.MustParse("2005-2-1"),
+				}).Return([]string{"2004-1-1"}, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse([]string{"2004-1-1"})).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournalDates(lib.SearchJournalRequest{End: "2005-2-1"}, session, render)
+			})
+		})
+
+		Context("With successful result with no date specified", func() {
+			It("should return dates", func() {
+				service.On("SearchJournalDates", mockUser1.UserId, lib.JournalQuery{}).Return([]string{"2004-1-1", "2010-1-1"}, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse([]string{"2004-1-1", "2010-1-1"})).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournalDates(lib.SearchJournalRequest{}, session, render)
+			})
+		})
+
+		Context("When search returns error", func() {
+			It("should return error response", func() {
+				service.On("SearchJournalDates", mockUser1.UserId, lib.JournalQuery{}).Return([]string{}, lib.UserUnauthorized)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 500, lib.ErrorResponse(lib.UserUnauthorized.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.SearchJournalDates(lib.SearchJournalRequest{}, session, render)
 			})
 		})
 	})
