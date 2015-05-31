@@ -10,11 +10,8 @@ install:
   - go get github.com/stretchr/testify/mock
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-  - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 
-script:
-  - go test ./lib -coverprofile=go.coverprofile
-  - $HOME/gopath/bin/goveralls -coverprofile=go.coverprofile -service=travis-ci
+script: $HOME/gopath/bin/goveralls -package=./lib -service=travis-ci
 
 before_script:
   - sleep 10
