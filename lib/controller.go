@@ -6,7 +6,6 @@ import (
 	"github.com/jinzhu/now"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
-	"log"
 )
 
 type LoginRequest struct {
@@ -237,7 +236,6 @@ func (c *Controller) SearchJournal(req SearchJournalRequest, session sessions.Se
 		query.End = now.MustParse(req.End)
 	}
 
-	log.Println(req.Query)
 	results, err := c.service.SearchJournal(session.Get("userId").(string), query)
 	if err != nil {
 		r.JSON(500, ErrorResponse(err.Error()))
