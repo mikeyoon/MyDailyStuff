@@ -61,7 +61,27 @@ type JournalQuery struct {
 	SortBy string
 }
 
-type Service struct {
+type Service interface {
+	//Init(options ServiceOptions) error
+	GetUserById(id string) (User, error)
+	GetUserByEmail(email string) (User, error)
+	GetUserByLogin(email string, password string) (User, error)
+	UpdateUser(id string, email string, password string) error
+	GetUserVerification(token string) (UserVerification, error)
+	CreateUserVerification(email string, password string) error
+	CreateUser(verificationToken string) (string, error)
+	GetResetPassword(token string) (PasswordReset, error)
+	CreateAndSendResetPassword(email string) error
+	ResetPassword(token string, password string) error
+	CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error)
+	UpdateJournalEntry(id string, userId string, entries []string) error
+	DeleteJournalEntry(id string, userId string) error
+	GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error)
+	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error)
+	SearchJournalDates(userId string, jq JournalQuery) ([]string, error)
+}
+
+type MdsService struct {
 	es      *elastigo.Conn
 	sg      *sendgrid.SGClient
 }
@@ -78,7 +98,7 @@ type ServiceOptions struct {
 	MainIndex        string
 }
 
-func (s *Service) Init(options ServiceOptions) error {
+func (s *MdsService) Init(options ServiceOptions) error {
 	conn := elastigo.NewConn()
 
 	if options.MainIndex != "" {
@@ -110,7 +130,7 @@ func (s *Service) Init(options ServiceOptions) error {
 	return err
 }
 
-func (service *Service) createIndexes(c *elastigo.Conn) error {
+func (service *MdsService) createIndexes(c *elastigo.Conn) error {
 	indexExists, err := c.IndicesExists(EsIndex)
 
 	if err != nil {
@@ -252,7 +272,7 @@ func getSingleResult(result elastigo.SearchResult, output interface{}) error {
 }
 
 //User Functions
-func (s *Service) GetUserByEmail(email string) (User, error) {
+func (s MdsService) GetUserByEmail(email string) (User, error) {
 	var retval User
 
 	query := elastigo.Query().
@@ -273,7 +293,7 @@ func (s *Service) GetUserByEmail(email string) (User, error) {
 	return retval, nil
 }
 
-func (s *Service) GetUserByLogin(email string, password string) (User, error) {
+func (s MdsService) GetUserByLogin(email string, password string) (User, error) {
 	var retval User
 
 	query := elastigo.Query().
@@ -303,7 +323,7 @@ func (s *Service) GetUserByLogin(email string, password string) (User, error) {
 	return retval, err
 }
 
-func (s *Service) GetUserById(id string) (User, error) {
+func (s MdsService) GetUserById(id string) (User, error) {
 	var retval User
 	err := s.es.GetSource(EsIndex, UserType, id, nil, &retval)
 
@@ -314,7 +334,7 @@ func (s *Service) GetUserById(id string) (User, error) {
 	return retval, err
 }
 
-func (s *Service) UpdateUser(id string, email string, password string) error {
+func (s MdsService) UpdateUser(id string, email string, password string) error {
 	user, err := s.GetUserById(id)
 
 	if err != nil {
@@ -339,7 +359,7 @@ func (s *Service) UpdateUser(id string, email string, password string) error {
 	return nil
 }
 
-func (s *Service) GetUserVerification(token string) (UserVerification, error) {
+func (s MdsService) GetUserVerification(token string) (UserVerification, error) {
 	var retval UserVerification
 
 	query := elastigo.Query().
@@ -361,7 +381,7 @@ func (s *Service) GetUserVerification(token string) (UserVerification, error) {
 	return retval, err
 }
 
-func (s *Service) CreateUserVerification(email string, password string) error {
+func (s MdsService) CreateUserVerification(email string, password string) error {
 	_, err := s.GetUserByEmail(email)
 
 	if err == UserNotFound {
@@ -427,7 +447,7 @@ MyDailyStuff.com`)
 	}
 }
 
-func (s *Service) CreateUser(verificationToken string) (string, error) {
+func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	verify, err := s.GetUserVerification(verificationToken)
 	if err == nil {
 		id := uuid.New()
@@ -449,7 +469,7 @@ func (s *Service) CreateUser(verificationToken string) (string, error) {
 	}
 }
 
-func (s *Service) GetResetPassword(token string) (PasswordReset, error) {
+func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 	var retval PasswordReset
 
 	query := elastigo.Query().
@@ -470,7 +490,7 @@ func (s *Service) GetResetPassword(token string) (PasswordReset, error) {
 	return retval, err
 }
 
-func (s *Service) CreateAndSendResetPassword(email string) error {
+func (s MdsService) CreateAndSendResetPassword(email string) error {
 	user, err := s.GetUserByEmail(email)
 	if err == nil {
 		id := uuid.New()
@@ -524,7 +544,7 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 	return err
 }
 
-func (s *Service) ResetPassword(token string, password string) error {
+func (s MdsService) ResetPassword(token string, password string) error {
 	reset, err := s.GetResetPassword(token)
 
 	if len(password) < 6 || len(password) > 50 {
@@ -545,7 +565,7 @@ func (s *Service) ResetPassword(token string, password string) error {
 
 //Journal Functions
 
-func (s *Service) CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error) {
+func (s MdsService) CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error) {
 	var entry JournalEntry
 
 	_, err := s.GetJournalEntryByDate(userId, date)
@@ -562,7 +582,7 @@ func (s *Service) CreateJournalEntry(userId string, entries []string, date time.
 	return entry, err
 }
 
-func (s *Service) UpdateJournalEntry(id string, userId string, entries []string) error {
+func (s MdsService) UpdateJournalEntry(id string, userId string, entries []string) error {
 	if userId == "" {
 		return UserUnauthorized
 	}
@@ -583,7 +603,7 @@ func (s *Service) UpdateJournalEntry(id string, userId string, entries []string)
 	return err
 }
 
-func (s *Service) DeleteJournalEntry(id string, userId string) error {
+func (s MdsService) DeleteJournalEntry(id string, userId string) error {
 	if userId == "" {
 		return UserUnauthorized
 	}
@@ -599,7 +619,7 @@ func (s *Service) DeleteJournalEntry(id string, userId string) error {
 	return err
 }
 
-func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error) {
+func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error) {
 	var retval JournalEntry
 
 	if userId == "" {
@@ -633,7 +653,7 @@ func (s *Service) GetJournalEntryByDate(userId string, date time.Time) (JournalE
 }
 
 //Search journal entries
-func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error) {
+func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error) {
 	if userId == "" {
 		return nil, UserUnauthorized
 	}
@@ -701,7 +721,7 @@ func (s *Service) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry,
 }
 
 //Find dates with journal entries
-func (s *Service) SearchJournalDates(userId string, jq JournalQuery) ([]string, error) {
+func (s MdsService) SearchJournalDates(userId string, jq JournalQuery) ([]string, error) {
 	if userId == "" {
 		return nil, UserUnauthorized
 	}

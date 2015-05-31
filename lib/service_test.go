@@ -12,7 +12,7 @@ import (
 )
 
 var _ = Describe("Service", func() {
-	service := lib.Service{}
+	service := lib.MdsService{}
 	conn := elastigo.NewConn()
 
 	TestIndex := "test"
