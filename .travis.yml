@@ -12,7 +12,9 @@ install:
   - go get github.com/mattn/goveralls
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 
-script: $HOME/gopath/bin/goveralls -package=./lib -service=travis-ci
+script:
+  - go test ./lib -coverprofile=go.coverprofile
+  - $HOME/gopath/bin/goveralls -coverprofile=go.coverprofile -service=travis-ci
 
 before_script:
   - sleep 10
