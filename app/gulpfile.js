@@ -73,7 +73,7 @@ gulp.task('copy-fonts', function() {
 });
 
 gulp.task('copy-html', function() {
-    return gulp.src('./index.html')
+    return gulp.src(['./index.html', 'favicon.ico'])
         .pipe(gulp.dest('../public'));
 });
 
