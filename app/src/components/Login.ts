@@ -18,9 +18,11 @@ export interface LoginState {
     email?: string;
     password?: string;
     auth?: any;
-    errors?: string[];
+    errors?: any;
     persist?: boolean;
 }
+
+var emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
 export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
     implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
@@ -32,20 +34,26 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
     }
 
     validate(): boolean {
-        var errors: string[] = [];
+        var errors: any = {};
 
-        if (this.state.auth.loginResult && this.state.auth.loginResult.success == false) {
-            errors.push(this.state.auth.loginResult.error)
+        if (!emailRegex.test(this.state.email)) {
+            errors["email"] = "Email is invalid";
+        }
+
+        if (!this.state.password || this.state.password.length < 6) {
+            errors["password"] = "Password needs to be 6 or more characters";
+        } else if (this.state.password && this.state.password.length > 50) {
+            errors["password"] = "Password needs to be less than 50 characters";
         }
 
         this.setState({ errors: errors });
-
-        return !errors
+        return !Object.keys(errors).length;
     }
 
     getStateFromFlux() {
         var result = {
-            auth: this.getFlux().store("auth")
+            auth: this.getFlux().store("auth"),
+            errors: {}
         };
 
         return result;
@@ -57,7 +65,9 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
 
     onSubmit(ev:any) {
         ev.preventDefault();
-        this.getFlux().actions.account.login(new Requests.Login(this.state.email, this.state.password, this.state.persist));
+        if (this.validate()) {
+            this.getFlux().actions.account.login(new Requests.Login(this.state.email, this.state.password, this.state.persist));
+        }
     }
 
     handleTextChange(name:string, ev:any) {
@@ -73,15 +83,9 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
     }
 
     renderLoginError() {
-        var errors: string[] = this.state.errors ? this.state.errors : [];
-
-        if (this.state.auth.loginResult && this.state.auth.loginResult.success == false) {
-            errors.push(this.state.auth.loginResult.error)
+        if (this.state.auth.error) {
+            return d("div.alert.alert-danger", this.state.auth.error);
         }
-
-        if (errors.length) return d("div.alert.alert-danger", {}, d('ul', {}, errors.map((err, ii) => {
-            return d('li', { key: ii }, err)
-        })));
 
         return null;
     }
@@ -93,19 +97,21 @@ export class LoginComponent extends TypedReact.Component<LoginProps, LoginState>
                 d("br"),
                 this.renderLoginError(),
                 d("form", {onSubmit: this.onSubmit}, [
-                    d("div.form-group", {key: 1}, [
+                    d("div.form-group" + (this.state.errors["email"] ? '.has-error' : ''), {key: 1}, [
                         d("label", {htmlFor: "email"}, "Email:"),
                         d("input.form-control#email[name=email]", {
                             value: this.state.email,
                             onChange: this.handleTextChange.bind(this, "email")
-                        })
+                        }),
+                        this.state.errors["email"] ? d("span.help-block", this.state.errors["email"]) : null
                     ]),
-                    d("div.form-group", {key: 2}, [
+                    d("div.form-group" + (this.state.errors["password"] ? '.has-error' : ''), {key: 2}, [
                         d("label", {htmlFor: "password"}, "Password:"),
                         d("input.form-control#password[name=password][type=password]", {
                             value: this.state.password,
                             onChange: this.handleTextChange.bind(this, "password")
-                        })
+                        }),
+                        this.state.errors["password"] ? d("span.help-block", this.state.errors["password"]) : null
                     ]),
                     d("div.checkbox", {key: 3},
                         d("label", {htmlFor: "rememberMe"}, [

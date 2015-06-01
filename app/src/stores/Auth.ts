@@ -26,6 +26,9 @@ var AuthStore = Fluxxor.createStore({
 
         this.client = rest.wrap(mime).wrap(errorCode);
         this.isLoggedIn = null;
+        this.loading = false;
+        this.error = null;
+
         this.loginResult = {};
         this.registerResult = {};
         this.sendResetResult = {};
@@ -37,6 +40,7 @@ var AuthStore = Fluxxor.createStore({
     },
 
     onClearResults: function() {
+        this.loading = false;
         this.loginResult = {};
         this.registerResult = {};
         this.sendResetResult = {};
@@ -67,73 +71,87 @@ var AuthStore = Fluxxor.createStore({
     },
 
     onResetSend: function(email: string) {
+        this.loading = true;
+        this.sendResetResult = {};
+        this.emit('change');
+
         this.client({
             method: "POST",
             path: "/api/account/forgot/" + email
         }).then(
             (response: rest.Response) => {
+                this.loading = false;
                 this.sendResetResult = response.entity;
                 if (this.sendResetResult.success) {
-                    console.log('Reset email sent');
+                    this.error = null;
+                } else {
+                    this.error = this.sendResetResult.error;
                 }
                 this.emit("change");
             },
             (response: rest.Response) => {
                 console.log(response);
-                this.sendResetResult = {
-                    success: false,
-                    message: "Failed"
-                };
+                this.loading = false;
+                this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
             }
         );
     },
 
     onPasswordReset: function(req: Requests.PasswordReset) {
+        this.loading = true;
+        this.resetPasswordResult = {};
+        this.emit('change');
+
         this.client({
             method: "POST",
             path: "/api/account/reset/",
             entity: JSON.stringify(req)
         }).then(
             (response: rest.Response) => {
+                this.loading = false;
                 this.resetPasswordResult = response.entity;
                 if (this.resetPasswordResult.success) {
-                    console.log('Reset email sent');
+                    this.error = null;
+                } else {
+                    this.error = this.resetPasswordResult.error;
                 }
                 this.emit("change");
             },
             (response: rest.Response) => {
                 console.log(response);
-                this.resetPasswordResult = {
-                    success: false,
-                    message: "Failed"
-                };
+                this.loading = false;
+                this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
             }
         );
     },
 
     onRegister: function(params: Requests.Register) {
+        this.loading = true;
+        this.registerResult = {};
+
+        this.emit('change');
         this.client({
             method: "POST",
             path: "/api/account/register",
             entity: JSON.stringify(params)
         }).then(
             (response: rest.Response) => {
+                this.loading = false;
                 this.registerResult = response.entity;
                 if (this.registerResult.success) {
-                    console.log('Verify email sent');
-                    //this.isLoggedIn = true;
-                    //page('/register/verify');
+                    this.error = null;
+                } else {
+                    this.error = this.registerResult.error;
                 }
                 this.emit("change");
             },
             (response: rest.Response) => {
                 console.log(response);
-                this.registerResult = {
-                    success: false,
-                    message: "Failed"
-                };
+
+                this.loading = false;
+                this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
             }
         );
@@ -150,7 +168,6 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log("Error");
                 console.log(response);
                 this.emit("change");
             }
@@ -158,28 +175,36 @@ var AuthStore = Fluxxor.createStore({
     },
 
     onLogin: function(payload: Requests.Login) {
+        this.loading = true;
+        this.loginResult = {};
+
+        this.emit('change');
+
         this.client({
             method: "POST",
             path: "/api/account/login",
             entity: JSON.stringify(payload)
         }).then(
             (response: rest.Response) => {
+                this.loading = false;
+
                 this.loginResult = response.entity;
                 if (this.loginResult.success) {
+                    this.error = null;
                     this.isLoggedIn = true;
                     this.onGetAccount();
                     page('/');
+                } else {
+                    this.error = this.loginResult.error;
                 }
 
                 this.emit("change");
             },
             (response: rest.Response) => {
+                this.loading = false;
                 console.log(response);
-                this.loginResult = {
-                    success: false,
-                    message: "Unexpected error authenticating with server."
-                };
 
+                this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
             }
         );
@@ -208,6 +233,10 @@ var AuthStore = Fluxxor.createStore({
     },
 
     onSaveProfile: function(req: Requests.SaveProfile) {
+        this.loading = true;
+        this.saveProfileResult = {};
+        this.emit('change');
+
         this.client({
             method: 'PUT',
             path: '/api/account',
@@ -216,12 +245,18 @@ var AuthStore = Fluxxor.createStore({
             })
         }).then(
             (response: rest.Response) => {
+                this.loading = false;
                 this.saveProfileResult = response.entity;
+                if (this.saveProfileResult.success) {
+                    this.error = null;
+                } else {
+                    this.error = this.saveProfileResult.error;
+                }
                 this.emit("change");
             },
             (response: rest.Response) => {
                 console.log(response);
-
+                this.loading = false;
                 this.emit("change");
             }
         )

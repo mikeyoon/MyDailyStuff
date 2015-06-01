@@ -20,6 +20,11 @@ var JournalStore = Fluxxor.createStore({
             actions.constants.JOURNAL.ADD, this.onAdd
         );
 
+        this.editing = false;
+        this.loading = false;
+        this.deleting = false;
+        this.error = null;
+
         this.current = null;
         this.hasEntry = false;
         this.date = new Date();
@@ -28,6 +33,9 @@ var JournalStore = Fluxxor.createStore({
     },
 
     onAdd: function(entry: string) {
+        this.editing = true;
+        this.emit('change');
+
         this.client({
             method: "POST",
             path: "/api/journal",
@@ -37,19 +45,29 @@ var JournalStore = Fluxxor.createStore({
             })
         }).then(
             (response: rest.Response) => {
+                this.editing = false;
                 if (response.entity.success) {
                     this.current = response.entity.result;
                     this.hasEntry = true;
-                    this.emit('change');
+                    this.error = null;
+                } else {
+                    this.error = response.entity.error;
                 }
+
+                this.emit('change');
             },
             (response: rest.Response) => {
+                this.editing = false;
                 console.log(response);
+                this.emit('change');
             }
         )
     },
 
     onEdit: function(req: Requests.EditJournalEntry) {
+        this.editing = true;
+        this.emit('change');
+
         if (!req.entry) {
             this.current.entries.splice(req.index, 1);
         } else {
@@ -65,34 +83,54 @@ var JournalStore = Fluxxor.createStore({
             })
         }).then(
             (response: rest.Response) => {
+                this.editing = false;
                 if (response.entity.success) {
                     //We're relying on the current to be updated client-side due to delays in indexing in ES
                     this.emit("change");
+                    this.error = null;
+                } else {
+                    this.error = response.entity.error;
                 }
             },
             (response: rest.Response) => {
+                this.editing = false;
                 console.log(response);
+                this.emit('change');
             }
         )
     },
 
     onDelete: function() {
+        this.deleting = true;
+        this.emit('change');
+
         this.client({
             method: "DELETE",
             path: "/api/journal/" + this.current.id
         }).then(
             (response: rest.Response) => {
-                this.hasEntry = false;
-                this.current = null;
+                this.deleting = false;
+
+                if (response.entity.success) {
+                    this.hasEntry = false;
+                    this.current = null;
+                    this.error = null;
+                } else {
+                    this.error = response.entity.error;
+                }
+
                 this.emit("change");
             },
             (response: rest.Response) => {
+                this.deleting = false;
                 console.log(response);
+                this.emit('change');
             }
         )
     },
 
     onGet: function(date: Date) {
+        this.loading = true;
         this.date = date;
 
         this.client({
@@ -100,6 +138,8 @@ var JournalStore = Fluxxor.createStore({
             path: "/api/journal/" + moment(this.date).format("YYYY-M-D")
         }).then(
             (response: rest.Response) => {
+                this.loading = false;
+
                 if (response.entity.success) {
                     this.current = response.entity.result;
                     this.hasEntry = true;
@@ -112,6 +152,7 @@ var JournalStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
+                this.loading = false;
                 console.log(response);
                 this.hasEntry = false;
                 this.current = null;

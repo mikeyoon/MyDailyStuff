@@ -124,7 +124,9 @@ func (s *MdsService) Init(options ServiceOptions) error {
 
 	if err == nil {
 		s.es = conn
-		s.sg = sendgrid.NewSendGridClient(options.SendGridUsername, options.SendGridPassword)
+		if options.SendGridUsername != "" {
+			s.sg = sendgrid.NewSendGridClient(options.SendGridUsername, options.SendGridPassword)
+		}
 	}
 
 	return err
@@ -439,7 +441,9 @@ MyDailyStuff.com`)
 </body>
 </html>`)
 
-		err = s.sg.Send(message)
+		if s.sg != nil {
+			err = s.sg.Send(message)
+		}
 
 		return err
 	} else {
@@ -537,7 +541,9 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 </body>
 </html>`)
 
-			err = s.sg.Send(message)
+			if s.sg != nil {
+				err = s.sg.Send(message)
+			}
 		}
 	}
 

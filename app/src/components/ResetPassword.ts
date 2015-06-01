@@ -17,8 +17,7 @@ interface ForgotState {
     auth?: any;
     password?: string;
     confirm?: string;
-    errors?: string[];
-    errorFields?: any;
+    errors?: any;
 }
 
 var emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
@@ -35,7 +34,7 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
     getStateFromFlux() {
         var result = {
             auth: this.getFlux().store("auth"),
-            errorFields: {}
+            errors: {}
         };
 
         return result;
@@ -59,39 +58,25 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
     }
 
     validate(): boolean {
-        var errors: string[] = [];
-        var fields: any = {};
+        var errors: any = {};
 
         if (this.state.confirm != this.state.password) {
-            errors.push('Passwords do not match');
-            fields["password"] = true;
-            fields["confirm"] = true;
+            errors["password"] = "passwords do not match";
+            errors["confirm"] = "passwords do not match";
+        } else if (!this.state.password || this.state.password.length < 6) {
+            errors["password"] = "Password needs to be 6 or more characters";
+        } else if (this.state.password && this.state.password.length > 50) {
+            errors["password"] = "Password needs to be less than 50 characters";
         }
 
-        if (!this.state.password || this.state.password.length < 6) {
-            errors.push('Password needs to be 6 or more characters');
-            fields["password"] = true;
-        }
-
-        if (this.state.password && this.state.password.length > 50) {
-            errors.push('Password needs to be less than 50 characters');
-            fields["password"] = true;
-        }
-
-        this.setState({ errors: errors, errorFields: fields });
-
-        return !errors.length;
+        this.setState({ errors: errors });
+        return !Object.keys(errors).length;
     }
 
     renderErrors() {
-        var errors: string[] = this.state.errors ? this.state.errors.slice() : [];
-        if (this.state.auth && this.state.auth.resetPasswordResult && this.state.auth.resetPasswordResult.success == false) {
-            errors.push(this.state.auth.resetPasswordResult.error);
+        if (this.state.auth.error) {
+            return d("div.alert.alert-danger", this.state.auth.error);
         }
-
-        if (errors.length) return d("div.alert.alert-danger", {}, d('ul', {}, errors.map((err, ii) => {
-            return d('li', { key: ii }, err);
-        })));
 
         return null;
     }
@@ -105,22 +90,24 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
 
                 this.state.auth.resetPasswordResult.success ?
                     d('div', {}, [
-                        "Your password has been reset. Click ",
-                        d("a[href=/login]", "here"),
-                        " to login."
+                        d('div.alert.alert-success', {}, [
+                            "Your password has been reset. Click ",
+                            d("a[href=/login]", "here"),
+                            " to login."
+                        ]),
                     ]) :
                     d("form", { onSubmit: this.onSubmit }, [
-                        d("div.form-group" + (this.state.errorFields["password"] ? '.has-error' : ''), { key: "2" }, [
+                        d("div.form-group" + (this.state.errors["password"] ? '.has-error' : ''), { key: "2" }, [
                             d("label.control-label", { htmlFor: "password" }, "Password:"),
-                            d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") })
+                            d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") }),
+                            this.state.errors["password"] ? d("span.help-block", this.state.errors["password"]) : null
                         ]),
-                        d("div.form-group" + (this.state.errorFields["confirm"] ? '.has-error' : ''), { key: "3" }, [
+                        d("div.form-group" + (this.state.errors["confirm"] ? '.has-error' : ''), { key: "3" }, [
                             d("label.control-label", { htmlFor: "confirm" }, "Confirm Password:"),
-                            d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") })
+                            d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") }),
+                            this.state.errors["confirm"] ? d("span.help-block", this.state.errors["confirm"]) : null
                         ]),
                         d("div.text-center", {}, d("button.btn.btn-primary[type=submit]", "Reset Password"))
-                        //d("span.margin-small", "or"),
-                        //d("a[href=/login]", "Login with an existing account")
                     ])
             ])
         ]);
