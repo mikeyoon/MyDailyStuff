@@ -105,7 +105,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     handleTextChange(name:string, ev:any) {
         var state:any = {};
         state[name] = ev.target.value;
-        this.setState(state, () => this.validate());
+        this.setState(state);
     }
 
     static handlePrev(ev: any) {
@@ -122,6 +122,10 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         if ((ev.keyCode == 10 || ev.keyCode == 13) && ev.ctrlKey) {
             this.handleAddEntry(ev);
         }
+    }
+
+    handleBlur(ev: any) {
+        this.validate();
     }
 
     renderEntries() {
@@ -147,7 +151,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         return d("div.row", {}, [
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
-                    d('small.margin-small', { key: "prev" }, d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: JournalComponent.handlePrev }, "< prev")),
+                    d('small.margin-small', { key: "prev" },
+                        d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: JournalComponent.handlePrev }, "< prev")),
                     today.format("ddd, MMM Do YYYY"),
                     d('small.margin-small', { style: { visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden' }, key: "next" },
                         d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: JournalComponent.handleNext }, "next >"))
@@ -166,10 +171,12 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                                 style: { width: "100%" },
                                 value: this.state.newEntry,
                                 onKeyDown: this.handleKeyDown,
+                                onBlur: this.handleBlur,
+                                maxLength: 500,
                                 onChange: this.handleTextChange.bind(this, "newEntry") }),
                             this.state.errors["newEntry"] ? d("span.help-block", this.state.errors["newEntry"]) : null
                         ]),
-                        d('button.btn.btn-primary[type=submit]' + (Object.keys(this.state.errors).length ? '.disabled' : ''),
+                        d('button.btn.btn-primary[type=submit]' + (Object.keys(this.state.errors).length || !this.state.newEntry ? '.disabled' : ''),
                             { onClick: this.handleAddEntry }, "Add"),
                         d('span.margin-small', "(or press ctrl + enter)")
                     ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
