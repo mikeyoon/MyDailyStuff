@@ -574,17 +574,38 @@ func (s MdsService) ResetPassword(token string, password string) error {
 func (s MdsService) CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error) {
 	var entry JournalEntry
 
-	_, err := s.GetJournalEntryByDate(userId, date)
-	if err != NoJournalWithDate {
-		return entry, EntryAlreadyExists
+	var err error = nil
+
+	if (len(entries) > 7) {
+		err = TooManyEntries
 	}
 
-	entryDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+	if err == nil {
+		for _, entry := range entries {
+			if len(entry) > 500 {
+				err = JournalEntryInvalid
+				break
+			}
+		}
+	}
 
-	id := uuid.New()
-	entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
+	if err == nil {
+		_, jerr := s.GetJournalEntryByDate(userId, date)
 
-	_, err = s.es.Index(EsIndex, JournalType, id, nil, entry)
+		if jerr != NoJournalWithDate {
+			err = EntryAlreadyExists
+		}
+	}
+
+	if err == nil {
+		entryDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+
+		id := uuid.New()
+		entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
+
+		_, err = s.es.Index(EsIndex, JournalType, id, nil, entry)
+	}
+
 	return entry, err
 }
 
@@ -593,9 +614,23 @@ func (s MdsService) UpdateJournalEntry(id string, userId string, entries []strin
 		return UserUnauthorized
 	}
 
-	var entry JournalEntry
+	var err error = nil
 
-	err := s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
+	if (len(entries) > 7) {
+		err = TooManyEntries
+	}
+
+	for _, entry := range entries {
+		if len(entry) > 500 {
+			err = JournalEntryInvalid
+			break
+		}
+	}
+
+	var entry JournalEntry
+	if err == nil {
+		err = s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
+	}
 
 	if err == nil && entry.UserId == userId  {
 		entry.Entries = entries

@@ -17,10 +17,11 @@ export interface JournalProps {
 }
 
 export interface JournalState {
-    current: Responses.JournalEntry;
-    date: Date;
-    hasEntry: boolean;
-    newEntry: string;
+    current?: Responses.JournalEntry;
+    date?: Date;
+    hasEntry?: boolean;
+    newEntry?: string;
+    errors?: any;
 }
 
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
@@ -36,13 +37,15 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             current: journal.current,
             date: journal.date,
             hasEntry: journal.hasEntry,
-            newEntry: ''
+            newEntry: '',
+            errors: {}
         };
     }
 
     componentWillReceiveProps(nextProps: JournalProps) {
         this.getFlux().actions.journal.get(nextProps.date);
         this.getFlux().actions.search.date(nextProps.date);
+        this.validate();
     }
 
     componentWillMount() {
@@ -58,14 +61,28 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         //this.calendar.show();
     }
 
+    validate(): boolean {
+        var errors: any = {};
+
+        if (this.state.newEntry.length > 500) {
+            errors["newEntry"] = "Entry must be 500 characters or less";
+        } else if (this.state.current && this.state.current.entries.length >= 10) {
+            errors["newEntry"] = "Only 10 entries are allowed per day";
+        }
+
+        this.setState({ errors: errors });
+        return !Object.keys(errors).length;
+    }
+
     handleAddEntry(ev: any) {
         ev.preventDefault();
-        if (!this.state.newEntry) return;
 
-        if (this.state.hasEntry) {
-            this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(this.state.newEntry, this.state.current.entries.length));
-        } else {
-            this.getFlux().actions.journal.add(this.state.newEntry);
+        if (this.validate()) {
+            if (this.state.hasEntry) {
+                this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(this.state.newEntry, this.state.current.entries.length));
+            } else {
+                this.getFlux().actions.journal.add(this.state.newEntry);
+            }
         }
     }
 
@@ -88,7 +105,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     handleTextChange(name:string, ev:any) {
         var state:any = {};
         state[name] = ev.target.value;
-        this.setState(state);
+        this.setState(state, () => this.validate());
     }
 
     static handlePrev(ev: any) {
@@ -140,20 +157,22 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
                 d('hr'),
 
-                d("form", { onSubmit: this.handleAddEntry }, [
-                    d("div.form-group", {}, [
-                        d("label", "Add a new entry (markdown)"),
-                        d("textarea[placeholder=New entry...]", {
-                            rows: 4,
-                            style: { width: "100%" },
-                            value: this.state.newEntry,
-                            onKeyDown: this.handleKeyDown,
-                            onChange: this.handleTextChange.bind(this, "newEntry") })
-                    ]),
-                    d('button.btn.btn-primary[type=submit]' + (!this.state.newEntry ? '.disabled' : ''),
-                        { onClick: this.handleAddEntry }, "Add"),
-                    d('span.margin-small', "(or press ctrl + enter)")
-                ]),
+                !this.state.current || this.state.current.entries.length < 7 ?
+                    d("form", { onSubmit: this.handleAddEntry }, [
+                        d("div.form-group" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
+                            d("label.control-label", "Add a new entry (markdown)"),
+                            d("textarea[placeholder=New entry...].form-control", {
+                                rows: 4,
+                                style: { width: "100%" },
+                                value: this.state.newEntry,
+                                onKeyDown: this.handleKeyDown,
+                                onChange: this.handleTextChange.bind(this, "newEntry") }),
+                            this.state.errors["newEntry"] ? d("span.help-block", this.state.errors["newEntry"]) : null
+                        ]),
+                        d('button.btn.btn-primary[type=submit]' + (Object.keys(this.state.errors).length ? '.disabled' : ''),
+                            { onClick: this.handleAddEntry }, "Add"),
+                        d('span.margin-small', "(or press ctrl + enter)")
+                    ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
                 //d("div#calendar", { ref: 'calendar'}, d('input#asdf'))
             ])
         ]);

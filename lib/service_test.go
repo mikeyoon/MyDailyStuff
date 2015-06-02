@@ -339,6 +339,26 @@ var _ = Describe("Service", func() {
 			})
 		})
 
+		Context("Where entry length is too long", func() {
+			It("should return error", func() {
+				current := time.Now()
+				entry, err := service.CreateJournalEntry(testUser1.UserId, []string{string(make([]byte, 501))}, current)
+
+				Expect(err).To(Equal(lib.JournalEntryInvalid))
+				Expect(entry).To(Equal(lib.JournalEntry{}))
+			})
+		})
+
+		Context("Where there are more than 7 entries", func() {
+			It("should return error", func() {
+				current := time.Now()
+				entry, err := service.CreateJournalEntry(testUser1.UserId, make([]string, 8), current)
+
+				Expect(err).To(Equal(lib.TooManyEntries))
+				Expect(entry).To(Equal(lib.JournalEntry{}))
+			})
+		})
+
 		Context("Where there is a date conflict", func() {
 			It("should return entry exists error", func() {
 				_, err := service.CreateJournalEntry(testUser1.UserId, []string{"hello", "world"}, journal1.Date)
