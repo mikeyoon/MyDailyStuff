@@ -170,10 +170,12 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         return d("div.row", {}, [
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
-                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''), { key: 'prev', onClick: JournalComponent.handlePrev.bind(this, prev) },
+                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
+                        { key: 'prev', onClick: JournalComponent.handlePrev.bind(this, prev) },
                         d('span.glyphicon.glyphicon-menu-left')),
                     today.format("ddd, MMM Do YYYY"),
-                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''), { key: 'next', onClick: JournalComponent.handleNext.bind(this, next) },
+                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
+                        { key: 'next',  style: {visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}, onClick: JournalComponent.handleNext.bind(this, next) },
                         d('span.glyphicon.glyphicon-menu-right')),
                 ]),
 
