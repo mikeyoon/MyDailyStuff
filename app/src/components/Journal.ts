@@ -8,6 +8,7 @@ import Responses = require("../models/responses");
 import TypedReact = require('typed-react');
 import moment = require('moment');
 import marked = require('marked');
+import page = require('page');
 //import Pikaday = require('pikaday');
 var d = jsnox(React);
 
@@ -22,6 +23,10 @@ export interface JournalState {
     hasEntry?: boolean;
     newEntry?: string;
     errors?: any;
+    loading?: boolean;
+    editing?: boolean;
+    deleting?: boolean;
+    started?: boolean;
 }
 
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
@@ -38,7 +43,11 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             date: journal.date,
             hasEntry: journal.hasEntry,
             newEntry: '',
-            errors: {}
+            errors: {},
+            loading: journal.loading,
+            editing: journal.editing,
+            deleting: journal.deleting,
+            started: journal.started,
         };
     }
 
@@ -108,13 +117,15 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         this.setState(state);
     }
 
-    static handlePrev(ev: any) {
+    static handlePrev(date: moment.Moment, ev: any) {
         ev.preventDefault();
+        page('/journal/' + date.format("YYYY-M-D"));
         //this.getFlux().actions.journal.get(new Date('1/1/2001'))
     }
 
-    static handleNext(ev: any) {
+    static handleNext(date: moment.Moment, ev: any) {
         ev.preventDefault();
+        page('/journal/' + date.format("YYYY-M-D"));
         //this.getFlux().actions.journal.get(new Date('1/1/2002'))
     }
 
@@ -130,7 +141,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     renderEntries() {
         if (this.state.hasEntry) {
-            return this.state.current.entries.map((e: string, index: number) => {
+            return d('div.margin-top-md', {}, this.state.current.entries.map((e: string, index: number) => {
                 return d("div.well", { key: index }, [
                     d('button.btn.btn-clear.pull-right', { key: "delete", onClick: this.handleDeleteEntry.bind(this, index) },
                         d('span.glyphicon.glyphicon-remove')),
@@ -139,26 +150,34 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
                     d("div.journal-entry", { dangerouslySetInnerHTML: { __html: marked(e) }})
                 ]);
-            });
+            }));
+        } else if (this.state.started) {
+            return d('h3.text-center', "No entries...try to remember!");
+        } else {
+            return d('div.margin-top-md', {},
+                d('div.progress', {},
+                    d('div.progress-bar.progress-bar-striped.active[role=progressbar]', { style: { width: "100%" }})
+                )
+            );
         }
     }
 
     render() {
-        var today = moment(this.props.date);
-        var next = moment(this.props.date).add(1, 'day');
-        var prev = moment(this.props.date).add(-1, 'day');
+        var today = moment(this.state.date || this.props.date);
+        var next = moment(this.state.date || this.props.date).add(1, 'day');
+        var prev = moment(this.state.date || this.props.date).add(-1, 'day');
 
         return d("div.row", {}, [
             d("div.col-md-8.col-md-offset-2", {}, [
                 d('h2.text-center', {}, [
-                    d('small.margin-small', { key: "prev" },
-                        d('a[href=/journal/' + prev.format("YYYY-M-D") + ']', { onClick: JournalComponent.handlePrev }, "< prev")),
+                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''), { key: 'prev', onClick: JournalComponent.handlePrev.bind(this, prev) },
+                        d('span.glyphicon.glyphicon-menu-left')),
                     today.format("ddd, MMM Do YYYY"),
-                    d('small.margin-small', { style: { visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden' }, key: "next" },
-                        d('a[href=/journal/' + next.format("YYYY-M-D") + ']', { onClick: JournalComponent.handleNext }, "next >"))
+                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''), { key: 'next', onClick: JournalComponent.handleNext.bind(this, next) },
+                        d('span.glyphicon.glyphicon-menu-right')),
                 ]),
 
-                this.state.hasEntry ? this.renderEntries() : d('h3.text-center', "No entries...try to remember!"),
+                this.renderEntries(),
 
                 d('hr'),
 

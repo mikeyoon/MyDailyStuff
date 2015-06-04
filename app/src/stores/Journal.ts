@@ -23,11 +23,12 @@ var JournalStore = Fluxxor.createStore({
         this.editing = false;
         this.loading = false;
         this.deleting = false;
+        this.started = false; //Whether the journal page has loaded
         this.error = null;
 
         this.current = null;
         this.hasEntry = false;
-        this.date = new Date();
+        this.date = null;
 
         this.client = rest.wrap(mime).wrap(errorCode);
     },
@@ -131,14 +132,16 @@ var JournalStore = Fluxxor.createStore({
 
     onGet: function(date: Date) {
         this.loading = true;
-        this.date = date;
+        this.emit('change');
 
         this.client({
             method: "GET",
-            path: "/api/journal/" + moment(this.date).format("YYYY-M-D")
+            path: "/api/journal/" + moment(date).format("YYYY-M-D")
         }).then(
             (response: rest.Response) => {
                 this.loading = false;
+                this.date = date;
+                this.started = true;
 
                 if (response.entity.success) {
                     this.current = response.entity.result;
@@ -152,6 +155,7 @@ var JournalStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
+                this.started = true;
                 this.loading = false;
                 console.log(response);
                 this.hasEntry = false;
