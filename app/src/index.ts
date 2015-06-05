@@ -18,6 +18,7 @@ import Reset = require('./components/ResetPassword');
 import App = require('./components/App');
 import Search = require('./components/Search');
 import Profile = require('./components/Profile');
+import About = require('./components/About');
 
 import AuthStore = require('./stores/Auth');
 import JournalStore = require('./stores/Journal');
@@ -101,6 +102,10 @@ page('/journal/:date', (ctx) => {
     } else {
         renderApp(Journal.Component, {flux: flux, date: moment(ctx.params.date, 'YYYY-M-D').toDate() });
     }
+});
+
+page('/about', () => {
+    renderApp(About.Component, {});
 });
 
 //page.exit((ctx, next) => {
