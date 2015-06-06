@@ -24,12 +24,14 @@ import AuthStore = require('./stores/Auth');
 import JournalStore = require('./stores/Journal');
 import SearchStore = require('./stores/SearchJournalStore');
 import RouteStore = require('./stores/Route');
+import AnalyticsStore = require('./stores/Analytics');
 
 var stores = {
     auth: new AuthStore(),
     journal: new JournalStore(),
     search: new SearchStore(),
-    route: new RouteStore()
+    route: new RouteStore(),
+    analytics: new AnalyticsStore()
 };
 
 var flux = new Fluxxor.Flux(stores, actions.methods);
