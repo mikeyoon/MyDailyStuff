@@ -6,7 +6,7 @@ import moment = require('moment');
 
 declare var _gaq: any;
 
-function trackEvent(category: string, action: string, label?: string, value?: any, nonInteraction?: boolean) {
+function trackEvent(category: string, action: string, label?: string, value?: Number, nonInteraction?: boolean) {
     _gaq.push(['_trackEvent', category, action, label, value, nonInteraction]);
 }
 
@@ -72,7 +72,7 @@ var AnalyticsStore = Fluxxor.createStore({
         trackEvent('journal', 'edit');
     },
     onJournalGet: function(date: Date) {
-        trackEvent('journal', 'get', 'date', moment(date).format("MM-DD-YYYY"));
+        trackEvent('journal', 'get', moment(date).format("MM-DD-YYYY"));
     },
     onJournalDelete: function() {
         trackEvent('journal', 'delete');
@@ -82,7 +82,7 @@ var AnalyticsStore = Fluxxor.createStore({
         //_trackEvent('journal', 'delete');
     },
     onSearchQuery: function(query: string) {
-        trackEvent('search', 'query', 'query', query);
+        trackEvent('search', 'query', query);
     }
 });
 
