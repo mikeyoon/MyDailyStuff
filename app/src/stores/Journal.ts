@@ -149,7 +149,7 @@ var JournalStore = Fluxxor.createStore({
                 if (response.entity.success) {
                     this.current = response.entity.result;
                     this.hasEntry = true;
-
+                    this.error = null;
                 } else {
                     this.hasEntry = false;
                     this.current = null;
