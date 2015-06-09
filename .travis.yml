@@ -4,7 +4,7 @@ go:
   - tip
 
 install:
-  - export GOPATH=$TRAVIS_BUILD_DIR/Godeps/_workspace:$GOPATH
+  - export GOPATH=$GOPATH:$TRAVIS_BUILD_DIR/Godeps/_workspace
   - go get github.com/onsi/ginkgo
   - go get github.com/onsi/gomega
   - go get github.com/stretchr/testify/mock
@@ -14,7 +14,7 @@ install:
 script: $HOME/gopath/bin/goveralls -package=./lib -service=travis-ci
 
 before_script:
-  - sleep 10
+  - sleep 5
 
 services:
   - elasticsearch
