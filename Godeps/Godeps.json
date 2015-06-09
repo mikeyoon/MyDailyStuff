@@ -55,6 +55,10 @@
 			"Rev": "664da28e00d9ee7e15a5cd6c38c1a4434f0d8e1a"
 		},
 		{
+			"ImportPath": "github.com/kennygrant/sanitize",
+			"Rev": "bf9c39a678d8e26aeee60d5fe733cad47a7a6871"
+		},
+		{
 			"ImportPath": "github.com/martini-contrib/binding",
 			"Rev": "8aaceec3b52c275477f32c95ea5c6e8ccaba04c5"
 		},
@@ -92,6 +96,10 @@
 		{
 			"ImportPath": "golang.org/x/crypto/blowfish",
 			"Rev": "c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "a8c61998a557a37435f719980da368469c10bfed"
 		}
 	]
 }

@@ -27,6 +27,7 @@ export interface JournalState {
     editing?: boolean;
     deleting?: boolean;
     started?: boolean;
+    serviceError?: string;
 }
 
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
@@ -44,6 +45,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             hasEntry: journal.hasEntry,
             newEntry: '',
             errors: {},
+            serviceError: journal.error,
             loading: journal.loading,
             editing: journal.editing,
             deleting: journal.deleting,
@@ -182,6 +184,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                 this.renderEntries(),
 
                 d('hr'),
+
+                this.state.serviceError ? d("div.alert.alert-danger", this.state.serviceError) : null,
 
                 !this.state.current || this.state.current.entries.length < 7 ?
                     d("form", { onSubmit: this.handleAddEntry }, [

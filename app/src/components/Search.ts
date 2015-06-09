@@ -51,15 +51,13 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
                                     moment(result.date).utc().format('dddd, MMMM Do YYYY'))
                             ]),
                             d('ul.list-group', {}, result.entries.map((entry, ii) => {
-                                return d('li.list-group-item', entry, { key: ii });
+                                return d('li.list-group-item', { key: ii, dangerouslySetInnerHTML: { __html: entry } });
                             }))
                         ]);
                     })
                 )
             ])
         ]);
-
-
     }
 }
 

@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"github.com/kennygrant/sanitize"
 )
 
 var EsIndex = "mds"
@@ -82,8 +83,8 @@ type Service interface {
 }
 
 type MdsService struct {
-	es      *elastigo.Conn
-	sg      *sendgrid.SGClient
+	es *elastigo.Conn
+	sg *sendgrid.SGClient
 }
 
 type IndexSettings struct {
@@ -576,15 +577,22 @@ func (s MdsService) CreateJournalEntry(userId string, entries []string, date tim
 
 	var err error = nil
 
-	if (len(entries) > 7) {
+	if len(entries) > 7 {
 		err = TooManyEntries
 	}
 
 	if err == nil {
-		for _, entry := range entries {
+		for index, entry := range entries {
 			if len(entry) > 500 {
 				err = JournalEntryInvalid
 				break
+			} else {
+				entries[index] = strings.TrimSpace(sanitize.HTML(entry))
+				fmt.Println(entries[index])
+				if len(entries[index]) <= 0 {
+					err = JournalEntryEmpty
+					break
+				}
 			}
 		}
 	}
@@ -616,14 +624,20 @@ func (s MdsService) UpdateJournalEntry(id string, userId string, entries []strin
 
 	var err error = nil
 
-	if (len(entries) > 7) {
+	if len(entries) > 7 {
 		err = TooManyEntries
 	}
 
-	for _, entry := range entries {
+	for index, entry := range entries {
 		if len(entry) > 500 {
 			err = JournalEntryInvalid
 			break
+		} else {
+			entries[index] = strings.TrimSpace(sanitize.HTML(entry))
+			if len(entries[index]) <= 0 {
+				err = JournalEntryEmpty
+				break
+			}
 		}
 	}
 
@@ -632,7 +646,7 @@ func (s MdsService) UpdateJournalEntry(id string, userId string, entries []strin
 		err = s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
 	}
 
-	if err == nil && entry.UserId == userId  {
+	if err == nil && entry.UserId == userId {
 		entry.Entries = entries
 		_, err = s.es.IndexWithParameters(EsIndex, JournalType, id, "", 0, "", "", "", 0, "", "", true, nil, entry)
 	}
@@ -729,7 +743,8 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 
 	query = query.Filter(filter)
 
-	search := elastigo.Search(EsIndex).Query(query)
+	search := elastigo.Search(EsIndex).Query(query).
+		Highlight(elastigo.NewHighlight().AddField("entries", elastigo.NewHighlightOpts().Tags("<strong>", "</strong>")))
 
 	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
@@ -755,6 +770,10 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 			panic(err)
 		}
 
+		fmt.Println(hit.Highlight)
+		if hit.Highlight != nil && (*hit.Highlight)["entries"] != nil {
+			entry.Entries = (*hit.Highlight)["entries"]
+		}
 		retval[index] = entry
 	}
 
