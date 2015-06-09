@@ -588,7 +588,6 @@ func (s MdsService) CreateJournalEntry(userId string, entries []string, date tim
 				break
 			} else {
 				entries[index] = strings.TrimSpace(sanitize.HTML(entry))
-				fmt.Println(entries[index])
 				if len(entries[index]) <= 0 {
 					err = JournalEntryEmpty
 					break
@@ -651,7 +650,7 @@ func (s MdsService) UpdateJournalEntry(id string, userId string, entries []strin
 		_, err = s.es.IndexWithParameters(EsIndex, JournalType, id, "", 0, "", "", "", 0, "", "", true, nil, entry)
 	}
 
-	if err == elastigo.RecordNotFound || entry.UserId != userId {
+	if err == elastigo.RecordNotFound || err == nil && entry.UserId != userId {
 		return EntryNotFound
 	}
 

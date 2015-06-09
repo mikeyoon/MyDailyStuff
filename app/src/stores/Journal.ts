@@ -69,10 +69,12 @@ var JournalStore = Fluxxor.createStore({
         this.editing = true;
         this.emit('change');
 
+        var entries = this.current.entries.slice(0);
+
         if (!req.entry) {
-            this.current.entries.splice(req.index, 1);
+            entries.splice(req.index, 1);
         } else {
-            this.current.entries[req.index] = req.entry;
+            entries[req.index] = req.entry;
         }
 
         //console.log(this.current.entries);
@@ -80,18 +82,19 @@ var JournalStore = Fluxxor.createStore({
             method: "PUT",
             path: "/api/journal/" + this.current.id,
             entity: JSON.stringify({
-                entries: this.current.entries
+                entries: entries
             })
         }).then(
             (response: rest.Response) => {
                 this.editing = false;
                 if (response.entity.success) {
                     //We're relying on the current to be updated client-side due to delays in indexing in ES
-                    this.emit("change");
                     this.error = null;
+                    this.current.entries = entries;
                 } else {
                     this.error = response.entity.error;
                 }
+                this.emit("change");
             },
             (response: rest.Response) => {
                 this.editing = false;

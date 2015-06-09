@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"time"
 	"encoding/base64"
+	"strings"
 )
 
 var _ = Describe("Service", func() {
@@ -387,6 +388,20 @@ var _ = Describe("Service", func() {
 				Expect(err).To(Equal(lib.EntryNotFound))
 			})
 		})
+
+		Context("Where the entry is empty", func() {
+			It("should return entry is empty error", func() {
+				err := service.UpdateJournalEntry(uuid.New(), journal1.UserId, []string{" ", "entry"})
+				Expect(err).To(Equal(lib.JournalEntryEmpty))
+			})
+		})
+
+		Context("Where the entry contains only html", func() {
+			It("should return entry is empty error", func() {
+				err := service.UpdateJournalEntry(uuid.New(), journal1.UserId, []string{"<div></div>", "entry"})
+				Expect(err).To(Equal(lib.JournalEntryEmpty))
+			})
+		})
 	})
 
 	Describe("Delete journal entry", func() {
@@ -452,8 +467,8 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
 				Expect(entries[0].Id).To(Equal(journal1.Id))
-				Expect(entries[0].Entries[0]).To(Equal(journal1.Entries[0]))
-				Expect(entries[0].Entries[1]).To(Equal(journal1.Entries[1]))
+				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal1.Entries[0], "test", "<strong>test</strong>", -1)))
+				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal1.Entries[1], "test", "<strong>test</strong>", -1)))
 			})
 		})
 
@@ -467,8 +482,8 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
 				Expect(entries[0].Id).To(Equal(journal3.Id))
-				Expect(entries[0].Entries[0]).To(Equal(journal3.Entries[0]))
-				Expect(entries[0].Entries[1]).To(Equal(journal3.Entries[1]))
+				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal3.Entries[0], "entry", "<strong>entry</strong>", -1)))
+				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal3.Entries[1], "entry", "<strong>entry</strong>", -1)))
 			})
 		})
 
@@ -482,8 +497,8 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
 				Expect(entries[0].Id).To(Equal(journal1.Id))
-				Expect(entries[0].Entries[0]).To(Equal(journal1.Entries[0]))
-				Expect(entries[0].Entries[1]).To(Equal(journal1.Entries[1]))
+				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal1.Entries[0], "entry", "<strong>entry</strong>", -1)))
+				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal1.Entries[1], "entry", "<strong>entry</strong>", -1)))
 			})
 		})
 
