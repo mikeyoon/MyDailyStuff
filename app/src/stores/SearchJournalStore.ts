@@ -65,7 +65,7 @@ var SearchJournalStore = Fluxxor.createStore({
                 if (response.entity.success) {
                     this.searchResults = response.entity.result.map(function(r: Responses.JournalEntry) {
                         return {
-                            entries: r.entries.filter((s, i) => new RegExp(query.replace(' ', '|'), "i").test(s)), //Ghetto filtering
+                            entries: r.entries,
                             id: r.id,
                             date: r.date
                         };
