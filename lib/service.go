@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/kennygrant/sanitize"
 	elastigo "github.com/mikeyoon/elastigo/lib"
 	"github.com/sendgrid/sendgrid-go"
 	"golang.org/x/crypto/bcrypt"
@@ -13,7 +14,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-	"github.com/kennygrant/sanitize"
 )
 
 var EsIndex = "mds"
@@ -743,7 +743,10 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 	query = query.Filter(filter)
 
 	search := elastigo.Search(EsIndex).Query(query).
-		Highlight(elastigo.NewHighlight().AddField("entries", elastigo.NewHighlightOpts().Tags("<strong>", "</strong>")))
+		Highlight(elastigo.NewHighlight().
+			AddField("entries", nil).
+			SetOptions(elastigo.NewHighlightOpts().
+				Tags("<strong>", "</strong>")))
 
 	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
