@@ -98,6 +98,8 @@ func main() {
 	//Check if reset link is valid
 	m.Get("/api/account/reset/:token", c.GetResetPasswordRequest)
 
+	m.Get("/api/account/streak", LoginRequired, c.GetStreak)
+
 	//Reset password
 	m.Post("/api/account/reset/", binding.Json(lib.ResetPasswordRequest{}), c.ResetPassword)
 

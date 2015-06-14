@@ -80,6 +80,7 @@ type Service interface {
 	GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error)
 	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error)
 	SearchJournalDates(userId string, jq JournalQuery) ([]string, error)
+	GetStreak(userId string, limit int) (int, error)
 }
 
 type MdsService struct {
@@ -772,7 +773,6 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 			panic(err)
 		}
 
-		fmt.Println(hit.Highlight)
 		if hit.Highlight != nil && (*hit.Highlight)["entries"] != nil {
 			entry.Entries = (*hit.Highlight)["entries"]
 		}
@@ -782,12 +782,25 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 	return retval, nil
 }
 
+func (s MdsService) GetStreak(userId string, limit int) (int, error) {
+	end := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
+	start := end.Add(-time.Hour * 24 * time.Duration(limit))
+
+	filter := elastigo.Filter().And(
+		elastigo.Filter().Term("user_id", userId),
+		elastigo.Filter().Range("date", start, nil, end, nil, ""))
+
+	query := elastigo.Query().Filter(filter).All()
+
+	search := elastigo.Search("").Query(query)
+
+	resp, err := s.es.Count(EsIndex, JournalType, nil, search)
+
+	return resp.Count, err
+}
+
 //Find dates with journal entries
 func (s MdsService) SearchJournalDates(userId string, jq JournalQuery) ([]string, error) {
-	if userId == "" {
-		return nil, UserUnauthorized
-	}
-
 	query := elastigo.Query()
 
 	if jq.Query != "" {

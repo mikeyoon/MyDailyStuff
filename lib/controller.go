@@ -263,3 +263,14 @@ func (c *Controller) SearchJournalDates(req SearchJournalRequest, session sessio
 		r.JSON(200, SuccessResponse(results))
 	}
 }
+
+
+func (c *Controller) GetStreak(session sessions.Session, r render.Render) {
+	streak, err := c.service.GetStreak(session.Get("userId").(string), 10)
+
+	if err != nil {
+		r.JSON(500, ErrorResponse(err.Error()))
+	} else {
+		r.JSON(200, SuccessResponse(streak))
+	}
+}

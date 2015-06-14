@@ -69,6 +69,14 @@ var _ = Describe("Service", func() {
 		Id: uuid.New(),
 	}
 
+	journal4 := lib.JournalEntry{
+		UserId: testUser1.UserId,
+		Entries: []string{"some entry 1", "some entry 2"},
+		Date: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 2),
+		CreateDate: time.Now(),
+		Id: uuid.New(),
+	}
+
 	//Test Password Reset Data
 	reset1 := lib.PasswordReset{
 		UserId:     testUser1.UserId,
@@ -106,6 +114,12 @@ var _ = Describe("Service", func() {
 		})
 
 		Context("Where the user exists, but with upper case", func() {
+			It("should have found the user", func() {
+				user, err := service.GetUserByEmail(strings.ToUpper(testUser1.Email))
+
+				Expect(err).To(BeNil())
+				Expect(user.Email).To(Equal(testUser1.Email))
+			})
 		})
 
 		Context("Where the user does not exist", func() {
@@ -559,6 +573,31 @@ var _ = Describe("Service", func() {
 				Expect(len(dates)).To(Equal(2))
 				Expect(dates).To(ContainElement("2002-05-25T00:00:00Z"))
 				Expect(dates).To(ContainElement("2002-06-20T00:00:00Z"))
+			})
+		})
+	})
+
+	Describe("Get Streak", func() {
+		BeforeEach(func() {
+			conn.IndexWithParameters(TestIndex, lib.JournalType, journal4.Id, "", 0, "", "", "", 0, "", "", true, nil, journal4)
+			conn.IndexWithParameters(TestIndex, lib.JournalType, journal3.Id, "", 0, "", "", "", 0, "", "", true, nil, journal3)
+		})
+
+		Context("When getting a 1 day streak", func() {
+			It("should return 0 count", func() {
+				count, err := service.GetStreak(testUser1.UserId, 1)
+
+				Expect(err).To(BeNil())
+				Expect(count).To(Equal(0))
+			})
+		})
+
+		Context("When getting a 5 day streak", func() {
+			It("should return 1 count", func() {
+				count, err := service.GetStreak(testUser1.UserId, 5)
+
+				Expect(err).To(BeNil())
+				Expect(count).To(Equal(1))
 			})
 		})
 	})

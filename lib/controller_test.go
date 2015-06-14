@@ -13,6 +13,7 @@ import (
 	"html/template"
 	"net/http"
 	"time"
+	"fmt"
 )
 
 type MockService struct {
@@ -97,6 +98,12 @@ func (s MockService) SearchJournal(userId string, jq lib.JournalQuery) ([]lib.Jo
 func (s MockService) SearchJournalDates(userId string, jq lib.JournalQuery) ([]string, error) {
 	args := s.Called(userId, jq)
 	return args.Get(0).([]string), args.Error(1)
+}
+
+func (s MockService) GetStreak(userId string, limit int) (int, error) {
+	fmt.Printf("%+v\n", s.ExpectedCalls[0])
+	args := s.Called(userId, limit)
+	return args.Get(0).(int), args.Error(1)
 }
 
 type MockSession struct {
@@ -625,6 +632,30 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.SearchJournalDates(lib.SearchJournalRequest{}, session, render)
+			})
+		})
+	})
+
+	Describe("Get Streak", func() {
+		Context("With successful result", func() {
+			It("should return success response", func() {
+				service.On("GetStreak", mockUser1.UserId, 10).Return(5, nil)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 200, lib.SuccessResponse(5)).Return()
+
+				controller.SetOptions(service, false)
+				controller.GetStreak(session, render)
+			})
+		})
+
+		Context("With failed result", func() {
+			It("should return success response", func() {
+				service.On("GetStreak", mockUser1.UserId, 10).Return(0, lib.UserUnauthorized)
+				session.On("Get", "userId").Return(mockUser1.UserId)
+				render.On("JSON", 500, lib.ErrorResponse(lib.UserUnauthorized.Error())).Return()
+
+				controller.SetOptions(service, false)
+				controller.GetStreak(session, render)
 			})
 		})
 	})

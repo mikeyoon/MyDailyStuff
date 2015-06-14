@@ -72,8 +72,8 @@
 		},
 		{
 			"ImportPath": "github.com/mikeyoon/elastigo/lib",
-			"Comment": "v1.0-186-gd874a03",
-			"Rev": "d874a03f6ef2860449fbc64fc50240350d3f10c0"
+			"Comment": "v1.0-207-g929912f",
+			"Rev": "929912f55b0afb8a2ba04d2e761015dba9ce2f7f"
 		},
 		{
 			"ImportPath": "github.com/oxtoacart/bpool",
