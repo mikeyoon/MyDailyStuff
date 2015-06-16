@@ -10,7 +10,8 @@ var c = {
         RESET_PASSWORD: "ACCOUNT:RESET_PASSWORD",
         SEND_RESET: "ACCOUNT:SEND_RESET",
         SAVE_PROFILE: "ACCOUNT:SAVE_PROFILE",
-        CLEAR_STORE: "ACCOUNT:CLEAR_STORE"
+        CLEAR_STORE: "ACCOUNT:CLEAR_STORE",
+        GET_STREAK: "ACCOUNT:GET_STREAK"
     },
 
     JOURNAL: {
@@ -81,6 +82,9 @@ var methods = {
         },
         clearResults: function() {
             this.dispatch(c.ACCOUNT.CLEAR_STORE);
+        },
+        getStreak: function(force: boolean) {
+            this.dispatch(c.ACCOUNT.GET_STREAK, force);
         }
     },
     routes: {

@@ -10,6 +10,9 @@ import moment = require('moment');
 import marked = require('marked');
 import page = require('page');
 //import Pikaday = require('pikaday');
+
+import Streak = require('./Streak');
+
 var d = jsnox(React);
 
 export interface JournalProps {
@@ -24,9 +27,11 @@ export interface JournalState {
     newEntry?: string;
     errors?: any;
     loading?: boolean;
+    adding?: boolean;
     editing?: boolean;
     deleting?: boolean;
     started?: boolean;
+    streak?: number;
     serviceError?: string;
 }
 
@@ -37,8 +42,11 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     getFlux: () => Fluxxor.Flux;
 
+    refreshStreak: boolean;
+
     getStateFromFlux(): JournalState {
         var journal = this.getFlux().store("journal");
+
         return {
             current: journal.current,
             date: journal.date,
@@ -46,6 +54,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             newEntry: '',
             errors: {},
             serviceError: journal.error,
+            adding: journal.adding,
             loading: journal.loading,
             editing: journal.editing,
             deleting: journal.deleting,
@@ -61,6 +70,11 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     componentWillMount() {
         this.getFlux().actions.journal.get(this.props.date);
+    }
+
+    componentWillUpdate(_: any, nextState: JournalState) {
+        this.refreshStreak = !nextState.deleting && this.state.deleting
+            || !nextState.adding && this.state.adding;
     }
 
     componentDidMount() {
@@ -190,7 +204,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                 !this.state.current || this.state.current.entries.length < 7 ?
                     d("form", { onSubmit: this.handleAddEntry }, [
                         d("div.form-group" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
-                            d("label.control-label", "Add a new entry (markdown)"),
+                            d("label.control-label.pull-left", "Add a new entry (markdown)"),
+                            d("label.pull-right", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })),
                             d("textarea[placeholder=New entry...].form-control", {
                                 rows: 4,
                                 style: { width: "100%" },

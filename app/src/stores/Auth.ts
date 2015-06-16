@@ -21,7 +21,8 @@ var AuthStore = Fluxxor.createStore({
             actions.constants.ACCOUNT.SEND_RESET, this.onResetSend,
             actions.constants.ACCOUNT.RESET_PASSWORD, this.onPasswordReset,
             actions.constants.ACCOUNT.SAVE_PROFILE, this.onSaveProfile,
-            actions.constants.ACCOUNT.CLEAR_STORE, this.onClearResults
+            actions.constants.ACCOUNT.CLEAR_STORE, this.onClearResults,
+            actions.constants.ACCOUNT.GET_STREAK, this.onGetStreak
         );
 
         this.client = rest.wrap(mime).wrap(errorCode);
@@ -36,7 +37,28 @@ var AuthStore = Fluxxor.createStore({
         this.saveProfileResult = {};
         this.user = {};
 
+        this.streak = null;
+
         this.onGetAccount();
+    },
+
+    onGetStreak: function(force: boolean) {
+        if (force || this.streak == null) {
+            this.client({
+                method: "GET",
+                path: "/api/account/streak",
+            }).then(
+                (response: rest.Response) => {
+                    this.streak = response.entity.result;
+                    this.emit('change');
+                },
+                (response: rest.Response) => {
+                    this.streak = null;
+                    console.log(response);
+                    this.emit('change');
+                }
+            )
+        }
     },
 
     onClearResults: function() {

@@ -611,7 +611,7 @@ func (s MdsService) CreateJournalEntry(userId string, entries []string, date tim
 		id := uuid.New()
 		entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
 
-		_, err = s.es.Index(EsIndex, JournalType, id, nil, entry)
+		_, err = s.es.IndexWithParameters(EsIndex, JournalType, id, "", 0, "", "", "", 0, "", "", true, nil, entry)
 	}
 
 	return entry, err
@@ -670,7 +670,7 @@ func (s MdsService) DeleteJournalEntry(id string, userId string) error {
 		return EntryNotFound
 	}
 
-	_, err = s.es.Delete(EsIndex, JournalType, id, nil)
+	_, err = s.es.Delete(EsIndex, JournalType, id, map[string]interface{}{"refresh": true})
 	return err
 }
 
@@ -784,7 +784,7 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 
 func (s MdsService) GetStreak(userId string, limit int) (int, error) {
 	end := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC)
-	start := end.Add(-time.Hour * 24 * time.Duration(limit))
+	start := end.Add(-time.Hour * 24 * time.Duration(limit - 1))
 
 	filter := elastigo.Filter().And(
 		elastigo.Filter().Term("user_id", userId),

@@ -21,6 +21,7 @@ var JournalStore = Fluxxor.createStore({
         );
 
         this.editing = false;
+        this.adding = false;
         this.loading = false;
         this.deleting = false;
         this.started = false; //Whether the journal page has loaded
@@ -34,7 +35,7 @@ var JournalStore = Fluxxor.createStore({
     },
 
     onAdd: function(entry: string) {
-        this.editing = true;
+        this.adding = true;
         this.emit('change');
 
         this.client({
@@ -46,7 +47,7 @@ var JournalStore = Fluxxor.createStore({
             })
         }).then(
             (response: rest.Response) => {
-                this.editing = false;
+                this.adding = false;
                 if (response.entity.success) {
                     this.current = response.entity.result;
                     this.hasEntry = true;
@@ -58,7 +59,7 @@ var JournalStore = Fluxxor.createStore({
                 this.emit('change');
             },
             (response: rest.Response) => {
-                this.editing = false;
+                this.adding = false;
                 console.log(response);
                 this.emit('change');
             }

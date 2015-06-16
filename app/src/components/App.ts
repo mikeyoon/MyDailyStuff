@@ -3,7 +3,6 @@ import Fluxxor = require('fluxxor');
 import jsnox = require('jsnox');
 import Requests = require("../models/requests");
 import TypedReact = require('typed-react');
-import AuthStore = require('../stores/Auth');
 
 import TopNav = require('../components/TopNav');
 
@@ -16,15 +15,9 @@ interface AppProps {
 }
 
 export class AppComponent extends TypedReact.Component<AppProps, {}>
-    implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
+    implements Fluxxor.FluxMixin {
 
     getFlux: () => Fluxxor.Flux;
-
-    getStateFromFlux() {
-        return {
-            auth: this.getFlux().store("auth")
-        };
-    }
 
     render() {
         return d('div', [
@@ -43,4 +36,4 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
     }
 }
 
-export var Component = TypedReact.createClass(AppComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);
+export var Component = TypedReact.createClass(AppComponent, [Fluxxor.FluxMixin(React)]);
