@@ -10,6 +10,7 @@ import actions = require('../actions');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 import page = require('page');
+import moment = require('moment');
 
 var AuthStore = Fluxxor.createStore({
     initialize: function() {
@@ -46,7 +47,7 @@ var AuthStore = Fluxxor.createStore({
         if (force || this.streak == null) {
             this.client({
                 method: "GET",
-                path: "/api/account/streak",
+                path: "/api/account/streak/" + moment(new Date()).format("YYYY-M-D"),
             }).then(
                 (response: rest.Response) => {
                     this.streak = response.entity.result;

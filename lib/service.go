@@ -80,7 +80,7 @@ type Service interface {
 	GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error)
 	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error)
 	SearchJournalDates(userId string, jq JournalQuery) ([]string, error)
-	GetStreak(userId string, limit int) (int, error)
+	GetStreak(userId string, date time.Time, limit int) (int, error)
 }
 
 type MdsService struct {
@@ -782,9 +782,9 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 	return retval, nil
 }
 
-func (s MdsService) GetStreak(userId string, limit int) (int, error) {
-	end := time.Date(time.Now().UTC().Year(), time.Now().UTC().Month(), time.Now().UTC().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24)
-	start := end.Add(-time.Hour * 24 * time.Duration(limit))
+func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, error) {
+	end := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24)
+	start := end.Add(-time.Hour * 24 * time.Duration(limit - 1))
 
 	filter := elastigo.Filter().And(
 		elastigo.Filter().Term("user_id", userId),
