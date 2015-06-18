@@ -783,8 +783,8 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 }
 
 func (s MdsService) GetStreak(userId string, limit int) (int, error) {
-	end := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24)
-	start := end.Add(-time.Hour * 24 * time.Duration(limit - 1))
+	end := time.Date(time.Now().UTC().Year(), time.Now().UTC().Month(), time.Now().UTC().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24)
+	start := end.Add(-time.Hour * 24 * time.Duration(limit))
 
 	filter := elastigo.Filter().And(
 		elastigo.Filter().Term("user_id", userId),
