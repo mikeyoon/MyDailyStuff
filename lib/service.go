@@ -743,11 +743,12 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 
 	query = query.Filter(filter)
 
+	highlight := elastigo.NewHighlight().
+		AddField("entries", nil).
+		SetOptions(elastigo.NewHighlightOpts().Tags("<strong>", "</strong>"))
+
 	search := elastigo.Search(EsIndex).Query(query).
-		Highlight(elastigo.NewHighlight().
-			AddField("entries", nil).
-			SetOptions(elastigo.NewHighlightOpts().
-				Tags("<strong>", "</strong>")))
+		Highlight(highlight)
 
 	result, err := s.es.Search(EsIndex, JournalType, nil, search)
 
@@ -784,7 +785,7 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 
 func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, error) {
 	end := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24)
-	start := end.Add(-time.Hour * 24 * time.Duration(limit - 1))
+	start := end.Add(-time.Hour * 24 * time.Duration(limit-1))
 
 	filter := elastigo.Filter().And(
 		elastigo.Filter().Term("user_id", userId),

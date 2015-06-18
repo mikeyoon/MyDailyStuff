@@ -544,7 +544,7 @@ var _ = Describe("Controller", func() {
 			It("should return entries", func() {
 				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
 					Query: "query",
-					End: now.MustParse("2005-2-1"),
+					End:   now.MustParse("2005-2-1"),
 				}).Return([]lib.JournalEntry{mockEntry1}, nil)
 				session.On("Get", "userId").Return(mockUser1.UserId)
 				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
@@ -552,7 +552,7 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 				controller.SearchJournal(lib.SearchJournalRequest{
 					Query: "query",
-					End: "2005-2-1",
+					End:   "2005-2-1",
 				}, session, render)
 			})
 		})

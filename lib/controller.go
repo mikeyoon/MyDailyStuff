@@ -264,7 +264,6 @@ func (c *Controller) SearchJournalDates(req SearchJournalRequest, session sessio
 	}
 }
 
-
 func (c *Controller) GetStreak(args martini.Params, session sessions.Session, r render.Render) {
 	streak, err := c.service.GetStreak(session.Get("userId").(string), now.MustParse(args["date"]), 10)
 
