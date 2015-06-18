@@ -585,7 +585,7 @@ var _ = Describe("Service", func() {
 
 		Context("When getting a 1 day streak", func() {
 			It("should return 0 count", func() {
-				count, err := service.GetStreak(testUser1.UserId, 1)
+				count, err := service.GetStreak(testUser1.UserId, time.Now(), 1)
 
 				Expect(err).To(BeNil())
 				Expect(count).To(Equal(0))
@@ -594,7 +594,7 @@ var _ = Describe("Service", func() {
 
 		Context("When getting a 5 day streak", func() {
 			It("should return 1 count", func() {
-				count, err := service.GetStreak(testUser1.UserId, 5)
+				count, err := service.GetStreak(testUser1.UserId, time.Now(), 5)
 
 				Expect(err).To(BeNil())
 				Expect(count).To(Equal(1))
