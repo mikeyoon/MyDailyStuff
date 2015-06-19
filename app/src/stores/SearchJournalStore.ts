@@ -79,7 +79,7 @@ var SearchJournalStore = Fluxxor.createStore({
                             date: r.date
                         };
                     });
-                    this.total = response.entity.total;
+                    this.total = response.entity.total || 0;
 
                     this.nextOffset = (req.offset + LIMIT) < this.total ? req.offset + LIMIT : null;
                     this.prevOffset = req.offset > 0 ? req.offset - LIMIT : null;
