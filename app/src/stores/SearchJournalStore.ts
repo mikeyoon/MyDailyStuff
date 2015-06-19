@@ -11,6 +11,8 @@ import moment = require('moment');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 
+const LIMIT = 10;
+
 var SearchJournalStore = Fluxxor.createStore({
     initialize: function() {
         this.bindActions(
@@ -20,6 +22,10 @@ var SearchJournalStore = Fluxxor.createStore({
 
         this.searchResults = [];
         this.dates = [];
+        this.total = null;
+        this.nextOffset = null;
+        this.prevOffset = null;
+        this.offset = 0;
         this.monthYear = null;
         this.client = rest.wrap(mime).wrap(errorCode);
     },
@@ -51,14 +57,17 @@ var SearchJournalStore = Fluxxor.createStore({
         }
     },
 
-    onQuerySearch: function(query: string) {
+    onQuerySearch: function(req: Requests.Search) {
         //console.log(this.current.entries);
+        this.offset = req.offset;
 
         this.client({
             method: "POST",
             path: "/api/search/",
             entity: JSON.stringify({
-                query: query
+                query: req.query,
+                offset: req.offset,
+                limit: LIMIT,
             })
         }).then(
             (response: rest.Response) => {
@@ -70,11 +79,20 @@ var SearchJournalStore = Fluxxor.createStore({
                             date: r.date
                         };
                     });
+                    this.total = response.entity.total;
+
+                    this.nextOffset = (req.offset + LIMIT) < this.total ? req.offset + LIMIT : null;
+                    this.prevOffset = req.offset > 0 ? req.offset - LIMIT : null;
+
                     this.emit("change");
                 }
             },
             (response: rest.Response) => {
                 console.log(response);
+                this.nextOffset = null;
+                this.prevOffset = null;
+
+                this.emit("change")
             }
         )
     },

@@ -12,6 +12,7 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -59,6 +60,7 @@ type JournalQuery struct {
 	End    time.Time
 	Query  string
 	Limit  int
+	Offset int
 	SortBy string
 }
 
@@ -78,7 +80,7 @@ type Service interface {
 	UpdateJournalEntry(id string, userId string, entries []string) error
 	DeleteJournalEntry(id string, userId string) error
 	GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error)
-	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error)
+	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, int, error)
 	SearchJournalDates(userId string, jq JournalQuery) ([]string, error)
 	GetStreak(userId string, date time.Time, limit int) (int, error)
 }
@@ -708,9 +710,9 @@ func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (Journa
 }
 
 //Search journal entries
-func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, error) {
+func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, int, error) {
 	if userId == "" {
-		return nil, UserUnauthorized
+		return nil, 0, UserUnauthorized
 	}
 
 	query := elastigo.Query()
@@ -750,37 +752,44 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 	search := elastigo.Search(EsIndex).Query(query).
 		Highlight(highlight)
 
-	result, err := s.es.Search(EsIndex, JournalType, nil, search)
-
-	if err != nil {
-		return nil, err
+	if jq.Limit > 0 {
+		search.Size(strconv.Itoa(jq.Limit))
 	}
 
-	_, err = query.MarshalJSON()
-
-	retval := make([]JournalEntry, result.Hits.Total)
-
-	//TODO: Maybe only take the fields we need
-	for index, hit := range result.Hits.Hits {
-		bytes, err := hit.Source.MarshalJSON()
-		if err != nil {
-			panic(err)
-		}
-
-		var entry JournalEntry
-
-		err = json.Unmarshal(bytes, &entry)
-		if err != nil {
-			panic(err)
-		}
-
-		if hit.Highlight != nil && (*hit.Highlight)["entries"] != nil {
-			entry.Entries = (*hit.Highlight)["entries"]
-		}
-		retval[index] = entry
+	if jq.Offset > 0 {
+		search.From(strconv.Itoa(jq.Offset))
 	}
 
-	return retval, nil
+	result, err := search.Result(s.es) //s.es.Search(EsIndex, JournalType, nil, search)
+
+	if err == nil {
+		retval := make([]JournalEntry, result.Hits.Len())
+
+		//TODO: Maybe only take the fields we need
+		for index, hit := range result.Hits.Hits {
+			bytes, err := hit.Source.MarshalJSON()
+			if err != nil {
+				panic(err)
+			}
+
+			var entry JournalEntry
+
+			err = json.Unmarshal(bytes, &entry)
+			if err != nil {
+				panic(err)
+			}
+
+			if hit.Highlight != nil && (*hit.Highlight)["entries"] != nil {
+				entry.Entries = (*hit.Highlight)["entries"]
+			}
+
+			retval[index] = entry
+		}
+
+		return retval, result.Hits.Total, nil
+	}
+
+	return nil, 0, err
 }
 
 func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, error) {

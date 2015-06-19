@@ -51,8 +51,8 @@ var methods = {
         date: function(date: Date) {
             this.dispatch(c.SEARCH.DATE, date);
         },
-        query: function(query: string) {
-            this.dispatch(c.SEARCH.QUERY, query);
+        query: function(query: string, offset: number) {
+            this.dispatch(c.SEARCH.QUERY, new Requests.Search(query, offset));
         }
     },
     account: {
@@ -91,8 +91,8 @@ var methods = {
         home: function() {
             this.dispatch(c.ROUTE.HOME);
         },
-        search: function(query: string) {
-            this.dispatch(c.ROUTE.SEARCH, query);
+        search: function(query: string, offset: number) {
+            this.dispatch(c.ROUTE.SEARCH, new Requests.Search(query, offset));
         }
     }
 };

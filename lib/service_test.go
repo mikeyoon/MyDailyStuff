@@ -2,14 +2,14 @@ package lib_test
 
 import (
 	"code.google.com/p/go-uuid/uuid"
+	"encoding/base64"
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	elastigo "github.com/mikeyoon/elastigo/lib"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"golang.org/x/crypto/bcrypt"
-	"time"
-	"encoding/base64"
 	"strings"
+	"time"
 )
 
 var _ = Describe("Service", func() {
@@ -28,10 +28,10 @@ var _ = Describe("Service", func() {
 	//Test Email Verification Data
 	pass2, _ := bcrypt.GenerateFromPassword([]byte("whatever"), 10)
 	verify1 := lib.UserVerification{
-		Email: "test2@test.com",
-		Token: uuid.New(),
+		Email:        "test2@test.com",
+		Token:        uuid.New(),
 		PasswordHash: base64.StdEncoding.EncodeToString(pass2),
-		CreateDate: time.Now(),
+		CreateDate:   time.Now(),
 	}
 
 	//Test Users Data
@@ -46,35 +46,35 @@ var _ = Describe("Service", func() {
 
 	//Test Journal Data
 	journal1 := lib.JournalEntry{
-		UserId: testUser1.UserId,
-		Entries: []string{"test entry 1", "test entry 2"},
-		Date: time.Date(2002, 5, 20, 0, 0, 0, 0, time.UTC),
+		UserId:     testUser1.UserId,
+		Entries:    []string{"test entry 1", "test entry 2"},
+		Date:       time.Date(2002, 5, 20, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		Id: uuid.New(),
+		Id:         uuid.New(),
 	}
 
 	journal2 := lib.JournalEntry{
-		UserId: testUser1.UserId,
-		Entries: []string{"another entry 1", "another entry 2"},
-		Date: time.Date(2002, 5, 25, 0, 0, 0, 0, time.UTC),
+		UserId:     testUser1.UserId,
+		Entries:    []string{"another entry 1", "another entry 2"},
+		Date:       time.Date(2002, 5, 25, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		Id: uuid.New(),
+		Id:         uuid.New(),
 	}
 
 	journal3 := lib.JournalEntry{
-		UserId: testUser1.UserId,
-		Entries: []string{"some entry 1", "some entry 2"},
-		Date: time.Date(2002, 6, 20, 0, 0, 0, 0, time.UTC),
+		UserId:     testUser1.UserId,
+		Entries:    []string{"some entry 1", "some entry 2"},
+		Date:       time.Date(2002, 6, 20, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		Id: uuid.New(),
+		Id:         uuid.New(),
 	}
 
 	journal4 := lib.JournalEntry{
-		UserId: testUser1.UserId,
-		Entries: []string{"some entry 1", "some entry 2"},
-		Date: time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 2),
+		UserId:     testUser1.UserId,
+		Entries:    []string{"some entry 1", "some entry 2"},
+		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 2),
 		CreateDate: time.Now(),
-		Id: uuid.New(),
+		Id:         uuid.New(),
 	}
 
 	//Test Password Reset Data
@@ -92,7 +92,7 @@ var _ = Describe("Service", func() {
 	})
 
 	AfterEach(func() {
-		conn.DeleteByQuery([]string{TestIndex}, []string{lib.UserType, lib.ResetType, lib.VerifyType, lib.JournalType}, nil,  elastigo.Search("").Query(elastigo.Query().All()))
+		conn.DeleteByQuery([]string{TestIndex}, []string{lib.UserType, lib.ResetType, lib.VerifyType, lib.JournalType}, nil, elastigo.Search("").Query(elastigo.Query().All()))
 	})
 
 	Describe("Storing mapping", func() {
@@ -474,12 +474,13 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with an exact word match query", func() {
 			It("should find matching entries", func() {
-				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
 					Query: "test",
 				})
 
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
+				Expect(total).To(Equal(1))
 				Expect(entries[0].Id).To(Equal(journal1.Id))
 				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal1.Entries[0], "test", "<strong>test</strong>", -1)))
 				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal1.Entries[1], "test", "<strong>test</strong>", -1)))
@@ -488,13 +489,14 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a start date and query", func() {
 			It("should find matching entries", func() {
-				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
 					Query: "entry",
 					Start: time.Date(2002, 6, 10, 0, 0, 0, 0, time.UTC),
 				})
 
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
+				Expect(total).To(Equal(1))
 				Expect(entries[0].Id).To(Equal(journal3.Id))
 				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal3.Entries[0], "entry", "<strong>entry</strong>", -1)))
 				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal3.Entries[1], "entry", "<strong>entry</strong>", -1)))
@@ -503,13 +505,14 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a end date and query", func() {
 			It("should find matching entries", func() {
-				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
 					Query: "entry",
-					End: time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
+					End:   time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
 				})
 
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
+				Expect(total).To(Equal(1))
 				Expect(entries[0].Id).To(Equal(journal1.Id))
 				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal1.Entries[0], "entry", "<strong>entry</strong>", -1)))
 				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal1.Entries[1], "entry", "<strong>entry</strong>", -1)))
@@ -518,14 +521,29 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a start and date and query", func() {
 			It("should find matching entries", func() {
-				entries, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
 					Query: "ent*",
 					Start: time.Date(2002, 4, 21, 0, 0, 0, 0, time.UTC),
-					End: time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
+					End:   time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
 				})
 
 				Expect(err).To(BeNil())
+				Expect(total).To(Equal(3))
 				Expect(len(entries)).To(Equal(3))
+			})
+		})
+
+		Context("When searching with paging", func() {
+			It("should find matching entries", func() {
+				entries, total, err := service.SearchJournal(testUser1.UserId, lib.JournalQuery{
+					Query:  "ent*",
+					Limit:  2,
+					Offset: 1,
+				})
+
+				Expect(err).To(BeNil())
+				Expect(total).To(Equal(3))
+				Expect(len(entries)).To(Equal(2))
 			})
 		})
 	})
@@ -540,7 +558,7 @@ var _ = Describe("Service", func() {
 			It("should return matching dates", func() {
 				dates, err := service.SearchJournalDates(testUser1.UserId, lib.JournalQuery{
 					Start: time.Date(2002, 4, 21, 0, 0, 0, 0, time.UTC),
-					End: time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
+					End:   time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
 				})
 
 				Expect(err).To(BeNil())

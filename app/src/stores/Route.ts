@@ -1,6 +1,7 @@
 import Fluxxor = require('fluxxor');
 import page = require('page');
 import actions = require('../actions');
+import Requests = require('../models/requests');
 
 var RouteStore = Fluxxor.createStore({
     initialize: function() {
@@ -10,8 +11,8 @@ var RouteStore = Fluxxor.createStore({
         );
     },
 
-    onSearch: function(query: string) {
-        page('/search/' + query);
+    onSearch: function(req: Requests.Search) {
+        page('/search/' + req.query + "?offset=" + req.offset);
     }
 });
 

@@ -84,7 +84,10 @@ page('/search/:query', (ctx) => {
     if (!stores.auth.isLoggedIn) {
         page('/login');
     } else {
-        renderApp(Search.Component, { flux: flux, query: ctx.params.query });
+        var regex = /offset=([0-9]+)/i.exec(ctx.querystring);
+        var offset = regex ? parseInt(regex[1]) : 0;
+
+        renderApp(Search.Component, { flux: flux, query: ctx.params.query, offset: offset });
     }
 });
 

@@ -34,7 +34,7 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
 
     handleSearch(ev: any) {
         ev.preventDefault();
-        if (this.state.query) this.getFlux().actions.routes.search(this.state.query);
+        if (this.state.query) this.getFlux().actions.routes.search(this.state.query, 0);
     }
 
     handleTextChange(name:string, ev:any) {
