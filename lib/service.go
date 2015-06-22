@@ -802,11 +802,45 @@ func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, er
 
 	query := elastigo.Query().Filter(filter).All()
 
-	search := elastigo.Search("").Query(query)
+	search := elastigo.Search(EsIndex).Type(JournalType).Query(query).Fields("date").Sort(elastigo.Sort("date").Desc())
 
-	resp, err := s.es.Count(EsIndex, JournalType, nil, search)
+	result, err := search.Result(s.es)
 
-	return resp.Count, err
+	var retval int = 0
+
+	if err == nil {
+		current := end
+
+		var fields map[string][]interface{}
+
+		for _, hit := range result.Hits.Hits {
+			if err == nil {
+				bytes, err := hit.Fields.MarshalJSON()
+
+				if err == nil {
+					err = json.Unmarshal(bytes, &fields)
+				}
+			}
+
+			if err == nil {
+				//Calculate the streak by finding the last ten entry dates and figuring out if there
+				//are any gaps
+				rdate, err2 := time.Parse("2006-01-02T15:04:05Z", fields["date"][0].(string))
+				err = err2
+
+				if err == nil {
+					if current.Sub(rdate).Hours() == 0 {
+						retval++
+						current = rdate.Add(-time.Hour * 24)
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return retval, err
 }
 
 //Find dates with journal entries

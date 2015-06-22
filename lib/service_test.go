@@ -69,10 +69,26 @@ var _ = Describe("Service", func() {
 		Id:         uuid.New(),
 	}
 
-	journal4 := lib.JournalEntry{
+	streak1 := lib.JournalEntry{
+		UserId:     testUser1.UserId,
+		Entries:    []string{"some entry 1", "some entry 2"},
+		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 1),
+		CreateDate: time.Now(),
+		Id:         uuid.New(),
+	}
+
+	streak2 := lib.JournalEntry{
 		UserId:     testUser1.UserId,
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 2),
+		CreateDate: time.Now(),
+		Id:         uuid.New(),
+	}
+
+	streak4 := lib.JournalEntry{
+		UserId:     testUser1.UserId,
+		Entries:    []string{"some entry 1", "some entry 2"},
+		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 4),
 		CreateDate: time.Now(),
 		Id:         uuid.New(),
 	}
@@ -597,25 +613,26 @@ var _ = Describe("Service", func() {
 
 	Describe("Get Streak", func() {
 		BeforeEach(func() {
-			conn.IndexWithParameters(TestIndex, lib.JournalType, journal4.Id, "", 0, "", "", "", 0, "", "", true, nil, journal4)
-			conn.IndexWithParameters(TestIndex, lib.JournalType, journal3.Id, "", 0, "", "", "", 0, "", "", true, nil, journal3)
+			conn.IndexWithParameters(TestIndex, lib.JournalType, streak1.Id, "", 0, "", "", "", 0, "", "", true, nil, streak1)
+			conn.IndexWithParameters(TestIndex, lib.JournalType, streak2.Id, "", 0, "", "", "", 0, "", "", true, nil, streak2)
+			conn.IndexWithParameters(TestIndex, lib.JournalType, streak4.Id, "", 0, "", "", "", 0, "", "", true, nil, streak4)
 		})
 
 		Context("When getting a 1 day streak", func() {
-			It("should return 0 count", func() {
+			It("should return 1 count", func() {
 				count, err := service.GetStreak(testUser1.UserId, time.Now(), 1)
 
 				Expect(err).To(BeNil())
-				Expect(count).To(Equal(0))
+				Expect(count).To(Equal(1))
 			})
 		})
 
 		Context("When getting a 5 day streak", func() {
-			It("should return 1 count", func() {
+			It("should return 2 count", func() {
 				count, err := service.GetStreak(testUser1.UserId, time.Now(), 5)
 
 				Expect(err).To(BeNil())
-				Expect(count).To(Equal(1))
+				Expect(count).To(Equal(2))
 			})
 		})
 	})
