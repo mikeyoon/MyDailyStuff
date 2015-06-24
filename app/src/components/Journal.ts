@@ -62,6 +62,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             editing: journal.editing,
             deleting: journal.deleting,
             started: journal.started,
+            showCalendar: journal.showCalendar
         };
     }
 
@@ -81,11 +82,13 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     componentDidMount() {
-        document.body.addEventListener('click', this.closeCalendar);
+        $(document).on('touchend', this.closeCalendar);
+        $(document).on('click', this.closeCalendar);
     }
 
     componentWillUnmount() {
-        document.body.removeEventListener('click', this.closeCalendar);
+        $(document).off('touchend', this.closeCalendar);
+        $(document).off('click', this.closeCalendar);
     }
 
     validate(): boolean {
@@ -146,35 +149,18 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     handleDateChange(dateText: string, date: moment.Moment, ev: any) {
-        this.handleToggleCalendar(false, ev);
         page('/journal/' + date.format("YYYY-M-D"));
-        ev.stopPropagation();
-    }
-
-    handleCalendarClick(ev: any) {
-        ev.stopPropagation();
     }
 
     closeCalendar(ev: any) {
-        if (!$(ev.target).parents('.popover').length) {
-            this.handleToggleCalendar(false, null);
+        if (this.state.showCalendar && !$(ev.target).closest('.popover').length) {
+            this.getFlux().actions.journal.toggleCalendar(false);
         }
     }
 
     handleToggleCalendar(show: boolean, ev: any) {
-        //if (this.state.showCalendar) {
-        //    document.body.removeEventListener('click', this.closeCalendar);
-        //} else {
-        //    document.body.addEventListener('click', this.closeCalendar);
-        //}
-
-        //if (!this.state.showCalendar) {
-        //    (<any>React.findDOMNode(this.refs["popover"])).focus();
-        //}
-
-        this.setState({
-            showCalendar: show
-        });
+        ev.preventDefault();
+        if (!this.state.showCalendar) this.getFlux().actions.journal.toggleCalendar(show);
     }
 
     handleKeyDown(ev: any) {

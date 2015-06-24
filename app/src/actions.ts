@@ -18,7 +18,8 @@ var c = {
         GET: "JOURNAL:GET",
         ADD: "JOURNAL:ADD",
         EDIT: "JOURNAL:EDIT",
-        DELETE: "JOURNAL:DELETE"
+        DELETE: "JOURNAL:DELETE",
+        TOGGLE_CALENDAR: "JOURNAL:CALENDAR"
     },
 
     SEARCH: {
@@ -45,6 +46,9 @@ var methods = {
         },
         delete: function() {
             this.dispatch(c.JOURNAL.DELETE);
+        },
+        toggleCalendar: function(show: boolean) {
+            this.dispatch(c.JOURNAL.TOGGLE_CALENDAR, show)
         }
     },
     search: {
