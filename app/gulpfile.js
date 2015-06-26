@@ -55,9 +55,22 @@ gulp.task('less', function() {
       .pipe(gulp.dest('../public'));
 });
 
-gulp.task('copy-jquery', function() {
-    return gulp.src('./node_modules/jquery/dist/jquery.min.js')
+gulp.task('less-landing', function() {
+    return gulp.src('./less/landing.less')
+        .pipe(isProd ? nop() : sourcemaps.init())
+        .pipe(less())
+        .pipe(isProd ? nop() : sourcemaps.write('./'))
         .pipe(gulp.dest('../public'));
+});
+
+gulp.task('copy-vendor', function() {
+    return gulp.src([
+        './node_modules/jquery/dist/jquery.min.js',
+        './vendor/ie10-viewport-bug-workaround.js',
+        './vendor/jquery.unveilEffects.js',
+        './vendor/retina-1.1.0.js'
+    ])
+    .pipe(gulp.dest('../public'));
 });
 
 gulp.task('copy-bootstrap', function() {
@@ -73,10 +86,10 @@ gulp.task('copy-fonts', function() {
 });
 
 gulp.task('copy-html', function() {
-    return gulp.src(['./index.html', 'favicon.ico'])
+    return gulp.src(['index.html', 'favicon.ico', 'app.html'])
         .pipe(gulp.dest('../public'));
 });
 
-gulp.task('build', ['browserify', 'less', 'copy-jquery', 'copy-fonts', 'copy-bootstrap', 'copy-html']);
+gulp.task('build', ['browserify', 'less', 'less-landing', 'copy-vendor', 'copy-fonts', 'copy-bootstrap', 'copy-html']);
 
 gulp.task('watch', ['enable-watch-mode', 'browserify']);
