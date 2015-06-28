@@ -76,7 +76,7 @@ gulp.task('copy-vendor', function() {
 
 gulp.task('copy-images', function() {
     return gulp.src([
-        './images/header.jpg'
+        './images/*'
     ])
     .pipe(gulp.dest('../public/img'));
 });
