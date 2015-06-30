@@ -18,136 +18,223 @@
 
 <body>
 
-<! -- ********** HEADER ********** -->
-<div id="h">
+
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
+    <div class="container topnav">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand topnav" href="#">My Daily Stuff</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="/register">Register</a>
+                </li>
+                <li>
+                    <a href="/login">Login</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+<!-- Header -->
+<a name="about"></a>
+<div class="intro-header">
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="intro-message">
+                    <h1>My Daily Stuff</h1>
+                    <h3>Your simple and easy way to track your daily activities</h3>
+                    <hr class="intro-divider">
+                    <div>
+                        <a href="/register" class="btn btn-default btn-lg" style="margin-right: 16px">
+                            <span class="network-name">Register</span>
+                        </a>
+                        <a href="/login" class="btn btn-default btn-lg">
+                            <span class="network-name">Login</span>
+                        </a>
+                    </div>
+                    <!--<ul class="list-inline intro-social-buttons">-->
+                        <!--<li>-->
+                            <!--<a href="/register" class="btn btn-default btn-lg">-->
+                                <!--<span class="network-name">Register</span>-->
+                            <!--</a>-->
+                        <!--</li>-->
+                        <!--<li>-->
+                            <!--<a href="/login" class="btn btn-default btn-lg">-->
+                                <!--<span class="network-name">Login</span>-->
+                            <!--</a>-->
+                        <!--</li>-->
+                    <!--</ul>-->
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /.container -->
+
+</div>
+<!-- /.intro-header -->
+
+<a  name="services"></a>
+<div class="content-section-a">
+
     <div class="container">
         <div class="row">
-            <li><a class="btn btn-lg btn-info btn-register" href="/register">Register</a></li>
-
-            <div class="col-md-10 col-md-offset-1 mt">
-                <h3>YOUR SIMPLE AND EASY WAY TO TRACK YOUR DAILY ACTIVITIES</h3>
-                <h1 class="mb">My Daily Stuff</h1>
+            <div class="col-lg-5 col-sm-6">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Simple Journaling</h2>
+                <p class="lead">
+                    Always lost for words when people ask you what you did recently?
+                    Missed the perfect opportunity to tell that incredibly interesting and funny thing that happened last night?
+                    Log your daily highlights at MyDailyStuff and never end up stuck when someone asks you how your weekend was!
+                </p>
             </div>
-            <div class="col-md-12 mt hidden-xs">
-                <img src="assets/img/graph.png" class="img-responsive aligncenter" alt="" data-effect="slide-bottom">
+            <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                <img class="img-responsive" src="/img/journal.png" alt="">
             </div>
         </div>
-    </div><! --/container -->
-</div><! --/h -->
 
-<! -- ********** FIRST ********** -->
-<div id="w">
-    <div class="row nopadding">
-        <div class="col-md-5 col-md-offset-1 mt">
-            <h4>Simple Journaling</h4>
-            <p>Always lost for words when people ask you what you did recently?
-                Missed the perfect opportunity to tell that incredibly interesting and funny thing that happened last night?</p>
-            <p>Log your daily highlights at MyDailyStuff and never end up stuck when someone asks you how your weekend was!</p>
+    </div>
+    <!-- /.container -->
+
+</div>
+<!-- /.content-section-a -->
+
+<div class="content-section-b">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Find Old Entries</h2>
+                <p class="lead">
+                    It's hard enough to remember what you did yesterday, so we included a search feature. Now all you need to do
+                    is remember how to spell. Or if you remember the day just navigate using a simple calendar.
+                </p>
+            </div>
+            <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+                <img class="img-responsive" src="/img/search.png" alt="">
+            </div>
         </div>
 
-        <div class="col-md-6 pull-right">
-            <img src="/img/journal.png" class="img-responsive alignright" alt="" data-effect="slide-right">
-        </div>
-    </div><! --/row -->
-</div><! --/container -->
+    </div>
+    <!-- /.container -->
 
+</div>
+<!-- /.content-section-b -->
 
-<! -- ********** BLUE SECTION - PICTON ********** -->
-<div id="picton">
-    <div class="row nopadding">
-        <div class="col-md-6 pull-left">
-            <img src="/img/search.png" class="img-responsive alignleft" alt="" data-effect="slide-left">
-        </div>
-        <div class="col-md-5 mt">
-            <h4>Find Old Entries</h4>
-            <p>It's hard enough to remember what you did yesterday, so we included a search feature. Now all you need to do
-            is remember how to spell.</p>
-            <p>Or if you remember the day just navigate using a simple calendar.</p>
-        </div>
+<div class="content-section-a">
 
-    </div><! --row -->
-</div><! --/Picton -->
+    <div class="container">
 
-
-<! -- ********** BLUE SECTION - CURIOUS ********** -->
-<div id="curious">
-    <div class="row nopadding">
-        <div class="col-md-5 col-md-offset-1 mt">
-            <h4>Mobile Ready</h4>
-            <p>Responsive design allows for easy use on your phone or tablet so you can write down what you did
-            on the go, or in the bathroom.</p>
+        <div class="row">
+            <div class="col-lg-5 col-sm-6">
+                <hr class="section-heading-spacer">
+                <div class="clearfix"></div>
+                <h2 class="section-heading">Mobile Ready</h2>
+                <p class="lead">
+                    Responsive design allows for easy use on your phone or tablet so you can write down what you did
+                    on the go, or in the bathroom.
+                </p>
+            </div>
+            <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                <img class="img-responsive" src="/img/mobile.png" alt="">
+            </div>
         </div>
 
-        <div class="col-md-6 pull-right">
-            <img src="/img/mobile.png" class="img-responsive alignright" alt="" data-effect="slide-right">
-        </div>
-    </div><! --/row -->
-</div><! --/curious -->
+    </div>
+    <!-- /.container -->
 
-<! -- ********** BLUE SECTION - MALIBU ********** -->
-<div id="malibu">
-    <div class="row nopadding">
-        <div class="col-md-6 pull-left">
-            <!--<img src="assets/img/shot04.png" class="img-responsive alignleft" alt="" data-effect="slide-left">-->
-        </div>
-        <div class="col-md-5 mt">
-            <h4>Totally Free</h4>
-            <p>No ads and we don't sell your data to anyone. You can feel confident storing your daily
-            activities with us (and the NSA).</p>
-        </div>
+</div>
+<!-- /.content-section-a -->
 
-    </div><! --row -->
-</div><! --/Malibu -->
-
-
-<! -- ********** BLUE SECTION - JELLY ********** -->
-<!--<div id="jelly">-->
+<!--<! &#45;&#45; ********** BLUE SECTION - MALIBU ********** &ndash;&gt;-->
+<!--<div id="malibu">-->
     <!--<div class="row nopadding">-->
-        <!--<div class="col-md-5 col-md-offset-1 mt">-->
-            <!--<h4>Don't Wait, Try Us Now</h4>-->
-            <!--<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>-->
-            <!--<p>Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>-->
-            <!--<p>It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>-->
-            <!--<p class="mt"><button class="btn btn-white btn-theme">Sign Up Now | 14 Days Free</button></p>-->
+        <!--<div class="col-md-6 pull-left">-->
+            <!--&lt;!&ndash;<img src="assets/img/shot04.png" class="img-responsive alignleft" alt="" data-effect="slide-left">&ndash;&gt;-->
+        <!--</div>-->
+        <!--<div class="col-md-5 mt">-->
+            <!--<h4>Totally Free</h4>-->
+            <!--<p>No ads and we don't sell your data to anyone. You can feel confident storing your daily-->
+            <!--activities with us (and the NSA).</p>-->
         <!--</div>-->
 
-        <!--<div class="col-md-6 mt centered">-->
-            <!--<h1 data-effect="slide-bottom">24</h1>-->
-            <!--<h3>$ per month</h3>-->
-        <!--</div>-->
-    <!--</div><! &#45;&#45;/row &ndash;&gt;-->
-<!--</div><! &#45;&#45;/Jelly &ndash;&gt;-->
+    <!--</div><! &#45;&#45;row &ndash;&gt;-->
+<!--</div><! &#45;&#45;/Malibu &ndash;&gt;-->
 
-<! -- ********** FOOTER ********** -->
-<div id="f">
+<div class="banner">
+
     <div class="container">
+
         <div class="row">
-            <div class="col-md-8 col-md-offset-2 centered">
-                <h4 class="mb">Want to try our super awesome app? Come on, you've got nothing to lose!</h4>
-                <a class='btn btn-lg btn-info btn-sub' href="/register" type="submit">Yes, Sign me up!</a>
+            <div class="col-lg-6">
+                <h3>Want to try our super awesome app? Come on, you've got nothing to lose!</h3>
             </div>
-
-        </div><! --/row -->
-    </div><! --/container -->
-</div><! --/F -->
-
-<! -- ********** CREDITS ********** -->
-<div id="c">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6 col-md-offset-3 centered">
-                <p>Copyright 2015 | Mike Yoon</p>
+            <div class="col-lg-6">
+                <ul class="list-inline banner-social-buttons">
+                    <li>
+                        <a href="/register" class="btn btn-default btn-lg">Yes, Sign me up!</a>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div><! --/container -->
-</div><! --/C -->
+
+    </div>
+    <!-- /.container -->
+
+</div>
+<!-- /.banner -->
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ul class="list-inline">
+                    <li>
+                        <a href="#">Home</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="#about">About</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="#services">Services</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="#contact">Contact</a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted small">Copyright &copy; Mike Yoon 2015. All Rights Reserved</p>
+            </div>
+        </div>
+    </div>
+</footer>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="/js/jquery.min.js"></script>
 <script src="/js/bootstrap.min.js"></script>
-<script src="/js/retina-1.1.0.js"></script>
-<script src="/js/jquery.unveilEffects.js"></script>
 </body>
 </html>
