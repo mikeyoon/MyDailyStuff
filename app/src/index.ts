@@ -55,15 +55,27 @@ page('/', () => {
 });
 
 page('/register', () => {
-    renderApp(Signup.Component, { flux: flux });
+    if (!stores.auth.isLoggedIn) {
+        renderApp(Signup.Component, {flux: flux});
+    } else {
+        page('/login');
+    }
 });
 
 page('/login', () => {
-    renderApp(Login.Component, { flux: flux });
+    if (!stores.auth.isLoggedIn) {
+        renderApp(Login.Component, { flux: flux });
+    } else {
+        page('/journal');
+    }
 });
 
 page('/profile', () => {
-    renderApp(Profile.Component, { flux: flux });
+    if (stores.auth.isLoggedIn) {
+        renderApp(Profile.Component, {flux: flux});
+    } else {
+        page('/login');
+    }
 });
 
 page('/forgot-password', () => {
