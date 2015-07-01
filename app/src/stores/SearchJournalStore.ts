@@ -22,6 +22,8 @@ var SearchJournalStore = Fluxxor.createStore({
 
         this.searchResults = [];
         this.dates = [];
+        this.query = "";
+        this.searching = false;
         this.total = null;
         this.nextOffset = null;
         this.prevOffset = null;
@@ -60,6 +62,11 @@ var SearchJournalStore = Fluxxor.createStore({
     onQuerySearch: function(req: Requests.Search) {
         //console.log(this.current.entries);
         this.offset = req.offset;
+        this.searching = true;
+        this.emit("change");
+
+        //Set query after the change so it won't update until after the request completes
+        this.query = req.query;
 
         this.client({
             method: "POST",
@@ -80,7 +87,7 @@ var SearchJournalStore = Fluxxor.createStore({
                         };
                     });
                     this.total = response.entity.total || 0;
-
+                    this.searching = false;
                     this.nextOffset = (req.offset + LIMIT) < this.total ? req.offset + LIMIT : null;
                     this.prevOffset = req.offset > 0 ? req.offset - LIMIT : null;
 
@@ -91,24 +98,9 @@ var SearchJournalStore = Fluxxor.createStore({
                 console.log(response);
                 this.nextOffset = null;
                 this.prevOffset = null;
+                this.searching = false;
 
                 this.emit("change")
-            }
-        )
-    },
-
-    onDelete: function() {
-        this.client({
-            method: "DELETE",
-            path: "/api/journal/" + this.current.id
-        }).then(
-            (response: rest.Response) => {
-                this.hasEntry = false;
-                this.current = null;
-                this.emit("change");
-            },
-            (response: rest.Response) => {
-                console.log(response);
             }
         )
     }

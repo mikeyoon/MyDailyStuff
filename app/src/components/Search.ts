@@ -19,6 +19,7 @@ interface SearchState {
     nextOffset?: number;
     prevOffset?: number;
     offset?: number;
+    query?: string;
     results?: Responses.QuerySearchResult[];
 }
 
@@ -36,6 +37,7 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
             nextOffset: store.nextOffset,
             prevOffset: store.prevOffset,
             offset: store.offset,
+            query: store.query,
         };
     }
 
@@ -57,7 +59,7 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
     render() {
         return d('div.row', {}, [
             d('div.col-md-8.col-md-offset-2', {}, [
-                d('h4', this.state.total + " results for \"" + this.props.query + "\""),
+                d('h4', this.state.total + " results for \"" + this.state.query + "\""),
                 d('div', {},
                     this.state.results.map((result, index) => {
                         return d('div.panel.panel-default', { key: index }, [
