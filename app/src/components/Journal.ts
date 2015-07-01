@@ -68,7 +68,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
     componentWillReceiveProps(nextProps: JournalProps) {
         this.getFlux().actions.journal.get(nextProps.date);
-        this.getFlux().actions.search.date(nextProps.date);
+        //this.getFlux().actions.search.date(nextProps.date);
         this.validate();
     }
 

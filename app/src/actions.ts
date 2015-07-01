@@ -24,7 +24,8 @@ var c = {
 
     SEARCH: {
         DATE: "SEARCH:DATE",
-        QUERY: "SEARCH:QUERY"
+        QUERY: "SEARCH:QUERY",
+        CLEAR: "SEARCH:CLEAR",
     },
 
     ROUTE: {
@@ -57,6 +58,9 @@ var methods = {
         },
         query: function(query: string, offset: number) {
             this.dispatch(c.SEARCH.QUERY, new Requests.Search(query, offset));
+        },
+        clear: function() {
+            this.dispatch(c.SEARCH.CLEAR);
         }
     },
     account: {

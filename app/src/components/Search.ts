@@ -49,6 +49,10 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
         this.getFlux().actions.search.query(this.props.query, this.props.offset);
     }
 
+    componentWillUnmount() {
+        this.getFlux().actions.search.clear();
+    }
+
     handlePageLink(offset: number, ev: any) {
         if (offset == null) {
             ev.preventDefault();
@@ -58,7 +62,7 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
 
     render() {
         return d('div.row', {}, [
-            d('div.col-md-8.col-md-offset-2', {}, [
+            this.state.query ? d('div.col-md-8.col-md-offset-2', {}, [
                 d('h4', this.state.total + " results for \"" + this.state.query + "\""),
                 d('div', {},
                     this.state.results.map((result, index) => {
@@ -73,20 +77,27 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
                             }))
                         ]);
                     })
+                ),
+                d('ul.pager', {}, [
+                    d('li.previous' + (this.state.prevOffset == null ? '.disabled' : ''), {},
+                        d("a", { href: `/search/${this.state.query}?offset=${this.state.prevOffset}`,
+                            onClick: this.handlePageLink.bind(this, this.state.prevOffset),
+                            rel: this.state.prevOffset == null ? "external" : null,
+                        }, [d('span.glyphicon.glyphicon-chevron-left'), " prev"])),
+                    d('li.next' + (this.state.nextOffset == null ? '.disabled' : ''), {},
+                        d("a", { href: `/search/${this.state.query}?offset=${this.state.nextOffset}`,
+                            onClick: this.handlePageLink.bind(this, this.state.nextOffset),
+                            rel: this.state.nextOffset == null ? "external" : null,
+                        }, ["next ", d('span.glyphicon.glyphicon-chevron-right')]))
+                ])
+            ]) :
+            d('div.col-md-8.col-md-offset-2', {},
+                d('div.margin-top-md', {},
+                    d('div.progress', {},
+                        d('div.progress-bar.progress-bar-striped.active[role=progressbar]', { style: { width: "100%" }})
+                    )
                 )
-            ]),
-            d('nav.col-md-3.col-md-offset-2', {}, d('ul.pager', {}, [
-                d('li.previous' + (this.state.prevOffset == null ? '.disabled' : ''), {},
-                    d("a", { href: `/search/${this.state.query}?offset=${this.state.prevOffset}`,
-                        onClick: this.handlePageLink.bind(this, this.state.prevOffset),
-                        rel: this.state.prevOffset == null ? "external" : null,
-                    }, [d('span.glyphicon.glyphicon-chevron-left'), " prev"])),
-                d('li.next' + (this.state.nextOffset == null ? '.disabled' : ''), {},
-                    d("a", { href: `/search/${this.state.query}?offset=${this.state.nextOffset}`,
-                        onClick: this.handlePageLink.bind(this, this.state.nextOffset),
-                        rel: this.state.nextOffset == null ? "external" : null,
-                    }, ["next ", d('span.glyphicon.glyphicon-chevron-right')]))
-            ]))
+            )
         ]);
     }
 }

@@ -17,7 +17,8 @@ var SearchJournalStore = Fluxxor.createStore({
     initialize: function() {
         this.bindActions(
             actions.constants.SEARCH.DATE, this.onDateSearch,
-            actions.constants.SEARCH.QUERY, this.onQuerySearch
+            actions.constants.SEARCH.QUERY, this.onQuerySearch,
+            actions.constants.SEARCH.CLEAR, this.onClear
         );
 
         this.searchResults = [];
@@ -61,12 +62,12 @@ var SearchJournalStore = Fluxxor.createStore({
 
     onQuerySearch: function(req: Requests.Search) {
         //console.log(this.current.entries);
-        this.offset = req.offset;
         this.searching = true;
         this.emit("change");
 
         //Set query after the change so it won't update until after the request completes
         this.query = req.query;
+        this.offset = req.offset;
 
         this.client({
             method: "POST",
@@ -103,6 +104,15 @@ var SearchJournalStore = Fluxxor.createStore({
                 this.emit("change")
             }
         )
+    },
+
+    onClear: function() {
+        this.query = "";
+        this.total = 0;
+        this.nextOffset = 0;
+        this.prevOffset = 0;
+        this.searchResults = [];
+        this.emit('change');
     }
 });
 
