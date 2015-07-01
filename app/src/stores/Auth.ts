@@ -216,7 +216,7 @@ var AuthStore = Fluxxor.createStore({
                     this.error = null;
                     this.isLoggedIn = true;
                     this.onGetAccount();
-                    page('/');
+                    page('/journal');
                 } else {
                     this.error = this.loginResult.error;
                 }
@@ -242,7 +242,7 @@ var AuthStore = Fluxxor.createStore({
                 if (response.entity.success) {
                     this.isLoggedIn = true;
                     this.onGetAccount();
-                    page('/');
+                    page('/journal');
                 }
 
                 this.emit("change");
