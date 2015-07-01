@@ -77,12 +77,12 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
             ]),
             d('nav.col-md-3.col-md-offset-2', {}, d('ul.pager', {}, [
                 d('li.previous' + (this.state.prevOffset == null ? '.disabled' : ''), {},
-                    d("a", { href: `/search/${this.props.query}?offset=${this.state.prevOffset}`,
+                    d("a", { href: `/search/${this.state.query}?offset=${this.state.prevOffset}`,
                         onClick: this.handlePageLink.bind(this, this.state.prevOffset),
                         rel: this.state.prevOffset == null ? "external" : null,
                     }, [d('span.glyphicon.glyphicon-chevron-left'), " prev"])),
                 d('li.next' + (this.state.nextOffset == null ? '.disabled' : ''), {},
-                    d("a", { href: `/search/${this.props.query}?offset=${this.state.nextOffset}`,
+                    d("a", { href: `/search/${this.state.query}?offset=${this.state.nextOffset}`,
                         onClick: this.handlePageLink.bind(this, this.state.nextOffset),
                         rel: this.state.nextOffset == null ? "external" : null,
                     }, ["next ", d('span.glyphicon.glyphicon-chevron-right')]))
