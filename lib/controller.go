@@ -107,7 +107,10 @@ func (c *Controller) Login(req LoginRequest, session sessions.Session, r render.
 func (c *Controller) Logout(session sessions.Session, r render.Render) {
 	session.Delete("userId")
 	session.Options(sessions.Options{
-		MaxAge: -1,
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   c.secureCookie,
+		Path:     "/",
 	})
 
 	r.JSON(200, SuccessResponse(nil))

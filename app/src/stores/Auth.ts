@@ -241,6 +241,7 @@ var AuthStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 if (response.entity.success) {
                     this.isLoggedIn = true;
+                    this.onGetAccount();
                     page('/');
                 }
 

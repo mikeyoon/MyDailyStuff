@@ -251,7 +251,7 @@ var _ = Describe("Controller", func() {
 		Context("User is logged in", func() {
 			It("should log the user out", func() {
 				session.On("Delete", "userId").Return()
-				session.On("Options", sessions.Options{MaxAge: -1}).Return()
+				session.On("Options", sessions.Options{MaxAge: -1, HttpOnly: true, Secure: false, Path: "/"}).Return()
 				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
 				controller.SetOptions(service, false)
 
