@@ -5,7 +5,7 @@ import (
 	"github.com/martini-contrib/sessions"
 	"github.com/mikeyoon/MyDailyStuff/lib"
 	. "github.com/onsi/ginkgo"
-	//. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/now"
@@ -166,12 +166,46 @@ func (m MockRender) Header() http.Header {
 	return args.Get(0).(http.Header)
 }
 
+type MockCsrf struct {
+	mock.Mock
+}
+
+func (m MockCsrf) GetHeaderName() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m MockCsrf) GetFormName() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m MockCsrf) GetCookieName() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m MockCsrf) GetToken() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m MockCsrf) ValidToken(t string) bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
+func (m MockCsrf) Error(w http.ResponseWriter) {
+	m.Called(w)
+}
+
 var _ = Describe("Controller", func() {
 	controller := new(lib.Controller)
 
 	var service MockService
 	var session MockSession
 	var render MockRender
+	var csrf MockCsrf
 
 	mockUser1 := lib.User{
 		UserId:        uuid.New(),
@@ -263,6 +297,7 @@ var _ = Describe("Controller", func() {
 	Describe("Get Profile", func() {
 		Context("User is valid", func() {
 			It("should return the user information", func() {
+				header := http.Header{}
 				session.On("Get", "userId").Return(mockUser1.UserId)
 				service.On("GetUserById", mockUser1.UserId).Return(mockUser1, nil)
 				render.On("JSON", 200, lib.SuccessResponse(map[string]interface{}{
@@ -271,20 +306,30 @@ var _ = Describe("Controller", func() {
 					"last_login_date": mockUser1.LastLoginDate,
 					"email":           mockUser1.Email,
 				})).Return()
-				controller.SetOptions(service, false)
+				render.On("Header").Return(header)
+				csrf.On("GetToken").Return("123")
 
-				controller.Profile(session, render)
+				controller.SetOptions(service, false)
+				controller.Profile(session, render, csrf)
+
+				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
 			})
 		})
 
 		Context("User does not exist", func() {
 			It("should return 404 response", func() {
+				header := http.Header{}
+
 				session.On("Get", "userId").Return(mockUser1.UserId)
 				service.On("GetUserById", mockUser1.UserId).Return(lib.User{}, lib.UserNotFound)
 				render.On("JSON", 404, lib.ErrorResponse(lib.UserNotFound.Error())).Return()
-				controller.SetOptions(service, false)
+				render.On("Header").Return(header)
+				csrf.On("GetToken").Return("123")
 
-				controller.Profile(session, render)
+				controller.SetOptions(service, false)
+				controller.Profile(session, render, csrf)
+
+				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
 			})
 		})
 	})
@@ -314,23 +359,35 @@ var _ = Describe("Controller", func() {
 	Describe("Update Profile", func() {
 		Context("Where there is no error", func() {
 			It("should return success response", func() {
+				header := http.Header{}
+
 				session.On("Get", "userId").Return(mockUser1.Email)
 				service.On("UpdateUser", mockUser1.Email, "", "password").Return(nil)
 				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
+				render.On("Header").Return(header)
+				csrf.On("GetToken").Return("123")
 
 				controller.SetOptions(service, false)
-				controller.UpdateProfile(lib.ModifyAccountRequest{Password: "password"}, session, render)
+				controller.UpdateProfile(lib.ModifyAccountRequest{Password: "password"}, session, render, csrf)
+
+				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
 			})
 		})
 
 		Context("Where there is an error", func() {
 			It("should return failure response", func() {
+				header := http.Header{}
+
 				session.On("Get", "userId").Return(mockUser1.Email)
 				service.On("UpdateUser", mockUser1.Email, "", "password").Return(lib.UserNotFound)
 				render.On("JSON", 200, lib.ErrorResponse(lib.UserNotFound.Error())).Return()
+				render.On("Header").Return(header)
+				csrf.On("GetToken").Return("123")
 
 				controller.SetOptions(service, false)
-				controller.UpdateProfile(lib.ModifyAccountRequest{Password: "password"}, session, render)
+				controller.UpdateProfile(lib.ModifyAccountRequest{Password: "password"}, session, render, csrf)
+
+				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
 			})
 		})
 	})

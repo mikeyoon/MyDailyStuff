@@ -5,12 +5,15 @@
 import rest = require('rest');
 import mime = require('rest/interceptor/mime');
 import errorCode = require('rest/interceptor/errorCode');
+import csrf = require('rest/interceptor/csrf');
 import Fluxxor = require('fluxxor');
 import actions = require('../actions');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 import page = require('page');
 import moment = require('moment');
+
+const CSRF_HEADER = "X-Csrf-Token";
 
 var AuthStore = Fluxxor.createStore({
     initialize: function() {
@@ -26,7 +29,7 @@ var AuthStore = Fluxxor.createStore({
             actions.constants.ACCOUNT.GET_STREAK, this.onGetStreak
         );
 
-        this.client = rest.wrap(mime).wrap(errorCode);
+        this.client = rest.wrap(mime).wrap(errorCode).wrap(csrf);
         this.isLoggedIn = null;
         this.loading = false;
         this.error = null;
@@ -37,6 +40,7 @@ var AuthStore = Fluxxor.createStore({
         this.resetPasswordResult = {};
         this.saveProfileResult = {};
         this.user = {};
+        this.csrf = null;
 
         this.streak = null;
 
@@ -69,6 +73,7 @@ var AuthStore = Fluxxor.createStore({
         this.sendResetResult = {};
         this.resetPasswordResult = {};
         this.saveProfileResult = {};
+        this.error = null;
         this.emit("change");
     },
 
@@ -77,10 +82,14 @@ var AuthStore = Fluxxor.createStore({
             method: "GET",
             path: "/api/account"
         }).then(
+
             (response: rest.Response) => {
+                this.csrf = response.headers[CSRF_HEADER];
+
+                console.log(this.csrf);
                 if (response.entity.success) {
                     this.isLoggedIn = true;
-                    this.user = response.entity.result
+                    this.user = response.entity.result;
                 } else {
                     this.isLoggedIn = false;
                 }
@@ -88,6 +97,7 @@ var AuthStore = Fluxxor.createStore({
             },
             (response: rest.Response) => {
                 console.log(response);
+                this.csrf = response.headers[CSRF_HEADER];
                 this.isLoggedIn = false;
                 this.emit("change");
             })
@@ -153,6 +163,7 @@ var AuthStore = Fluxxor.createStore({
     onRegister: function(params: Requests.Register) {
         this.loading = true;
         this.registerResult = {};
+        this.error = null;
 
         this.emit('change');
         this.client({
@@ -200,6 +211,7 @@ var AuthStore = Fluxxor.createStore({
     onLogin: function(payload: Requests.Login) {
         this.loading = true;
         this.loginResult = {};
+        this.error = null;
 
         this.emit('change');
 
@@ -264,6 +276,7 @@ var AuthStore = Fluxxor.createStore({
         this.client({
             method: 'PUT',
             path: '/api/account',
+            csrfToken: this.csrf,
             entity: JSON.stringify({
                 password: req.password
             })
@@ -271,6 +284,7 @@ var AuthStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 this.loading = false;
                 this.saveProfileResult = response.entity;
+                this.csrf = response.headers[CSRF_HEADER];
                 if (this.saveProfileResult.success) {
                     this.error = null;
                 } else {
@@ -280,7 +294,10 @@ var AuthStore = Fluxxor.createStore({
             },
             (response: rest.Response) => {
                 console.log(response);
+                this.csrf = response.headers[CSRF_HEADER];
                 this.loading = false;
+                this.error = "Unknown error updating your profile. Please refresh the page and try again.";
+
                 this.emit("change");
             }
         )

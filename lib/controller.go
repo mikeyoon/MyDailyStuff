@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/now"
+	"github.com/martini-contrib/csrf"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 )
@@ -56,14 +57,23 @@ type Response struct {
 	Error   string      `json:"error,omitempty"`
 	Result  interface{} `json:"result,omitempty"`
 	Total   int         `json:"total,omitempty"`
+	Token   string      `json:"csrf,omitempty"`
 }
 
 func ErrorResponse(error string) Response {
 	return Response{Success: false, Error: error}
 }
 
+func ErrorProtectedResponse(error string, token string) Response {
+	return Response{Success: false, Error: error, Token: token}
+}
+
 func SuccessResponse(result interface{}) Response {
 	return Response{Success: true, Result: result}
+}
+
+func ProtectedResponse(result interface{}, token string) Response {
+	return Response{Success: true, Result: result, Token: token}
 }
 
 func PagedSuccessResponse(result interface{}, total int) Response {
@@ -116,8 +126,10 @@ func (c *Controller) Logout(session sessions.Session, r render.Render) {
 	r.JSON(200, SuccessResponse(nil))
 }
 
-func (c *Controller) Profile(session sessions.Session, r render.Render) {
+func (c *Controller) Profile(session sessions.Session, r render.Render, x csrf.CSRF) {
 	user, err := c.service.GetUserById(session.Get("userId").(string))
+
+	r.Header().Set("X-Csrf-Token", x.GetToken())
 
 	if err == nil {
 		r.JSON(200, SuccessResponse(map[string]interface{}{
@@ -140,8 +152,10 @@ func (c *Controller) Register(reg RegisterRequest, r render.Render) {
 	}
 }
 
-func (c *Controller) UpdateProfile(req ModifyAccountRequest, session sessions.Session, r render.Render) {
+func (c *Controller) UpdateProfile(req ModifyAccountRequest, session sessions.Session, r render.Render, x csrf.CSRF) {
 	err := c.service.UpdateUser(session.Get("userId").(string), "", req.Password)
+	r.Header().Set("X-Csrf-Token", x.GetToken())
+
 	if err != nil {
 		r.JSON(200, ErrorResponse(err.Error()))
 	} else {

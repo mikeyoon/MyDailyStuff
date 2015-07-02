@@ -11,6 +11,8 @@ import (
 	"github.com/martini-contrib/gorelic"
 	"log"
 	"os"
+	"github.com/martini-contrib/csrf"
+	"net/http"
 )
 
 var (
@@ -70,12 +72,23 @@ func main() {
 
 	store := sessions.NewCookieStore([]byte(secret))
 
-	gorelic.InitNewrelicAgent(os.Getenv("NEW_RELIC_LICENSE_KEY"), "MyDailyStuff", false)
-
 	m := martini.Classic()
 	m.Use(render.Renderer())
-	m.Use(gorelic.Handler)
+
+	if os.Getenv("NEW_RELIC_LICENSE_KEY") != "" {
+		gorelic.InitNewrelicAgent(os.Getenv("NEW_RELIC_LICENSE_KEY"), "MyDailyStuff", false)
+		m.Use(gorelic.Handler)
+	}
+
 	m.Use(sessions.Sessions("my_session", store))
+	m.Use(csrf.Generate(&csrf.Options{
+		Secret: secret,
+		SessionKey: "userId",
+		Header: "X-Csrf-Token",
+		ErrorFunc: func(w http.ResponseWriter) {
+			http.Error(w, "CSRF token validation failed", http.StatusBadRequest)
+		},
+	}))
 	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "app.html", Exclude: "/api"}))
 
 	c := lib.Controller{}
@@ -94,7 +107,7 @@ func main() {
 	m.Post("/api/account/register", binding.Json(lib.RegisterRequest{}), c.Register)
 
 	//Modify user account
-	m.Put("/api/account", LoginRequired, binding.Json(lib.ModifyAccountRequest{}), c.UpdateProfile)
+	m.Put("/api/account", LoginRequired, csrf.Validate, binding.Json(lib.ModifyAccountRequest{}), c.UpdateProfile)
 
 	//Send reset password link
 	m.Post("/api/account/forgot/:email", c.CreateForgotPasswordRequest)
