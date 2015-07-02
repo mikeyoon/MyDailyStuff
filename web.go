@@ -8,6 +8,7 @@ import (
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	"github.com/mikeyoon/MyDailyStuff/lib"
+	"github.com/martini-contrib/gorelic"
 	"log"
 	"os"
 )
@@ -69,8 +70,11 @@ func main() {
 
 	store := sessions.NewCookieStore([]byte(secret))
 
+	gorelic.InitNewrelicAgent(os.Getenv("NEW_RELIC_LICENSE_KEY"), "MyDailyStuff", false)
+
 	m := martini.Classic()
 	m.Use(render.Renderer())
+	m.Use(gorelic.Handler)
 	m.Use(sessions.Sessions("my_session", store))
 	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "index.html", Exclude: "/api"}))
 

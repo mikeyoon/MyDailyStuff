@@ -63,6 +63,10 @@
 			"Rev": "8aaceec3b52c275477f32c95ea5c6e8ccaba04c5"
 		},
 		{
+			"ImportPath": "github.com/martini-contrib/gorelic",
+			"Rev": "f8b0843aa3ab66d8734aa7d9acf399bdc197c65d"
+		},
+		{
 			"ImportPath": "github.com/martini-contrib/render",
 			"Rev": "b65063311fac6cbf84d3538f5715f7847e648322"
 		},
@@ -88,6 +92,19 @@
 			"ImportPath": "github.com/sendgrid/smtpapi-go",
 			"Comment": "v0.3.0",
 			"Rev": "aef812c905eba82b7da419b8ae08acc04b3af8a4"
+		},
+		{
+			"ImportPath": "github.com/yvasiyarov/go-metrics",
+			"Rev": "c25f46c4b94079672242ec48a545e7ca9ebe3aec"
+		},
+		{
+			"ImportPath": "github.com/yvasiyarov/gorelic",
+			"Comment": "v0.0.6-24-g1c0ed4e",
+			"Rev": "1c0ed4e38e62548df0051140795e569d35cf2ded"
+		},
+		{
+			"ImportPath": "github.com/yvasiyarov/newrelic_platform_go",
+			"Rev": "cef0ebd22fb48453114ba645d0fb80fea6e670de"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
