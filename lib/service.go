@@ -458,6 +458,12 @@ MyDailyStuff.com`)
 func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	verify, err := s.GetUserVerification(verificationToken)
 	if err == nil {
+		_, getErr := s.GetUserByEmail(verify.Email)
+
+		err = getErr
+	}
+
+	if err == UserNotFound {
 		id := uuid.New()
 
 		_, err = s.es.Index(EsIndex, UserType, id, nil, User{
