@@ -86,7 +86,6 @@ var AuthStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 this.csrf = response.headers[CSRF_HEADER];
 
-                console.log(this.csrf);
                 if (response.entity.success) {
                     this.isLoggedIn = true;
                     this.user = response.entity.result;
