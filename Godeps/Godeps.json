@@ -8,6 +8,11 @@
 			"Rev": "35bc42037350f0078e3c974c6ea690f1926603ab"
 		},
 		{
+			"ImportPath": "code.google.com/p/xsrftoken",
+			"Comment": "null-4",
+			"Rev": "bd5a620fff6e6167cccc9291a8d079402428a17a"
+		},
+		{
 			"ImportPath": "github.com/araddon/gou",
 			"Rev": "cf9cf25f52be174c5878920a8021bd224cbe32c7"
 		},
@@ -61,6 +66,10 @@
 		{
 			"ImportPath": "github.com/martini-contrib/binding",
 			"Rev": "8aaceec3b52c275477f32c95ea5c6e8ccaba04c5"
+		},
+		{
+			"ImportPath": "github.com/martini-contrib/csrf",
+			"Rev": "b016a25855e9ed4604a5e59b818342f2b8883f93"
 		},
 		{
 			"ImportPath": "github.com/martini-contrib/gorelic",
