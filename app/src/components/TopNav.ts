@@ -11,6 +11,7 @@ interface TopNavState {
     isLoggedIn: boolean;
     query?: string;
     email?: string;
+    searching?: boolean;
 }
 
 export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
@@ -20,10 +21,12 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
 
     getStateFromFlux() {
         var store = this.getFlux().store("auth");
+        var search = this.getFlux().store("search");
 
         return {
             isLoggedIn: store.isLoggedIn,
-            email: store.user ? store.user.email : null
+            email: store.user ? store.user.email : null,
+            searching: search.searching,
         };
     }
 
@@ -34,7 +37,7 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
 
     handleSearch(ev: any) {
         ev.preventDefault();
-        if (this.state.query) this.getFlux().actions.routes.search(this.state.query);
+        if (this.state.query && !this.state.searching) this.getFlux().actions.routes.search(this.state.query, 0);
     }
 
     handleTextChange(name:string, ev:any) {
@@ -59,7 +62,7 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                         d('span.icon-bar', { key: 2 }),
                         d('span.icon-bar', { key: 3 })
                     ]),
-                    d('a.navbar-brand[href=/]', 'My Daily Stuff')
+                    d('a.navbar-brand[href=/journal]', 'My Daily Stuff')
                 ]),
 
                 d('div.collapse.navbar-collapse.navbar-ex1-collapse#navbar', {}, [
@@ -69,7 +72,9 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
                                 onChange: this.handleTextChange.bind(this, "query"),
                                 onKeyDown: this.handleSearchKeyDown
                             }),
-                            d('div.input-group-btn', {}, d('button[type=submit].btn.btn-primary', {}, d('i.glyphicon.glyphicon-search')))
+                            d('div.input-group-btn', {},
+                                d('button[type=submit].btn.btn-primary' + (this.state.searching ? '.disabled' : ''), {},
+                                    d('i.glyphicon.glyphicon-search')))
                         ]),
 
                     ]) : null,
@@ -94,4 +99,4 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
     }
 }
 
-export var Component = TypedReact.createClass(TopNavComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);
+export var Component = TypedReact.createClass(TopNavComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth", "search")]);

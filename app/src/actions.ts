@@ -18,12 +18,14 @@ var c = {
         GET: "JOURNAL:GET",
         ADD: "JOURNAL:ADD",
         EDIT: "JOURNAL:EDIT",
-        DELETE: "JOURNAL:DELETE"
+        DELETE: "JOURNAL:DELETE",
+        TOGGLE_CALENDAR: "JOURNAL:CALENDAR"
     },
 
     SEARCH: {
         DATE: "SEARCH:DATE",
-        QUERY: "SEARCH:QUERY"
+        QUERY: "SEARCH:QUERY",
+        CLEAR: "SEARCH:CLEAR",
     },
 
     ROUTE: {
@@ -45,14 +47,20 @@ var methods = {
         },
         delete: function() {
             this.dispatch(c.JOURNAL.DELETE);
+        },
+        toggleCalendar: function(show: boolean) {
+            this.dispatch(c.JOURNAL.TOGGLE_CALENDAR, show)
         }
     },
     search: {
         date: function(date: Date) {
             this.dispatch(c.SEARCH.DATE, date);
         },
-        query: function(query: string) {
-            this.dispatch(c.SEARCH.QUERY, query);
+        query: function(query: string, offset: number) {
+            this.dispatch(c.SEARCH.QUERY, new Requests.Search(query, offset));
+        },
+        clear: function() {
+            this.dispatch(c.SEARCH.CLEAR);
         }
     },
     account: {
@@ -91,8 +99,8 @@ var methods = {
         home: function() {
             this.dispatch(c.ROUTE.HOME);
         },
-        search: function(query: string) {
-            this.dispatch(c.ROUTE.SEARCH, query);
+        search: function(query: string, offset: number) {
+            this.dispatch(c.ROUTE.SEARCH, new Requests.Search(query, offset));
         }
     }
 };

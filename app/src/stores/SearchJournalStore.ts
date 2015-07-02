@@ -11,15 +11,24 @@ import moment = require('moment');
 import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 
+const LIMIT = 10;
+
 var SearchJournalStore = Fluxxor.createStore({
     initialize: function() {
         this.bindActions(
             actions.constants.SEARCH.DATE, this.onDateSearch,
-            actions.constants.SEARCH.QUERY, this.onQuerySearch
+            actions.constants.SEARCH.QUERY, this.onQuerySearch,
+            actions.constants.SEARCH.CLEAR, this.onClear
         );
 
         this.searchResults = [];
         this.dates = [];
+        this.query = "";
+        this.searching = false;
+        this.total = null;
+        this.nextOffset = null;
+        this.prevOffset = null;
+        this.offset = 0;
         this.monthYear = null;
         this.client = rest.wrap(mime).wrap(errorCode);
     },
@@ -51,14 +60,22 @@ var SearchJournalStore = Fluxxor.createStore({
         }
     },
 
-    onQuerySearch: function(query: string) {
+    onQuerySearch: function(req: Requests.Search) {
         //console.log(this.current.entries);
+        this.searching = true;
+        this.emit("change");
+
+        //Set query after the change so it won't update until after the request completes
+        this.query = req.query;
+        this.offset = req.offset;
 
         this.client({
             method: "POST",
             path: "/api/search/",
             entity: JSON.stringify({
-                query: query
+                query: req.query,
+                offset: req.offset,
+                limit: LIMIT,
             })
         }).then(
             (response: rest.Response) => {
@@ -70,29 +87,32 @@ var SearchJournalStore = Fluxxor.createStore({
                             date: r.date
                         };
                     });
+                    this.total = response.entity.total || 0;
+                    this.searching = false;
+                    this.nextOffset = (req.offset + LIMIT) < this.total ? req.offset + LIMIT : null;
+                    this.prevOffset = req.offset > 0 ? req.offset - LIMIT : null;
+
                     this.emit("change");
                 }
             },
             (response: rest.Response) => {
                 console.log(response);
+                this.nextOffset = null;
+                this.prevOffset = null;
+                this.searching = false;
+
+                this.emit("change")
             }
         )
     },
 
-    onDelete: function() {
-        this.client({
-            method: "DELETE",
-            path: "/api/journal/" + this.current.id
-        }).then(
-            (response: rest.Response) => {
-                this.hasEntry = false;
-                this.current = null;
-                this.emit("change");
-            },
-            (response: rest.Response) => {
-                console.log(response);
-            }
-        )
+    onClear: function() {
+        this.query = "";
+        this.total = 0;
+        this.nextOffset = 0;
+        this.prevOffset = 0;
+        this.searchResults = [];
+        this.emit('change');
     }
 });
 

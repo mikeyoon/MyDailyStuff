@@ -51,3 +51,13 @@ export class PasswordReset {
         this.password = password;
     }
 }
+
+export class Search {
+    query: string;
+    offset: number;
+
+    constructor(query: string, offset: number) {
+        this.offset = offset;
+        this.query = query;
+    }
+}

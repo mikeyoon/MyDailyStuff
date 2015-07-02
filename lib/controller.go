@@ -34,9 +34,11 @@ type ModifyEntryRequest struct {
 }
 
 type SearchJournalRequest struct {
-	Query string `form:"query"`
-	Start string `form:"start"`
-	End   string `form:"end"`
+	Query  string `form:"query"`
+	Start  string `form:"start"`
+	End    string `form:"end"`
+	Limit  int    `form:"limit"`
+	Offset int    `form:"offset"`
 }
 
 type FindDaysRequest struct {
@@ -53,6 +55,7 @@ type Response struct {
 	Success bool        `json:"success"`
 	Error   string      `json:"error,omitempty"`
 	Result  interface{} `json:"result,omitempty"`
+	Total   int         `json:"total,omitempty"`
 }
 
 func ErrorResponse(error string) Response {
@@ -61,6 +64,10 @@ func ErrorResponse(error string) Response {
 
 func SuccessResponse(result interface{}) Response {
 	return Response{Success: true, Result: result}
+}
+
+func PagedSuccessResponse(result interface{}, total int) Response {
+	return Response{Success: true, Result: result, Total: total}
 }
 
 type Controller struct {
@@ -100,7 +107,10 @@ func (c *Controller) Login(req LoginRequest, session sessions.Session, r render.
 func (c *Controller) Logout(session sessions.Session, r render.Render) {
 	session.Delete("userId")
 	session.Options(sessions.Options{
-		MaxAge: -1,
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   c.secureCookie,
+		Path:     "/",
 	})
 
 	r.JSON(200, SuccessResponse(nil))
@@ -227,6 +237,8 @@ func (c *Controller) UpdateEntry(entry ModifyEntryRequest, session sessions.Sess
 func (c *Controller) SearchJournal(req SearchJournalRequest, session sessions.Session, r render.Render) {
 	var query JournalQuery
 	query.Query = req.Query
+	query.Limit = req.Limit
+	query.Offset = req.Offset
 
 	if req.Start != "" {
 		query.Start = now.MustParse(req.Start)
@@ -236,11 +248,12 @@ func (c *Controller) SearchJournal(req SearchJournalRequest, session sessions.Se
 		query.End = now.MustParse(req.End)
 	}
 
-	results, err := c.service.SearchJournal(session.Get("userId").(string), query)
+	results, total, err := c.service.SearchJournal(session.Get("userId").(string), query)
+
 	if err != nil {
 		r.JSON(500, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(results))
+		r.JSON(200, PagedSuccessResponse(results, total))
 	}
 }
 

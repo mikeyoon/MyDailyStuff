@@ -9,7 +9,9 @@ import TypedReact = require('typed-react');
 import moment = require('moment');
 import marked = require('marked');
 import page = require('page');
-//import Pikaday = require('pikaday');
+import DatePicker = require('react-date-picker');
+
+declare var $: any;
 
 import Streak = require('./Streak');
 
@@ -33,6 +35,7 @@ export interface JournalState {
     started?: boolean;
     streak?: number;
     serviceError?: string;
+    showCalendar?: boolean;
 }
 
 export class JournalComponent extends TypedReact.Component<JournalProps, JournalState>
@@ -59,12 +62,13 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
             editing: journal.editing,
             deleting: journal.deleting,
             started: journal.started,
+            showCalendar: journal.showCalendar
         };
     }
 
     componentWillReceiveProps(nextProps: JournalProps) {
         this.getFlux().actions.journal.get(nextProps.date);
-        this.getFlux().actions.search.date(nextProps.date);
+        //this.getFlux().actions.search.date(nextProps.date);
         this.validate();
     }
 
@@ -78,12 +82,13 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     componentDidMount() {
-        //this.calendar = new Pikaday({
-        //    container: document.getElementById('calendar'), //this.refs['calendar']
-        //    field: document.getElementById('asdf')
-        //});
-        //
-        //this.calendar.show();
+        $(document).on('touchend', this.closeCalendar);
+        $(document).on('click', this.closeCalendar);
+    }
+
+    componentWillUnmount() {
+        $(document).off('touchend', this.closeCalendar);
+        $(document).off('click', this.closeCalendar);
     }
 
     validate(): boolean {
@@ -136,13 +141,26 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     static handlePrev(date: moment.Moment, ev: any) {
         ev.preventDefault();
         page('/journal/' + date.format("YYYY-M-D"));
-        //this.getFlux().actions.journal.get(new Date('1/1/2001'))
     }
 
     static handleNext(date: moment.Moment, ev: any) {
         ev.preventDefault();
         page('/journal/' + date.format("YYYY-M-D"));
-        //this.getFlux().actions.journal.get(new Date('1/1/2002'))
+    }
+
+    handleDateChange(dateText: string, date: moment.Moment, ev: any) {
+        page('/journal/' + date.format("YYYY-M-D"));
+    }
+
+    closeCalendar(ev: any) {
+        if (this.state.showCalendar && !$(ev.target).closest('.popover').length) {
+            this.getFlux().actions.journal.toggleCalendar(false);
+        }
+    }
+
+    handleToggleCalendar(show: boolean, ev: any) {
+        ev.preventDefault();
+        if (!this.state.showCalendar) this.getFlux().actions.journal.toggleCalendar(show);
     }
 
     handleKeyDown(ev: any) {
@@ -189,11 +207,17 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                     d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
                         { key: 'prev', onClick: JournalComponent.handlePrev.bind(this, prev) },
                         d('span.glyphicon.glyphicon-menu-left')),
-                    today.format("ddd, MMM Do YYYY"),
+                    d('a[href=#]' + (this.state.showCalendar ? '.active' : ''), { onClick: this.handleToggleCalendar.bind(this, true) }, today.format("ddd, MMM Do YYYY")),
                     d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
                         { key: 'next',  style: {visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}, onClick: JournalComponent.handleNext.bind(this, next) },
                         d('span.glyphicon.glyphicon-menu-right')),
                 ]),
+
+                d('div.popover-container' + (this.state.showCalendar ? '' : '.hidden'), { },
+                    d('div.popover.bottom', { ref: 'popover', style: {display: "block", margin: "0 auto"}}, [
+                        d('div.arrow', { style: { left: "50% " }}),
+                        d('div.popover-content', {}, d(DatePicker, { maxDate: new Date(), date: today, onChange: this.handleDateChange }))
+                    ])),
 
                 this.renderEntries(),
 
@@ -220,7 +244,6 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                             { onClick: this.handleAddEntry }, "Add"),
                         d('span.margin-small', "(or press ctrl + enter)")
                     ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
-                //d("div#calendar", { ref: 'calendar'}, d('input#asdf'))
             ])
         ]);
     }

@@ -44,7 +44,7 @@ gulp.task('browserify', function() {
 
     return bundler.bundle()
         .pipe(source('app.js'))
-        .pipe(gulp.dest('../public'));
+        .pipe(gulp.dest('../public/js'));
 });
 
 gulp.task('less', function() {
@@ -52,19 +52,33 @@ gulp.task('less', function() {
       .pipe(isProd ? nop() : sourcemaps.init())
       .pipe(less())
       .pipe(isProd ? nop() : sourcemaps.write('./'))
-      .pipe(gulp.dest('../public'));
+      .pipe(gulp.dest('../public/css'));
 });
 
-gulp.task('copy-jquery', function() {
-    return gulp.src('./node_modules/jquery/dist/jquery.min.js')
-        .pipe(gulp.dest('../public'));
+gulp.task('less-landing', function() {
+    return gulp.src('./less/landing.less')
+        .pipe(isProd ? nop() : sourcemaps.init())
+        .pipe(less())
+        .pipe(isProd ? nop() : sourcemaps.write('./'))
+        .pipe(gulp.dest('../public/css'));
 });
 
-gulp.task('copy-bootstrap', function() {
+gulp.task('copy-vendor', function() {
     return gulp.src([
         './node_modules/bootstrap/dist/js/bootstrap.min.js',
-        './node_modules/pikaday/css/pikaday.css'
-    ]).pipe(gulp.dest('../public'));
+        './node_modules/jquery/dist/jquery.min.js',
+        './vendor/ie10-viewport-bug-workaround.js',
+        './vendor/jquery.unveilEffects.js',
+        './vendor/retina-1.1.0.js'
+    ])
+    .pipe(gulp.dest('../public/js'));
+});
+
+gulp.task('copy-images', function() {
+    return gulp.src([
+        './images/*'
+    ])
+    .pipe(gulp.dest('../public/img'));
 });
 
 gulp.task('copy-fonts', function() {
@@ -73,10 +87,10 @@ gulp.task('copy-fonts', function() {
 });
 
 gulp.task('copy-html', function() {
-    return gulp.src(['./index.html', 'favicon.ico'])
+    return gulp.src(['index.html', 'favicon.ico', 'app.html'])
         .pipe(gulp.dest('../public'));
 });
 
-gulp.task('build', ['browserify', 'less', 'copy-jquery', 'copy-fonts', 'copy-bootstrap', 'copy-html']);
+gulp.task('build', ['browserify', 'less', 'less-landing', 'copy-vendor', 'copy-fonts', 'copy-images', 'copy-html']);
 
 gulp.task('watch', ['enable-watch-mode', 'browserify']);

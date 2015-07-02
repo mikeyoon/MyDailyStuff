@@ -89,9 +89,9 @@ func (s MockService) GetJournalEntryByDate(userId string, date time.Time) (lib.J
 	return args.Get(0).(lib.JournalEntry), args.Error(1)
 }
 
-func (s MockService) SearchJournal(userId string, jq lib.JournalQuery) ([]lib.JournalEntry, error) {
+func (s MockService) SearchJournal(userId string, jq lib.JournalQuery) ([]lib.JournalEntry, int, error) {
 	args := s.Called(userId, jq)
-	return args.Get(0).([]lib.JournalEntry), args.Error(1)
+	return args.Get(0).([]lib.JournalEntry), args.Int(1), args.Error(2)
 }
 
 func (s MockService) SearchJournalDates(userId string, jq lib.JournalQuery) ([]string, error) {
@@ -251,7 +251,7 @@ var _ = Describe("Controller", func() {
 		Context("User is logged in", func() {
 			It("should log the user out", func() {
 				session.On("Delete", "userId").Return()
-				session.On("Options", sessions.Options{MaxAge: -1}).Return()
+				session.On("Options", sessions.Options{MaxAge: -1, HttpOnly: true, Secure: false, Path: "/"}).Return()
 				render.On("JSON", 200, lib.SuccessResponse(nil)).Return()
 				controller.SetOptions(service, false)
 
@@ -528,9 +528,9 @@ var _ = Describe("Controller", func() {
 				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
 					Query: "query",
 					Start: now.MustParse("2005-1-1"),
-				}).Return([]lib.JournalEntry{mockEntry1}, nil)
+				}).Return([]lib.JournalEntry{mockEntry1}, 1, nil)
 				session.On("Get", "userId").Return(mockUser1.UserId)
-				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
+				render.On("JSON", 200, lib.PagedSuccessResponse([]lib.JournalEntry{mockEntry1}, 1)).Return()
 
 				controller.SetOptions(service, false)
 				controller.SearchJournal(lib.SearchJournalRequest{
@@ -545,9 +545,9 @@ var _ = Describe("Controller", func() {
 				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
 					Query: "query",
 					End:   now.MustParse("2005-2-1"),
-				}).Return([]lib.JournalEntry{mockEntry1}, nil)
+				}).Return([]lib.JournalEntry{mockEntry1}, 1, nil)
 				session.On("Get", "userId").Return(mockUser1.UserId)
-				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
+				render.On("JSON", 200, lib.PagedSuccessResponse([]lib.JournalEntry{mockEntry1}, 1)).Return()
 
 				controller.SetOptions(service, false)
 				controller.SearchJournal(lib.SearchJournalRequest{
@@ -561,9 +561,9 @@ var _ = Describe("Controller", func() {
 			It("should return entries", func() {
 				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{
 					Query: "query",
-				}).Return([]lib.JournalEntry{mockEntry1}, nil)
+				}).Return([]lib.JournalEntry{mockEntry1}, 1, nil)
 				session.On("Get", "userId").Return(mockUser1.UserId)
-				render.On("JSON", 200, lib.SuccessResponse([]lib.JournalEntry{mockEntry1})).Return()
+				render.On("JSON", 200, lib.PagedSuccessResponse([]lib.JournalEntry{mockEntry1}, 1)).Return()
 
 				controller.SetOptions(service, false)
 				controller.SearchJournal(lib.SearchJournalRequest{
@@ -574,7 +574,7 @@ var _ = Describe("Controller", func() {
 
 		Context("When search returns error", func() {
 			It("should return error response", func() {
-				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{}).Return([]lib.JournalEntry{}, lib.UserUnauthorized)
+				service.On("SearchJournal", mockUser1.UserId, lib.JournalQuery{}).Return([]lib.JournalEntry{}, 0, lib.UserUnauthorized)
 				session.On("Get", "userId").Return(mockUser1.UserId)
 				render.On("JSON", 500, lib.ErrorResponse(lib.UserUnauthorized.Error())).Return()
 

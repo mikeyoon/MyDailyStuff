@@ -55,15 +55,27 @@ page('/', () => {
 });
 
 page('/register', () => {
-    renderApp(Signup.Component, { flux: flux });
+    if (!stores.auth.isLoggedIn) {
+        renderApp(Signup.Component, {flux: flux});
+    } else {
+        page('/login');
+    }
 });
 
 page('/login', () => {
-    renderApp(Login.Component, { flux: flux });
+    if (!stores.auth.isLoggedIn) {
+        renderApp(Login.Component, { flux: flux });
+    } else {
+        page('/journal');
+    }
 });
 
 page('/profile', () => {
-    renderApp(Profile.Component, { flux: flux });
+    if (stores.auth.isLoggedIn) {
+        renderApp(Profile.Component, {flux: flux});
+    } else {
+        page('/login');
+    }
 });
 
 page('/forgot-password', () => {
@@ -84,7 +96,10 @@ page('/search/:query', (ctx) => {
     if (!stores.auth.isLoggedIn) {
         page('/login');
     } else {
-        renderApp(Search.Component, { flux: flux, query: ctx.params.query });
+        var regex = /offset=([0-9]+)/i.exec(ctx.querystring);
+        var offset = regex ? parseInt(regex[1]) : 0;
+
+        renderApp(Search.Component, { flux: flux, query: ctx.params.query, offset: offset });
     }
 });
 

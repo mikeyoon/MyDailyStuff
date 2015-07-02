@@ -216,7 +216,7 @@ var AuthStore = Fluxxor.createStore({
                     this.error = null;
                     this.isLoggedIn = true;
                     this.onGetAccount();
-                    page('/');
+                    page('/journal');
                 } else {
                     this.error = this.loginResult.error;
                 }
@@ -241,7 +241,8 @@ var AuthStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 if (response.entity.success) {
                     this.isLoggedIn = true;
-                    page('/');
+                    this.onGetAccount();
+                    page('/journal');
                 }
 
                 this.emit("change");

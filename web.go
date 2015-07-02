@@ -76,7 +76,7 @@ func main() {
 	m.Use(render.Renderer())
 	m.Use(gorelic.Handler)
 	m.Use(sessions.Sessions("my_session", store))
-	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "index.html", Exclude: "/api"}))
+	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "app.html", Exclude: "/api"}))
 
 	c := lib.Controller{}
 	c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)

@@ -1,4 +1,6 @@
 @import "../node_modules/bootstrap/less/bootstrap";
+//@import "../node_modules/react-widgets/lib/less/react-widgets";
+@import (inline) "../node_modules/react-date-picker/index.css";
 
 html {
   position: relative;
@@ -8,6 +10,7 @@ html {
 body {
   /* Margin bottom by footer height plus padding */
   margin-bottom: 76px;
+  min-height: 100%;
 }
 
 textarea {
@@ -15,8 +18,11 @@ textarea {
   padding: 7px 8px;
 }
 
+a:hover {
+  text-decoration: none;
+}
+
 .journal-entry {
-  //padding-right: 40px;
   overflow-x: auto;
 }
 
@@ -44,6 +50,16 @@ textarea {
 
 .margin-top-md {
   margin-top: 24px;
+}
+
+.popover {
+  max-width: none;
+}
+
+.popover-container {
+  position: absolute;
+  left:50%;
+  margin-left: -164px;
 }
 
 @media (max-width: @screen-sm) {

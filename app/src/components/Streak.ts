@@ -48,7 +48,7 @@ export class StreakComponent extends TypedReact.Component<StreakProps, StreakSta
     }
 
     render() {
-        return d('span[data-toggle=tooltip][data-placement=left][title=Number of completed entries over the last ten days]', {}, [
+        return d('span[data-toggle=tooltip][data-placement=left][title=Number of contiguous entries over the last ten days]', {}, [
             "Streak ",
             d("span.badge", {}, [
                 this.state.streak,

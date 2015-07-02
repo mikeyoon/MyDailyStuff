@@ -17,7 +17,8 @@ var JournalStore = Fluxxor.createStore({
             actions.constants.JOURNAL.GET, this.onGet,
             actions.constants.JOURNAL.DELETE, this.onDelete,
             actions.constants.JOURNAL.EDIT, this.onEdit,
-            actions.constants.JOURNAL.ADD, this.onAdd
+            actions.constants.JOURNAL.ADD, this.onAdd,
+            actions.constants.JOURNAL.TOGGLE_CALENDAR, this.onToggleCalendar
         );
 
         this.editing = false;
@@ -30,6 +31,7 @@ var JournalStore = Fluxxor.createStore({
         this.current = null;
         this.hasEntry = false;
         this.date = null;
+        this.showCalendar = false;
 
         this.client = rest.wrap(mime).wrap(errorCode);
     },
@@ -78,7 +80,6 @@ var JournalStore = Fluxxor.createStore({
             entries[req.index] = req.entry;
         }
 
-        //console.log(this.current.entries);
         this.client({
             method: "PUT",
             path: "/api/journal/" + this.current.id,
@@ -146,6 +147,7 @@ var JournalStore = Fluxxor.createStore({
                 this.loading = false;
                 this.date = date;
                 this.started = true;
+                this.showCalendar = false;
 
                 if (response.entity.success) {
                     this.current = response.entity.result;
@@ -161,6 +163,7 @@ var JournalStore = Fluxxor.createStore({
             (response: rest.Response) => {
                 this.started = true;
                 this.loading = false;
+                this.showCalendar = false;
                 console.log(response);
                 this.hasEntry = false;
                 this.current = null;
@@ -168,6 +171,11 @@ var JournalStore = Fluxxor.createStore({
                 this.emit("change");
             }
         );
+    },
+
+    onToggleCalendar: function(show: boolean) {
+        this.showCalendar = show;
+        this.emit('change');
     }
 });
 
