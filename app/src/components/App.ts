@@ -22,14 +22,20 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
     render() {
         return d('div', [
             d(TopNav.Component),
-            d('div.container', {}, d(this.props.component, this.props.componentOptions)),
+            d('div.ui.grid.container', {}, d(this.props.component, this.props.componentOptions)),
             d('footer.footer', {},
-                d('div.container', {}, [
-                    d('p.text-muted', {}, [
-                        "Created by ",
-                        d('a[href=https://github.com/mikeyoon/]', "Mike Yoon"),
-                        d('a[href=/about].pull-right', "About")
-                    ]),
+                d('div.ui.container', {}, [
+                    d('div.ui.grid', {}, [
+                        d('div.four.column.row', {}, [
+                            d('div.left.floated.column', {}, [
+                                "Created by ",
+                                d('a[href=https://github.com/mikeyoon/]', "Mike Yoon"),
+                            ]),
+                            d('div.right.floated.column.right.aligned', {}, [
+                                d('a[href=/about].pull-right', "About")
+                            ])
+                        ])
+                    ])
                 ])
             )
         ]);

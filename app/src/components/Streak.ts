@@ -44,7 +44,7 @@ export class StreakComponent extends TypedReact.Component<StreakProps, StreakSta
     }
 
     componentDidMount() {
-        $('[data-toggle="tooltip"]').tooltip();
+        //$('[data-toggle="tooltip"]').tooltip();
     }
 
     render() {

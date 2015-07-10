@@ -82,6 +82,14 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     componentDidMount() {
+        $('.calendar-picker').popup({
+            position: 'bottom center',
+            preserve: true,
+            on: 'click',
+            popup: '.popup',
+            setFluidWidth: true
+        });
+
         $(document).on('touchend', this.closeCalendar);
         $(document).on('click', this.closeCalendar);
     }
@@ -149,6 +157,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     handleDateChange(dateText: string, date: moment.Moment, ev: any) {
+        $('.calendar-picker').popup('hide');
         page('/journal/' + date.format("YYYY-M-D"));
     }
 
@@ -159,8 +168,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     }
 
     handleToggleCalendar(show: boolean, ev: any) {
-        ev.preventDefault();
-        if (!this.state.showCalendar) this.getFlux().actions.journal.toggleCalendar(show);
+        //ev.preventDefault();
+        //if (!this.state.showCalendar) this.getFlux().actions.journal.toggleCalendar(show);
     }
 
     handleKeyDown(ev: any) {
@@ -176,8 +185,8 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     renderEntries() {
         if (this.state.hasEntry) {
             return d('div.margin-top-md', {}, this.state.current.entries.map((e: string, index: number) => {
-                return d("div.well", { key: index }, [
-                    d('button.btn.btn-clear.pull-right', { key: "delete", onClick: this.handleDeleteEntry.bind(this, index) },
+                return d("div.ui.raised.segment", { key: index }, [
+                    d('button.ui.right.floated.button', { key: "delete", onClick: this.handleDeleteEntry.bind(this, index) },
                         d('span.glyphicon.glyphicon-remove')),
                     //d('button.btn.btn-default.pull-right', { key: "edit", onClick: this.handleEditEntry.bind(this, index) },
                     //    d('span.glyphicon.glyphicon-edit')),
@@ -186,7 +195,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                 ]);
             }));
         } else if (this.state.started) {
-            return d('h3.text-center', "No entries...try to remember!");
+            return d('h2.ui.center.aligned', "No entries...try to remember!");
         } else {
             return d('div.margin-top-md', {},
                 d('div.progress', {},
@@ -201,35 +210,33 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         var next = moment(this.state.date || this.props.date).add(1, 'day');
         var prev = moment(this.state.date || this.props.date).add(-1, 'day');
 
-        return d("div.row", {}, [
-            d("div.col-md-8.col-md-offset-2", {}, [
-                d('h2.text-center', {}, [
+        return d("div.one.column.centered.row", {}, [
+            d('div.column.center.aligned', {}, [
+                d('h2', {}, [
                     d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
                         { key: 'prev', onClick: JournalComponent.handlePrev.bind(this, prev) },
                         d('span.glyphicon.glyphicon-menu-left')),
-                    d('a[href=#]' + (this.state.showCalendar ? '.active' : ''), { onClick: this.handleToggleCalendar.bind(this, true) }, today.format("ddd, MMM Do YYYY")),
+                    d('a[href=#].calendar-picker' + (this.state.showCalendar ? '.active' : ''), { }, today.format("ddd, MMM Do YYYY")),
+
                     d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
                         { key: 'next',  style: {visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}, onClick: JournalComponent.handleNext.bind(this, next) },
                         d('span.glyphicon.glyphicon-menu-right')),
                 ]),
+            ]),
 
-                d('div.popover-container' + (this.state.showCalendar ? '' : '.hidden'), { },
-                    d('div.popover.bottom', { ref: 'popover', style: {display: "block", margin: "0 auto"}}, [
-                        d('div.arrow', { style: { left: "50% " }}),
-                        d('div.popover-content', {}, d(DatePicker, { maxDate: new Date(), date: today, onChange: this.handleDateChange }))
-                    ])),
-
-                this.renderEntries(),
-
-                d('hr'),
+            d('div.column.eleven.wide.center.aligned', {}, this.renderEntries()),
+            d('div.column.eleven.wide', {}, [
+                d('div.ui.divider'),
 
                 this.state.serviceError ? d("div.alert.alert-danger", this.state.serviceError) : null,
 
                 !this.state.current || this.state.current.entries.length < 7 ?
-                    d("form", { onSubmit: this.handleAddEntry }, [
-                        d("div.form-group" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
-                            d("label.control-label.pull-left", "Add a new entry (markdown)"),
-                            d("label.pull-right", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })),
+                    d("form.ui.form", { onSubmit: this.handleAddEntry }, [
+                        d('div.fields', {}, [
+                            d('field.four.wide', { key: '1' }, d("label", "Add a new entry (markdown)")),
+                            d('field.four.wide', { key: '2' }, d("label", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })))
+                        ]),
+                        d("div.field" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
                             d("textarea[placeholder=New entry...].form-control", {
                                 rows: 4,
                                 style: { width: "100%" },
@@ -240,11 +247,13 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                                 onChange: this.handleTextChange.bind(this, "newEntry") }),
                             this.state.errors["newEntry"] ? d("span.help-block", this.state.errors["newEntry"]) : null
                         ]),
-                        d('button.btn.btn-primary[type=submit]' + (Object.keys(this.state.errors).length || !this.state.newEntry ? '.disabled' : ''),
+                        d('button.ui.primary.button[type=submit]' + (Object.keys(this.state.errors).length || !this.state.newEntry ? '.disabled' : ''),
                             { onClick: this.handleAddEntry }, "Add"),
                         d('span.margin-small', "(or press ctrl + enter)")
                     ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
-            ])
+            ]),
+
+            d('div.ui.popup', { style: {'min-width':'330px'} }, d(DatePicker, { maxDate: new Date(), date: today, onChange: this.handleDateChange }))
         ]);
     }
 }

@@ -1,5 +1,4 @@
-@import "../node_modules/bootstrap/less/bootstrap";
-//@import "../node_modules/react-widgets/lib/less/react-widgets";
+@import (inline) "../node_modules/semantic-ui/dist/semantic.min.css";
 @import (inline) "../node_modules/react-date-picker/index.css";
 
 html {
@@ -9,8 +8,10 @@ html {
 
 body {
   /* Margin bottom by footer height plus padding */
-  margin-bottom: 76px;
-  min-height: 100%;
+  //margin-bottom: 76px;
+  //min-height: 100%;
+  padding-top: 40px;
+  font-family: 'Open Sans', sans-serif;
 }
 
 textarea {
@@ -26,9 +27,9 @@ a:hover {
   overflow-x: auto;
 }
 
-.btn-clear {
-  .button-variant(@btn-default-color; transparent; transparent);
-}
+//.btn-clear {
+//  .button-variant(@btn-default-color; transparent; transparent);
+//}
 
 .footer {
   position: absolute;
@@ -61,26 +62,26 @@ a:hover {
   left:50%;
   margin-left: -164px;
 }
-
-@media (max-width: @screen-sm) {
-  body {
-    /* Margin bottom by footer height */
-    margin-bottom: 48px;
-  }
-
-  h2 {
-    font-size: 24px;
-  }
-
-  h3 {
-    font-size: 16px;
-  }
-
-  .container .text-muted {
-    margin: 10px 0;
-  }
-
-  .footer {
-    height: 40px;
-  }
-}
+//
+//@media (max-width: @screen-sm) {
+//  body {
+//    /* Margin bottom by footer height */
+//    margin-bottom: 48px;
+//  }
+//
+//  h2 {
+//    font-size: 24px;
+//  }
+//
+//  h3 {
+//    font-size: 16px;
+//  }
+//
+//  .container .text-muted {
+//    margin: 10px 0;
+//  }
+//
+//  .footer {
+//    height: 40px;
+//  }
+//}
