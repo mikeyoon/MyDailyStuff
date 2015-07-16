@@ -10,7 +10,7 @@ body {
   /* Margin bottom by footer height plus padding */
   //margin-bottom: 76px;
   //min-height: 100%;
-  padding-top: 40px;
+  padding-top: 60px;
   font-family: 'Open Sans', sans-serif;
 }
 
@@ -25,11 +25,18 @@ a:hover {
 
 .journal-entry {
   overflow-x: auto;
+  float: left;
+  max-width: 620px;
 }
 
-//.btn-clear {
-//  .button-variant(@btn-default-color; transparent; transparent);
-//}
+div.entries {
+  margin-bottom: 18px;
+}
+
+button.ui.button.clear {
+  background-color: transparent;
+  //.button-variant(@btn-default-color; transparent; transparent);
+}
 
 .footer {
   position: absolute;
@@ -62,26 +69,3 @@ a:hover {
   left:50%;
   margin-left: -164px;
 }
-//
-//@media (max-width: @screen-sm) {
-//  body {
-//    /* Margin bottom by footer height */
-//    margin-bottom: 48px;
-//  }
-//
-//  h2 {
-//    font-size: 24px;
-//  }
-//
-//  h3 {
-//    font-size: 16px;
-//  }
-//
-//  .container .text-muted {
-//    margin: 10px 0;
-//  }
-//
-//  .footer {
-//    height: 40px;
-//  }
-//}
