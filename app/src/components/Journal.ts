@@ -185,22 +185,22 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
     renderEntries() {
         if (this.state.hasEntry) {
             return d('div.margin-top-md', {}, this.state.current.entries.map((e: string, index: number) => {
-                return d("div.ui.raised.segment", { key: index }, [
-                    d('button.ui.right.floated.button', { key: "delete", onClick: this.handleDeleteEntry.bind(this, index) },
-                        d('span.glyphicon.glyphicon-remove')),
+                return d("div.ui.raised.clearing.segment", { key: index }, [
+                    d("div.journal-entry", { dangerouslySetInnerHTML: { __html: marked(e) }}),
+
+                    d('button.ui.clear.right.floated.button.icon', { key: "delete", onClick: this.handleDeleteEntry.bind(this, index) },
+                        d('i.remove.icon')),
                     //d('button.btn.btn-default.pull-right', { key: "edit", onClick: this.handleEditEntry.bind(this, index) },
                     //    d('span.glyphicon.glyphicon-edit')),
 
-                    d("div.journal-entry", { dangerouslySetInnerHTML: { __html: marked(e) }})
+
                 ]);
             }));
         } else if (this.state.started) {
-            return d('h2.ui.center.aligned', "No entries...try to remember!");
+            return d('div.ui.container.center.aligned.margin-top-md', {}, d('h2.ui.header', "No entries...try to remember!"));
         } else {
             return d('div.margin-top-md', {},
-                d('div.progress', {},
-                    d('div.progress-bar.progress-bar-striped.active[role=progressbar]', { style: { width: "100%" }})
-                )
+                d('div.ui.active.inverted.dimmer', {}, d('div.ui.text.loader', 'Loading'))
             );
         }
     }
@@ -210,48 +210,47 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
         var next = moment(this.state.date || this.props.date).add(1, 'day');
         var prev = moment(this.state.date || this.props.date).add(-1, 'day');
 
-        return d("div.one.column.centered.row", {}, [
-            d('div.column.center.aligned', {}, [
+        return d("div", {}, [
+            d('div.ui.container.center.aligned', {}, [
                 d('h2', {}, [
-                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
+                    d('a[href=#]' + (this.state.loading ? '.disabled' : ''),
                         { key: 'prev', onClick: JournalComponent.handlePrev.bind(this, prev) },
-                        d('span.glyphicon.glyphicon-menu-left')),
+                        d('i.icon.angle.left')),
                     d('a[href=#].calendar-picker' + (this.state.showCalendar ? '.active' : ''), { }, today.format("ddd, MMM Do YYYY")),
 
-                    d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
+                    d('a[href=#]' + (this.state.loading ? '.disabled' : ''),
                         { key: 'next',  style: {visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}, onClick: JournalComponent.handleNext.bind(this, next) },
-                        d('span.glyphicon.glyphicon-menu-right')),
+                        d('i.icon.angle.right')),
                 ]),
             ]),
 
-            d('div.column.eleven.wide.center.aligned', {}, this.renderEntries()),
-            d('div.column.eleven.wide', {}, [
-                d('div.ui.divider'),
+            d('div.ui.container.entries', { key: 2 }, this.renderEntries()),
 
-                this.state.serviceError ? d("div.alert.alert-danger", this.state.serviceError) : null,
+            d('div.ui.divider'),
 
-                !this.state.current || this.state.current.entries.length < 7 ?
-                    d("form.ui.form", { onSubmit: this.handleAddEntry }, [
-                        d('div.fields', {}, [
-                            d('field.four.wide', { key: '1' }, d("label", "Add a new entry (markdown)")),
-                            d('field.four.wide', { key: '2' }, d("label", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })))
-                        ]),
-                        d("div.field" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
-                            d("textarea[placeholder=New entry...].form-control", {
-                                rows: 4,
-                                style: { width: "100%" },
-                                value: this.state.newEntry,
-                                onKeyDown: this.handleKeyDown,
-                                onBlur: this.handleBlur,
-                                maxLength: 500,
-                                onChange: this.handleTextChange.bind(this, "newEntry") }),
-                            this.state.errors["newEntry"] ? d("span.help-block", this.state.errors["newEntry"]) : null
-                        ]),
-                        d('button.ui.primary.button[type=submit]' + (Object.keys(this.state.errors).length || !this.state.newEntry ? '.disabled' : ''),
-                            { onClick: this.handleAddEntry }, "Add"),
-                        d('span.margin-small', "(or press ctrl + enter)")
-                    ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
-            ]),
+            this.state.serviceError ? d("div.alert.alert-danger", this.state.serviceError) : null,
+
+            !this.state.current || this.state.current.entries.length < 7 ?
+                d("form.ui.form", { onSubmit: this.handleAddEntry }, [
+                    d('div.fields', {}, [
+                        d('field.four.wide', { key: '1' }, d("label", "Add a new entry (markdown)")),
+                        d('field.four.wide', { key: '2' }, d("label", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })))
+                    ]),
+                    d("div.field" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
+                        d("textarea[placeholder=New entry...].form-control", {
+                            rows: 4,
+                            style: { width: "100%" },
+                            value: this.state.newEntry,
+                            onKeyDown: this.handleKeyDown,
+                            onBlur: this.handleBlur,
+                            maxLength: 500,
+                            onChange: this.handleTextChange.bind(this, "newEntry") }),
+                        this.state.errors["newEntry"] ? d("span.help-block", this.state.errors["newEntry"]) : null
+                    ]),
+                    d('button.ui.primary.button[type=submit]' + (Object.keys(this.state.errors).length || !this.state.newEntry ? '.disabled' : ''),
+                        { onClick: this.handleAddEntry }, "Add"),
+                    d('span.margin-small', "(or press ctrl + enter)")
+                ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
 
             d('div.ui.popup', { style: {'min-width':'330px'} }, d(DatePicker, { maxDate: new Date(), date: today, onChange: this.handleDateChange }))
         ]);
