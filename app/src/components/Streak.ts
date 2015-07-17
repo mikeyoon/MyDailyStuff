@@ -50,10 +50,10 @@ export class StreakComponent extends TypedReact.Component<StreakProps, StreakSta
     render() {
         return d('span[data-toggle=tooltip][data-placement=left][title=Number of contiguous entries over the last ten days]', {}, [
             "Streak ",
-            d("span.badge", {}, [
+            d("span.ui.circular.blue.label", {}, [
                 this.state.streak,
                 " ",
-                this.state.streak >= 10 ? d("span.glyphicon.glyphicon-star") : null
+                this.state.streak >= 10 ? d("i.icon.star", {style:{margin:'0'}}) : null
             ])
         ])
     }

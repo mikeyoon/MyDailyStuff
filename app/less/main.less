@@ -10,8 +10,11 @@ body {
   /* Margin bottom by footer height plus padding */
   //margin-bottom: 76px;
   //min-height: 100%;
-  padding-top: 60px;
   font-family: 'Open Sans', sans-serif;
+}
+
+.main-content {
+  margin-top: 60px;
 }
 
 textarea {
@@ -25,17 +28,24 @@ a:hover {
 
 .journal-entry {
   overflow-x: auto;
-  float: left;
-  max-width: 620px;
+  margin-right: 24px;
+  //max-width: 620px;
 }
 
 div.entries {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+}
+
+.spacer {
+  clear: both;
+  height: 2px;
 }
 
 button.ui.button.clear {
   background-color: transparent;
-  //.button-variant(@btn-default-color; transparent; transparent);
+  position: absolute;
+  right: 0px;
+  top: 0px;
 }
 
 .footer {

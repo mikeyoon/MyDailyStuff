@@ -22,7 +22,7 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
     render() {
         return d('div', [
             d(TopNav.Component),
-            d('div.ui.text.container', {}, d(this.props.component, this.props.componentOptions)),
+            d('div.ui.text.container.main-content', {}, d(this.props.component, this.props.componentOptions)),
             d('footer.footer', {},
                 d('div.ui.container', {}, [
                     d('div.ui.grid', {}, [

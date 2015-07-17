@@ -224,7 +224,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                 ]),
             ]),
 
-            d('div.ui.container.entries', { key: 2 }, this.renderEntries()),
+            d('div.entries', { key: 2 }, this.renderEntries()),
 
             d('div.ui.divider'),
 
@@ -232,10 +232,11 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
 
             !this.state.current || this.state.current.entries.length < 7 ?
                 d("form.ui.form", { onSubmit: this.handleAddEntry }, [
-                    d('div.fields', {}, [
-                        d('field.four.wide', { key: '1' }, d("label", "Add a new entry (markdown)")),
-                        d('field.four.wide', { key: '2' }, d("label", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })))
+                    d('div', {style:{'margin-bottom':'2px'}}, [
+                        d('div', { key: '1', style:{float:'left'} }, d("label", "Add a new entry (markdown)")),
+                        d('div', { key: '2', style:{float:'right'} }, d("label", {}, d(Streak.Component, { flux: this.getFlux(), update: this.refreshStreak })))
                     ]),
+                    d('div.spacer', {key: 'spacer'}),
                     d("div.field" + (this.state.errors["newEntry"] ? '.has-error' : ''), {}, [
                         d("textarea[placeholder=New entry...].form-control", {
                             rows: 4,
