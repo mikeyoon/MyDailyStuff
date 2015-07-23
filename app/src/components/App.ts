@@ -21,20 +21,20 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
 
     render() {
         return d('div', [
+            //d('div.ui.vertical.inverted.sidebar.menu.left', {}, [
+            //
+            //]),
+
             d(TopNav.Component),
             d('div.ui.text.container.main-content', {}, d(this.props.component, this.props.componentOptions)),
             d('footer.footer', {},
-                d('div.ui.container', {}, [
-                    d('div.ui.grid', {}, [
-                        d('div.four.column.row', {}, [
-                            d('div.left.floated.column', {}, [
-                                "Created by ",
-                                d('a[href=https://github.com/mikeyoon/]', "Mike Yoon"),
-                            ]),
-                            d('div.right.floated.column.right.aligned', {}, [
-                                d('a[href=/about].pull-right', "About")
-                            ])
-                        ])
+                d('div.ui.fixed.navbar.page.grid', {}, [
+                    d('div.left.floated.six.wide.column', {}, [
+                        "Created by ",
+                        d('a[href=https://github.com/mikeyoon/]', "Mike Yoon"),
+                    ]),
+                    d('div.right.floated.four.wide.column.right.aligned', {}, [
+                        d('a[href=/about]', "About")
                     ])
                 ])
             )

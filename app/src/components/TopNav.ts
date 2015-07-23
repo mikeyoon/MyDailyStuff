@@ -59,7 +59,7 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
 
     render() {
         return d('div.ui.grid', {}, [
-            d('div.computer.tablet.only.row', {}, [
+            d('div.row', {}, [
                 d('div.ui.inverted.fixed.menu.navbar.page.grid', {}, [
                     d('a.brand.item[href=/journal]', 'My Daily Stuff'),
                     d('div.item', {}, [

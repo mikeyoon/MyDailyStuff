@@ -253,7 +253,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                     d('span.margin-small', "(or press ctrl + enter)")
                 ]) : d('div.alert.alert-info', "You've got " + this.state.current.entries.length + " entries, that should cover it!"),
 
-            d('div.ui.popup', { style: {'min-width':'330px'} }, d(DatePicker, { maxDate: new Date(), date: today, onChange: this.handleDateChange }))
+            d('div.ui.small.popup', { style: {'min-width':'330px'} }, d(DatePicker, { maxDate: new Date(), date: today, onChange: this.handleDateChange }))
         ]);
     }
 }
