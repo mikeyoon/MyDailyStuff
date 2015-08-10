@@ -62,36 +62,38 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
 
     render() {
         return d('div.row', {}, [
-            this.state.query ? d('div.col-md-8.col-md-offset-2', {}, [
+            this.state.query ? d('div', {}, [
                 d('h4', this.state.total + " results for \"" + this.state.query + "\""),
                 d('div', {},
                     this.state.results.map((result, index) => {
-                        return d('div.panel.panel-default', { key: index }, [
-                            d('div.panel-body', {}, [
+                        return d('div.ui.segments', { key: moment(result.date).utc().format('YYYY-M-D') }, [
+                            d('div.ui.segment.secondary', { key: 'header'}, [
                                 (index + 1 + this.state.offset) + '. ',
                                 d('a[href=/journal/' + moment(result.date).utc().format('YYYY-M-D') + ']',
                                     moment(result.date).utc().format('dddd, MMMM Do YYYY'))
                             ]),
-                            d('ul.list-group', {}, result.entries.map((entry, ii) => {
-                                return d('li.list-group-item', { key: ii, dangerouslySetInnerHTML: { __html: entry } });
-                            }))
+                            d('div.ui.segment', { key: 'result' }, [
+                                d('ul.ui.list', {}, result.entries.map((entry, ii) => {
+                                    return d('li.item', { key: ii, dangerouslySetInnerHTML: { __html: entry } });
+                                }))
+                            ])
                         ]);
                     })
                 ),
-                d('ul.pager', {}, [
-                    d('li.previous' + (this.state.prevOffset == null ? '.disabled' : ''), {},
+                d('div.ui.horizontal.divided.list', {}, [
+                    d('div.item' + (this.state.prevOffset == null ? '.disabled' : ''), { key: 'previous' },
                         d("a", { href: `/search/${this.state.query}?offset=${this.state.prevOffset}`,
                             onClick: this.handlePageLink.bind(this, this.state.prevOffset),
                             rel: this.state.prevOffset == null ? "external" : null,
-                        }, [d('span.glyphicon.glyphicon-chevron-left'), " prev"])),
-                    d('li.next' + (this.state.nextOffset == null ? '.disabled' : ''), {},
+                        }, [d('i.angle.left.icon'), " prev"])),
+                    d('div.item' + (this.state.nextOffset == null ? '.disabled' : ''), { key: 'next' },
                         d("a", { href: `/search/${this.state.query}?offset=${this.state.nextOffset}`,
                             onClick: this.handlePageLink.bind(this, this.state.nextOffset),
                             rel: this.state.nextOffset == null ? "external" : null,
-                        }, ["next ", d('span.glyphicon.glyphicon-chevron-right')]))
+                        }, ["next ", d('i.angle.right.icon')]))
                 ])
             ]) :
-            d('div.col-md-8.col-md-offset-2', {},
+            d('div', {},
                 d('div.margin-top-md', {},
                     d('div.progress', {},
                         d('div.progress-bar.progress-bar-striped.active[role=progressbar]', { style: { width: "100%" }})

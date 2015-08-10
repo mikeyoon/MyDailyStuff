@@ -96,23 +96,23 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
                 this.state.auth.saveProfileResult.success ?
                     d('div.alert.alert-success', "Profile Updated Successfully") : null,
 
-                d("form", { onSubmit: this.onSubmit }, [
-                    d("div.form-group", { key: "1" }, [
-                        d("label.control-label", { htmlFor: "email" }, "Email:"),
-                        d("input.form-control#email[name=email]", { defaultValue: this.state.email, disabled: true })
+                d("form.ui.form", { onSubmit: this.onSubmit }, [
+                    d("div.field", { key: "1" }, [
+                        d("label", { htmlFor: "email" }, "Email:"),
+                        d("input#email[name=email]", { defaultValue: this.state.email, disabled: true })
                     ]),
-                    d("div.form-group" + (this.state.errors["password"] ? '.has-error' : ''), { key: "2" }, [
-                        d("label.control-label", { htmlFor: "password" }, "Password:"),
-                        d("input.form-control#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") }),
+                    d("div.field" + (this.state.errors["password"] ? '.has-error' : ''), { key: "2" }, [
+                        d("label", { htmlFor: "password" }, "Password:"),
+                        d("input#password[name=password][type=password]", { value: this.state.password, onChange: this.handleTextChange.bind(this, "password") }),
                         this.state.errors["password"] ? d("span.help-block", this.state.errors["password"]) : null
                     ]),
-                    d("div.form-group" + (this.state.errors["confirm"] ? '.has-error' : ''), { key: "3" }, [
-                        d("label.control-label", { htmlFor: "confirm" }, "Confirm Password:"),
-                        d("input.form-control#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") }),
+                    d("div.field" + (this.state.errors["confirm"] ? '.has-error' : ''), { key: "3" }, [
+                        d("label", { htmlFor: "confirm" }, "Confirm Password:"),
+                        d("input#confirm[name=confirm][type=password]", { value: this.state.confirm, onChange: this.handleTextChange.bind(this, "confirm") }),
                         this.state.errors["confirm"] ? d("span.help-block", this.state.errors["confirm"]) : null
                     ]),
                     d("div.text-center", {}, [
-                        d("button.btn.btn-primary[type=submit]", "Save Changes")
+                        d("button.ui.button.primary[type=submit]", "Save Changes")
                     ])
                 ])
             ])
