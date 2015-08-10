@@ -62,21 +62,22 @@ export class TopNavComponent extends TypedReact.Component<{}, TopNavState>
             d('div.row', {}, [
                 d('div.ui.inverted.fixed.menu.navbar.page.grid', {}, [
                     d('a.brand.item[href=/journal]', 'My Daily Stuff'),
-                    d('div.item', {}, [
+                    this.state.isLoggedIn ? d('div.item', {}, [
                         d('div.ui.transparent.icon.input.inverted', {}, [
                             d('input[type=text][placeholder=Search...][autoComplete=off]'),
                             d('i.search.link.icon')
                         ])
-                    ]),
+                    ]) : null,
                     d('div.right.menu', {}, [
-                        d('div.ui.dropdown.item', {}, [
+                        this.state.isLoggedIn ? d('div.ui.dropdown.item', {}, [
                             this.state.email,
                             d('i.dropdown.icon'),
                             d('div.menu', {}, [
                                 d('a.item[href=/profile]', { key: 1 }, "My Profile"),
                                 d('a.item[href=#]', { key: 2, onClick: this.handleLogout }, "Logout")
                             ])
-                        ])
+                        ]) : d('a.item[href=/login]', "Login"),
+                        this.state.isLoggedIn ? null : d('a.item[href=/register]', "Register")
                     ])
 
                 ])

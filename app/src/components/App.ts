@@ -29,13 +29,16 @@ export class AppComponent extends TypedReact.Component<AppProps, {}>
             d('div.ui.text.container.main-content', {}, d(this.props.component, this.props.componentOptions)),
             d('footer.footer', {},
                 d('div.ui.fixed.navbar.page.grid', {}, [
-                    d('div.left.floated.six.wide.column', {}, [
-                        "Created by ",
-                        d('a[href=https://github.com/mikeyoon/]', "Mike Yoon"),
-                    ]),
-                    d('div.right.floated.four.wide.column.right.aligned', {}, [
-                        d('a[href=/about]', "About")
+                    d('div.row.footer', {}, [
+                        d('div.left.floated.six.wide.column', {}, [
+                            "Created by ",
+                            d('a[href=https://github.com/mikeyoon/]', "Mike Yoon"),
+                        ]),
+                        d('div.right.floated.four.wide.column.right.aligned', {}, [
+                            d('a[href=/about]', "About")
+                        ])
                     ])
+
                 ])
             )
         ]);
