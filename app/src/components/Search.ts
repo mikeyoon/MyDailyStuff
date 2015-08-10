@@ -80,17 +80,29 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
                         ]);
                     })
                 ),
-                d('div.ui.horizontal.divided.list', {}, [
-                    d('div.item' + (this.state.prevOffset == null ? '.disabled' : ''), { key: 'previous' },
-                        d("a", { href: `/search/${this.state.query}?offset=${this.state.prevOffset}`,
+                d('div.ui.horizontal.list', {}, [
+                    d("a.ui.item.middle.aligned"  + (this.state.prevOffset == null ? '.disabled' : ''),
+                        {
+                            key: 'prev',
+                            href: `/search/${this.state.query}?offset=${this.state.prevOffset}`,
                             onClick: this.handlePageLink.bind(this, this.state.prevOffset),
                             rel: this.state.prevOffset == null ? "external" : null,
-                        }, [d('i.angle.left.icon'), " prev"])),
-                    d('div.item' + (this.state.nextOffset == null ? '.disabled' : ''), { key: 'next' },
-                        d("a", { href: `/search/${this.state.query}?offset=${this.state.nextOffset}`,
+                        },
+                        [d('i.angle.left.icon.middle.aligned.content'), d('span.middle.aligned', " prev")]
+                    ),
+                    //d('div.item' + (this.state.prevOffset == null ? '.disabled' : ''), { key: 'previous' },
+
+                    d("a.ui.item.middle.aligned"  + (this.state.nextOffset == null ? '.disabled' : ''),
+                        {
+                            key: 'next',
+                            href: `/search/${this.state.query}?offset=${this.state.nextOffset}`,
                             onClick: this.handlePageLink.bind(this, this.state.nextOffset),
                             rel: this.state.nextOffset == null ? "external" : null,
-                        }, ["next ", d('i.angle.right.icon')]))
+                        },
+                        [d('span.middle.aligned', "next "), d('i.angle.right.icon.middle.aligned.content')]
+                    )
+                    //d('div.item' + (this.state.nextOffset == null ? '.disabled' : ''), { key: 'next' },
+
                 ])
             ]) :
             d('div', {},
