@@ -209,7 +209,7 @@ export class JournalComponent extends TypedReact.Component<JournalProps, Journal
                         d('span.glyphicon.glyphicon-menu-left')),
                     d('a[href=#]' + (this.state.showCalendar ? '.active' : ''), { onClick: this.handleToggleCalendar.bind(this, true) }, today.format("ddd, MMM Do YYYY")),
                     d('button.btn.btn-link' + (this.state.loading ? '.disabled' : ''),
-                        { key: 'next',  style: {visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}, onClick: JournalComponent.handleNext.bind(this, next) },
+                        { key: 'next', style: {visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}, onClick: JournalComponent.handleNext.bind(this, next) },
                         d('span.glyphicon.glyphicon-menu-right')),
                 ]),
 

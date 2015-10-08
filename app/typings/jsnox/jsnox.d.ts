@@ -3,7 +3,7 @@
 // Definitions by: Steve Baker <https://github.com/stkb/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-/// <reference path="../react/react-global.d.ts" />
+/// <reference path="../react/react.d.ts" />
 
 declare module 'jsnox' {
 
