@@ -43,8 +43,8 @@ type SearchJournalRequest struct {
 }
 
 type FindDaysRequest struct {
-	Start string `form:start`
-	End   string `form:end`
+	Start string `form:"start"`
+	End   string `form:"end"`
 }
 
 type ResetPasswordRequest struct {

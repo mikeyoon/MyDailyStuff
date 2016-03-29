@@ -1,0 +1,181 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "FowvbmgNunKXTi0x4Y/JzoXNUDo=",
+			"path": "github.com/onsi/ginkgo",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "LgNmdJZzHErHtYhSDec14GIinNs=",
+			"path": "github.com/onsi/ginkgo/config",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "aLkBED7RUwstAO+u2MgUXUwOwPo=",
+			"path": "github.com/onsi/ginkgo/internal/codelocation",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "Hpm+s2t5QAGXQmdaYEmcZinuRv4=",
+			"path": "github.com/onsi/ginkgo/internal/containernode",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "8i96MvxtHfaYs5kZmqsKL7YN28E=",
+			"path": "github.com/onsi/ginkgo/internal/failer",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "p1goMwYc09WaZpQJuoAFkTQAYBc=",
+			"path": "github.com/onsi/ginkgo/internal/leafnodes",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "q6IZwmd8pUnA3uQW8kDKAaF9l6I=",
+			"path": "github.com/onsi/ginkgo/internal/remote",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "qZ5YlSPd/p3xcoL3l5VcD+qoo08=",
+			"path": "github.com/onsi/ginkgo/internal/spec",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "iNTp7FrWVqo8Q1w8RFj5IqbGjDg=",
+			"path": "github.com/onsi/ginkgo/internal/specrunner",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "h8lnPK8tJZs/dEidErkEYgTlAAs=",
+			"path": "github.com/onsi/ginkgo/internal/suite",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "H0cK4t/8QjPKNSimhNSr1dxFSmQ=",
+			"path": "github.com/onsi/ginkgo/internal/testingtproxy",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "kn+ah21KBK7BH3h339Bi587hR3w=",
+			"path": "github.com/onsi/ginkgo/internal/writer",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "qYSgzYzsOx4q41AKilXXwf1sPNw=",
+			"path": "github.com/onsi/ginkgo/reporters",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "ZWBdt6VWU1n99tyVWG99U4jC2aQ=",
+			"path": "github.com/onsi/ginkgo/reporters/stenographer",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "XtJoO3FfjyNMLKdJSAQsgAuOCbU=",
+			"path": "github.com/onsi/ginkgo/types",
+			"revision": "c5c761488350e56a28c4a91da87e5db7020bedc8",
+			"revisionTime": "2015-05-25T12:13:08-07:00"
+		},
+		{
+			"checksumSHA1": "rKADMAPGP82nL+Roi6O7ebcUbxg=",
+			"path": "github.com/onsi/gomega",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "aMFStAJu9spxbPDdp5CYdeTo85A=",
+			"path": "github.com/onsi/gomega/format",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "JwGVeTqzV1k4mFU5p7PndRSoStQ=",
+			"path": "github.com/onsi/gomega/internal/assertion",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "ffOT6tscTg1Rr2vQSin8CziwmIY=",
+			"path": "github.com/onsi/gomega/internal/asyncassertion",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "e/6Ll0j08p1QIqSMfJFIPpLQfFg=",
+			"path": "github.com/onsi/gomega/internal/testingtsupport",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "vKVGJez5jigjVbrtCjAk9EdQFVg=",
+			"path": "github.com/onsi/gomega/matchers",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "yujI/4mbMBUDM4gF9t/V74S8nvs=",
+			"path": "github.com/onsi/gomega/matchers/support/goraph/bipartitegraph",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "8IzcUa1ol+CMxmbvBgpMO+UKh+U=",
+			"path": "github.com/onsi/gomega/matchers/support/goraph/edge",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "UfEAjTlj3fJa+ELPz7z+2vjcEhs=",
+			"path": "github.com/onsi/gomega/matchers/support/goraph/node",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "6Emiy+LKVBCVLJsv0jEwMsHS/NI=",
+			"path": "github.com/onsi/gomega/matchers/support/goraph/util",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "0VhK2cweXh/c94SGHDOaw9B5+Pw=",
+			"path": "github.com/onsi/gomega/types",
+			"revision": "766f4042b942146e90594d145c5071fa92c0aa9a",
+			"revisionTime": "2015-05-19T14:08:19-07:00"
+		},
+		{
+			"checksumSHA1": "iDI3Ec9Co5dn9MAf6VRg5cGNRPI=",
+			"path": "github.com/stretchr/objx",
+			"revision": "cbeaeb16a013161a98496fad62933b1d21786672",
+			"revisionTime": "2014-05-26T12:09:21-06:00"
+		},
+		{
+			"checksumSHA1": "s+uXxYIDuUnz0zzCgZrEB9qtdxw=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "232e8563676cd15c3a36ba5e675ad4312ac4cb11",
+			"revisionTime": "2015-05-27T15:45:55+01:00"
+		},
+		{
+			"checksumSHA1": "ZUHFAyomc43JaN4j3/1fS5Ug5UM=",
+			"path": "github.com/stretchr/testify/mock",
+			"revision": "232e8563676cd15c3a36ba5e675ad4312ac4cb11",
+			"revisionTime": "2015-05-27T15:45:55+01:00"
+		}
+	],
+	"rootPath": "github.com/mikeyoon/MyDailyStuff"
+}

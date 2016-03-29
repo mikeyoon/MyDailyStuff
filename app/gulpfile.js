@@ -9,7 +9,6 @@ var sourcemaps = require('gulp-sourcemaps');
 var less = require('gulp-less');
 var nop = require('gulp-nop');
 var watchify = require('watchify');
-var gutil = require('gulp-util');
 
 var isProd = process.env.NODE_ENV === 'production';
 
@@ -27,18 +26,18 @@ gulp.task('browserify', function() {
     if (watching) {
         bundler = watchify(bundler);
         bundler.on('update', function(ids) {
-            gutil.log('Updating browserify bundle: ' + ids);
+            console.log('Updating browserify bundle: ' + ids);
 
             var stream = bundler.bundle()
                 .on('error', function(err) {
-                    gutil.log(err.message);
+                    console.log(err.message);
                 })
                 .pipe(source('app.js'))
                 .pipe(gulp.dest('../public'));
         });
 
         bundler.on('bytes', function(bytes) {
-            gutil.log('Updated browserify bundle: ' + bytes + " bytes written.");
+            console.log('Updated browserify bundle: ' + bytes + " bytes written.");
         });
     }
 
