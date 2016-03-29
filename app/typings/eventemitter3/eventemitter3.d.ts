@@ -81,14 +81,15 @@ declare module EventEmitter3 {
         //
         setMaxListeners(): EventEmitter;
     }
-    export module EventEmitter {
-        //
-        // Expose the module.
-        //
-        export class EventEmitter extends EventEmitter3.EventEmitter {}
-        export class EventEmitter2 extends EventEmitter3.EventEmitter {}
-        export class EventEmitter3 extends EventEmitter3.EventEmitter {}
-    }
+
+    //export module EventEmitter {
+    //    //
+    //    // Expose the module.
+    //    //
+    //    export class EventEmitter extends EventEmitter3.EventEmitter {}
+    //    export class EventEmitter2 extends EventEmitter3.EventEmitter {}
+    //    export class EventEmitter3 extends EventEmitter3.EventEmitter {}
+    //}
 }
 
 declare module 'eventemitter3' {

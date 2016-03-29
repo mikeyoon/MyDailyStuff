@@ -36,6 +36,7 @@ declare module Fluxxor {
     interface StoreSpec {
         initialize?(instance?: any, options?: {}): void;
         actions?: any;
+        [others: string]: any;
     }
     
     interface StoreClass {
