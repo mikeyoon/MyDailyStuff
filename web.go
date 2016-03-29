@@ -5,14 +5,14 @@ import (
 	"flag"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
+	"github.com/martini-contrib/csrf"
+	"github.com/martini-contrib/gorelic"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	"github.com/mikeyoon/MyDailyStuff/lib"
-	"github.com/martini-contrib/gorelic"
 	"log"
-	"os"
-	"github.com/martini-contrib/csrf"
 	"net/http"
+	"os"
 )
 
 var (
@@ -82,9 +82,9 @@ func main() {
 
 	m.Use(sessions.Sessions("my_session", store))
 	m.Use(csrf.Generate(&csrf.Options{
-		Secret: secret,
+		Secret:     secret,
 		SessionKey: "userId",
-		Header: "X-Csrf-Token",
+		Header:     "X-Csrf-Token",
 		ErrorFunc: func(w http.ResponseWriter) {
 			http.Error(w, "CSRF token validation failed", http.StatusBadRequest)
 		},
