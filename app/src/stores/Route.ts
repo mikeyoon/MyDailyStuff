@@ -16,4 +16,4 @@ var RouteStore = Fluxxor.createStore({
     }
 });
 
-export = RouteStore;
+export default RouteStore;

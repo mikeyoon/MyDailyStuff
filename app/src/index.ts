@@ -1,30 +1,26 @@
-/// <reference path='../node_modules/typed-react/typed-react.d.ts' />
-/// <reference path='../typings/tsd.d.ts' />
-/// <reference path='./components/Login.ts' />
+/// <reference path='../typings/browser.d.ts' />
 
-import React = require('react');
-import TypedReact = require('typed-react');
-import page = require('page');
-import Fluxxor = require('fluxxor');
-import actions = require('./actions');
-import jsnox = require('jsnox');
-import moment = require('moment');
+import * as React from 'react';
+import page from 'page';
+import actions from './actions';
+import * as moment from 'moment';
+import * as DOM from 'react-dom';
 
-import Login = require('./components/Login');
-import Signup = require('./components/Signup');
-import Journal = require('./components/Journal');
-import Forgot = require('./components/Forgot');
-import Reset = require('./components/ResetPassword');
-import App = require('./components/App');
-import Search = require('./components/Search');
-import Profile = require('./components/Profile');
-import About = require('./components/About');
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Journal from './components/Journal';
+import Forgot from './components/Forgot';
+import Reset from './components/ResetPassword';
+import App from './components/App';
+import Search from './components/Search';
+import Profile from './components/Profile';
+import About from './components/About';
 
-import AuthStore = require('./stores/Auth');
-import JournalStore = require('./stores/Journal');
-import SearchStore = require('./stores/SearchJournalStore');
-import RouteStore = require('./stores/Route');
-import AnalyticsStore = require('./stores/Analytics');
+import AuthStore from './stores/Auth';
+import JournalStore from './stores/Journal';
+import SearchStore from './stores/SearchJournalStore';
+import RouteStore from './stores/Route';
+import AnalyticsStore from './stores/Analytics';
 
 var stores = {
     auth: new AuthStore(),
@@ -40,8 +36,8 @@ var flux = new Fluxxor.Flux(stores, actions.methods);
 //});
 
 function renderApp(component: React.ComponentClass<{}>, options: any) {
-    var routeElement = React.createElement(App.Component, { flux: flux, component: component, componentOptions: options });
-    React.render(routeElement, document.getElementById('content-root'));
+    var routeElement = React.createElement(App, { flux: flux, component: component, componentOptions: options });
+    DOM.render(routeElement, document.getElementById('content-root'));
 }
 
 page('/', () => {
@@ -50,13 +46,13 @@ page('/', () => {
     } else {
         //Check if logged in, if not, route to /login
         //If logged in, route to journal/today's date
-        renderApp(Journal.Component, {flux: flux, date: new Date()});
+        renderApp(Journal, {flux: flux, date: new Date()});
     }
 });
 
 page('/register', () => {
     if (!stores.auth.isLoggedIn) {
-        renderApp(Signup.Component, {flux: flux});
+        renderApp(Signup, {flux: flux});
     } else {
         page('/login');
     }
@@ -64,7 +60,7 @@ page('/register', () => {
 
 page('/login', () => {
     if (!stores.auth.isLoggedIn) {
-        renderApp(Login.Component, { flux: flux });
+        renderApp(Login, { flux: flux });
     } else {
         page('/journal');
     }
@@ -72,19 +68,19 @@ page('/login', () => {
 
 page('/profile', () => {
     if (stores.auth.isLoggedIn) {
-        renderApp(Profile.Component, {flux: flux});
+        renderApp(Profile, {flux: flux});
     } else {
         page('/login');
     }
 });
 
 page('/forgot-password', () => {
-    renderApp(Forgot.Component, { flux: flux });
+    renderApp(Forgot, { flux: flux });
 });
 
 page('/account/reset/:token', (ctx) => {
     //console.log(ctx.params.token);
-    renderApp(Reset.Component, { flux: flux, token: ctx.params.token });
+    renderApp(Reset, { flux: flux, token: ctx.params.token });
 });
 
 page('/account/verify/:token', (ctx) => {
@@ -99,7 +95,7 @@ page('/search/:query', (ctx) => {
         var regex = /offset=([0-9]+)/i.exec(ctx.querystring);
         var offset = regex ? parseInt(regex[1]) : 0;
 
-        renderApp(Search.Component, { flux: flux, query: ctx.params.query, offset: offset });
+        renderApp(Search, { flux: flux, query: ctx.params.query, offset: offset });
     }
 });
 
@@ -109,7 +105,7 @@ page('/journal', (ctx) => {
     } else {
         var date = new Date();
         date.setHours(0,0,0,0);
-        renderApp(Journal.Component, { flux: flux, date: date });
+        renderApp(Journal, { flux: flux, date: date });
     }
 });
 
@@ -117,12 +113,12 @@ page('/journal/:date', (ctx) => {
     if (!stores.auth.isLoggedIn) {
         page('/login');
     } else {
-        renderApp(Journal.Component, {flux: flux, date: moment(ctx.params.date, 'YYYY-M-D').toDate() });
+        renderApp(Journal, {flux: flux, date: moment(ctx.params.date, 'YYYY-M-D').toDate() });
     }
 });
 
 page('/about', () => {
-    renderApp(About.Component, {});
+    renderApp(About, {});
 });
 
 //page.exit((ctx, next) => {

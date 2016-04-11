@@ -1,4 +1,5 @@
-import Requests = require("./models/requests");
+import {createAction} from 'redux-actions';
+import * as Requests from "./models/requests";
 
 var c = {
     ACCOUNT: {
@@ -33,6 +34,8 @@ var c = {
         SEARCH: "ROUTE:SEARCH"
     }
 };
+
+export const addJournal = createAction(c.JOURNAL.ADD, )
 
 var methods = {
     journal: {
@@ -110,4 +113,4 @@ var actions = {
     constants: c
 };
 
-export = actions;
+export default actions;

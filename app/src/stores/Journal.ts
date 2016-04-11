@@ -179,4 +179,4 @@ var JournalStore = Fluxxor.createStore({
     }
 });
 
-export = JournalStore;
+export default JournalStore;

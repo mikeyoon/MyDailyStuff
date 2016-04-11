@@ -1,6 +1,4 @@
-/// <reference path='../../typings/page/page.d.ts' />
-/// <reference path='../../typings/rest/rest.d.ts' />
-/// <reference path='../../typings/fluxxor/fluxxor.d.ts' />
+/// <reference path='../../typings/browser.d.ts' />
 
 import rest = require('rest');
 import mime = require('rest/interceptor/mime');
@@ -12,6 +10,7 @@ import Requests = require("../models/requests");
 import Responses = require("../models/responses");
 import page = require('page');
 import moment = require('moment');
+import * as Redux from 'redux';
 
 const CSRF_HEADER = "X-Csrf-Token";
 
@@ -303,4 +302,4 @@ var AuthStore = Fluxxor.createStore({
     }
 });
 
-export = AuthStore;
+export default AuthStore;

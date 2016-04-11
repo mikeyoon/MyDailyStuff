@@ -116,4 +116,4 @@ var SearchJournalStore = Fluxxor.createStore({
     }
 });
 
-export = SearchJournalStore;
+export default SearchJournalStore;

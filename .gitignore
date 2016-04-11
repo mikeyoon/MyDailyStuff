@@ -6,3 +6,4 @@ public
 node_modules
 .idea/libraries/GOPATH__MyDailyStuff_.xml
 app/.idea/workspace.xml
+npm-debug.log

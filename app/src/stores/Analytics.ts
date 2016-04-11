@@ -1,8 +1,7 @@
-import Fluxxor = require('fluxxor');
-import page = require('page');
-import actions = require('../actions');
-import Requests = require("../models/requests");
-import moment = require('moment');
+import * as redux from 'redux';
+import * as actions from '../actions'
+import * as Requests from "../models/requests";
+import * as moment from 'moment';
 
 declare var _gaq: any;
 
@@ -86,4 +85,4 @@ var AnalyticsStore = Fluxxor.createStore({
     }
 });
 
-export = AnalyticsStore;
+export default AnalyticsStore;
