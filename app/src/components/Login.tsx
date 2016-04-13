@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Fluxxor = require('fluxxor');
 import * as Requests from "../models/requests";
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
 
 export interface LoginProps {
     flux: any;
@@ -18,10 +19,8 @@ export interface LoginState {
 
 const emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
-export default class LoginComponent extends React.Component<LoginProps, LoginState>
-    implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
-
-    getFlux: () => Fluxxor.Flux;
+export default class LoginComponent extends BaseFluxxorComponent<LoginProps, LoginState> {
+    getWatchers() { return ['auth']; }
 
     isValid(): boolean {
         return !this.state.errors;
@@ -76,7 +75,7 @@ export default class LoginComponent extends React.Component<LoginProps, LoginSta
 
     renderLoginError() {
         if (this.state.auth.error) {
-            return <div className="alert.alert-danger">{this.state.auth.error}</div>;
+            return <div className="alert alert-danger">{this.state.auth.error}</div>;
         }
 
         return null;
@@ -88,13 +87,13 @@ export default class LoginComponent extends React.Component<LoginProps, LoginSta
                 <h3 className="text-center">Login to your account</h3>
                 <br />
                 {this.renderLoginError()}
-                <form onSubmit={this.onSubmit}>
-                    <div className={"form-group " + (this.state.errors["email"] ? '.has-error' : '')} key="1">
+                <form onSubmit={this.onSubmit.bind(this)}>
+                    <div className={"form-group " + (this.state.errors["email"] ? 'has-error' : '')} key="1">
                         <label htmlFor="email">Email:</label>
                         <input className="form-control" id="email" name="email" value={this.state.email} onChange={this.handleTextChange.bind(this, "email")} />
                         {this.state.errors["email"] ? <span className="help-block">{this.state.errors["email"]}</span> : null}
                     </div>
-                    <div className={"form-group " + (this.state.errors["password"] ? '.has-error' : '')} key="2">
+                    <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
                         <label htmlFor="password">Password:</label>
                         <input className="form-control" id="password" name="password" type="password" value={this.state.password} onChange={this.handleTextChange.bind(this, "password")} />
                         {this.state.errors["password"] ? <span className="help-block">{this.state.errors["password"]}</span> : null}
@@ -118,5 +117,3 @@ export default class LoginComponent extends React.Component<LoginProps, LoginSta
         </div>
     }
 }
-
-//export var Component = TypedReact.createClass(LoginComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);

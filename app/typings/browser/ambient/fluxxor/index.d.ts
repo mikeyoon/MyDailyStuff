@@ -5,6 +5,7 @@
 // Definitions by: Yuichi Murata <https://github.com/mrk21>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
+/// <reference path='../eventemitter3/index.d.ts' />
 
 declare namespace Fluxxor {
     class Dispatcher {
@@ -34,11 +35,12 @@ declare namespace Fluxxor {
     }
 
     interface StoreSpec {
+        [index: string]: any;
         initialize?(instance?: any, options?: {}): void;
         actions?: any;
     }
 
-    interface StoreClass {
+    interface StoreClass<T> {
         new (options?: {}): any;
     }
 
@@ -61,7 +63,7 @@ declare namespace Fluxxor {
     function FluxMixin(React: typeof __React): FluxMixin;
     function FluxChildMixin(React: typeof __React): FluxChildMixin;
     function StoreWatchMixin<StoreState>(...storeNames: string[]): StoreWatchMixin<StoreState>;
-    function createStore(spec: StoreSpec): StoreClass;
+    function createStore<T>(spec: StoreSpec): StoreClass<T>;
     var version: string;
 }
 

@@ -1,4 +1,3 @@
-import {createAction} from 'redux-actions';
 import * as Requests from "./models/requests";
 
 var c = {
@@ -34,8 +33,6 @@ var c = {
         SEARCH: "ROUTE:SEARCH"
     }
 };
-
-export const addJournal = createAction(c.JOURNAL.ADD, )
 
 var methods = {
     journal: {

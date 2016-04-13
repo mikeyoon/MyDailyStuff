@@ -1,23 +1,23 @@
-import React = require('react');
-import Requests = require("../models/requests");
-
+import * as React from 'react';
 import TopNav from '../components/TopNav';
+import {assign} from 'lodash';
+(React as any).__spread = assign;
 
 interface AppProps {
     flux: Fluxxor.Flux;
     component: React.ComponentClass<{}>;
-    componentOptions: {};
+    componentOptions: any;
 }
 
 export default class AppComponent extends React.Component<AppProps, {}> {
 
-    //getFlux: () => Fluxxor.Flux;
-
     render() {
+        let Component = this.props.component;
+
         return <div>
-            <TopNav />
+            <TopNav flux={this.props.flux} />
             <div className="container">
-                <this.props.component {...this.props.componentOptions} />
+                <Component {...this.props.componentOptions} />
             </div>
             <footer className="footer">
                 <div className="container">
@@ -31,5 +31,3 @@ export default class AppComponent extends React.Component<AppProps, {}> {
         </div>
     }
 }
-
-//export var Component = TypedReact.createClass(AppComponent, [Fluxxor.FluxMixin(React)]);

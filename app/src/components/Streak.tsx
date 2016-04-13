@@ -1,9 +1,8 @@
 /**
  * Created by myoon on 6/15/2015.
  */
-import React = require('react');
-import Requests = require("../models/requests");
-import Responses = require("../models/responses");
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
+import * as React from 'react';
 
 declare var $: any;
 
@@ -16,26 +15,25 @@ export interface StreakState {
     streak?: number;
 }
 
-export default class StreakComponent extends React.Component<StreakProps, StreakState> {
+export default class StreakComponent extends BaseFluxxorComponent<StreakProps, StreakState> {
+    getWatchers() { return ['auth']; }
 
-    //getFlux: () => Fluxxor.Flux;
+    getStateFromFlux(): StreakState {
+        var auth = this.getFlux().store("auth");
 
-    // getStateFromFlux(): StreakState {
-    //     var auth = this.getFlux().store("auth");
-    //
-    //     return {
-    //         streak: auth.streak,
-    //     };
-    // }
+        return {
+            streak: auth.streak,
+        };
+    }
 
     componentWillReceiveProps(nextProps: StreakProps) {
-        // if (nextProps.update) {
-        //     this.getFlux().actions.account.getStreak(true);
-        // }
+        if (nextProps.update) {
+            this.getFlux().actions.account.getStreak(true);
+        }
     }
 
     componentWillMount() {
-        //this.getFlux().actions.account.getStreak(false);
+        this.getFlux().actions.account.getStreak(false);
     }
 
     componentDidMount() {
@@ -52,5 +50,3 @@ export default class StreakComponent extends React.Component<StreakProps, Streak
         </span>
     }
 }
-
-//export var Component = TypedReact.createClass(StreakComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);

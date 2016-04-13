@@ -212,7 +212,7 @@ declare namespace PageJS {
 
 declare module "page" {
     var page: PageJS.Static;
-    export default page;
+    export = page;
 }
 
 declare var page: PageJS.Static;

@@ -1,7 +1,10 @@
-import React = require('react');
-import Fluxxor = require('fluxxor');
-import Requests = require("../models/requests");
-import actions = require('../actions');
+import * as Fluxxor from 'fluxxor';
+import * as React from 'react';
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
+
+interface TopNavProps {
+    flux: Fluxxor.Flux;
+}
 
 interface TopNavState {
     isLoggedIn: boolean;
@@ -10,10 +13,8 @@ interface TopNavState {
     searching?: boolean;
 }
 
-export default class TopNavComponent extends React.Component<{}, TopNavState>
-    implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
-
-    getFlux: () => Fluxxor.Flux;
+export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, TopNavState> {
+    getWatchers() { return ['auth', 'search'] };
 
     getStateFromFlux() {
         var store = this.getFlux().store("auth");
@@ -70,7 +71,7 @@ export default class TopNavComponent extends React.Component<{}, TopNavState>
                                    onKeyDown={this.handleSearchKeyDown}/>
                             <div className="input-group-btn">
                                 <button type="submit"
-                                        className={"btn btn-primary " + this.state.searching ? '.disabled' : ''}>
+                                        className={"btn btn-primary " + this.state.searching ? 'disabled' : ''}>
                                     <i className="glyphicon glyphicon-search"/>
                                 </button>
                             </div>
@@ -98,5 +99,3 @@ export default class TopNavComponent extends React.Component<{}, TopNavState>
         </nav>
     }
 }
-
-//export var Component = TypedReact.createClass(TopNavComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth", "search")]);

@@ -1,5 +1,5 @@
-import * as redux from 'redux';
-import * as actions from '../actions'
+import * as Fluxxor from 'fluxxor';
+import actions from '../actions'
 import * as Requests from "../models/requests";
 import * as moment from 'moment';
 

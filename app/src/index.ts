@@ -1,8 +1,9 @@
 /// <reference path='../typings/browser.d.ts' />
 
 import * as React from 'react';
-import page from 'page';
+import * as page from 'page';
 import actions from './actions';
+import * as Fluxxor from 'fluxxor';
 import * as moment from 'moment';
 import * as DOM from 'react-dom';
 

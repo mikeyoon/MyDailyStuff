@@ -2,8 +2,7 @@
  * Created by myoon on 6/4/2015.
  */
 
-import React = require('react');
-import Fluxxor = require('fluxxor');
+import * as React  from 'react';
 
 export default class AboutComponent extends React.Component<{}, {}> {
 

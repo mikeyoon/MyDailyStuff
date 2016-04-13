@@ -4,10 +4,12 @@ import * as React from 'react';
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import * as moment from 'moment';
-import page from 'page';
+import * as page from 'page';
 import DatePicker from 'react-date-picker';
 import Streak from './Streak';
-declare var $: any;
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
+
+declare var $:any;
 
 export interface JournalProps {
     flux: any;
@@ -30,9 +32,8 @@ interface JournalState {
     showCalendar?: boolean;
 }
 
-export default class JournalComponent extends React.Component<JournalProps, JournalState> {
-
-    getFlux: () => any = () => {}; //Fluxxor.Flux;
+export default class JournalComponent extends BaseFluxxorComponent<JournalProps, JournalState> {
+    getWatchers() { return ['journal']; }
 
     refreshStreak:boolean;
 
@@ -71,13 +72,13 @@ export default class JournalComponent extends React.Component<JournalProps, Jour
     }
 
     componentDidMount() {
-        $(document).on('touchend', this.closeCalendar);
-        $(document).on('click', this.closeCalendar);
+        window.addEventListener('touchend', this.closeCalendar, false);
+        window.addEventListener('click', this.closeCalendar, false);
     }
 
     componentWillUnmount() {
-        $(document).off('touchend', this.closeCalendar);
-        $(document).off('click', this.closeCalendar);
+        window.removeEventListener('click', this.closeCalendar, false);
+        window.removeEventListener('touchend', this.closeCalendar, false);
     }
 
     validate():boolean {
@@ -237,7 +238,7 @@ export default class JournalComponent extends React.Component<JournalProps, Jour
                     </div>
 
                     <button
-                        className={"btn btn-primary " + (Object.keys(this.state.errors).length || !this.state.newEntry) ? '.disabled' : ''}
+                        className={"btn btn-primary " + (Object.keys(this.state.errors).length || !this.state.newEntry) ? 'disabled' : ''}
                         type="submit" onClick={this.handleAddEntry}>
                         Add
                     </button>
@@ -249,5 +250,3 @@ export default class JournalComponent extends React.Component<JournalProps, Jour
         </div>
     }
 }
-
-//export var Component = TypedReact.createClass(JournalComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("journal")]);

@@ -1,10 +1,8 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import React = require('react');
-import Fluxxor = require('fluxxor');
-import jsnox = require('jsnox');
-import Requests = require("../models/requests");
-import classNames = require('classnames');
+import * as React from 'react';
+import * as classNames from 'classnames';
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
 
 interface ForgotProps {
     flux: any;
@@ -18,11 +16,9 @@ interface ForgotState {
 
 const emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
-export default class ForgotComponent extends React.Component<ForgotProps, ForgotState>
-implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
-
-    getFlux: () => Fluxxor.Flux;
-
+export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, ForgotState> {
+    getWatchers() { return ['auth']; }
+    
     isValid(): boolean {
         return !this.state.errors;
     }
@@ -103,5 +99,3 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
         </div>
     }
 }
-
-//export var Component = TypedReact.createClass(ForgotComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);

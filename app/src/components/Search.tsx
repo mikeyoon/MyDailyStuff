@@ -1,15 +1,15 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import React = require('react');
-import Fluxxor = require('fluxxor');
-import Requests = require("../models/requests");
-import Responses = require("../models/responses");
-import actions = require('../actions');
-import moment = require('moment');
+import * as Fluxxor from 'fluxxor';
+import * as React from 'react';
+import * as Responses from "../models/responses";
+import * as moment from 'moment';
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
 
 interface SearchProps {
     query: string;
     offset: number;
+    flux: Fluxxor.Flux;
 }
 
 interface SearchState {
@@ -21,10 +21,8 @@ interface SearchState {
     results?: Responses.QuerySearchResult[];
 }
 
-export default class SearchComponent extends React.Component<SearchProps, SearchState>
-implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
-
-    getFlux: () => Fluxxor.Flux;
+export default class SearchComponent extends BaseFluxxorComponent<SearchProps, SearchState> {
+    getWatchers() { return ['search']; }
 
     getStateFromFlux() {
         var store = this.getFlux().store("search");
@@ -106,5 +104,3 @@ implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
         </div>
     }
 }
-
-//export var Component = TypedReact.createClass(SearchComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("search")]);

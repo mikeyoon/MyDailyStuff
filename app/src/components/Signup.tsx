@@ -1,8 +1,8 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import React = require('react');
-import Fluxxor = require('fluxxor');
-import Requests = require("../models/requests");
+import * as React from 'react';
+import * as Requests from "../models/requests";
+import BaseFluxxorComponent from "./BaseFluxxorComponent";
 
 interface SignupProps {
     flux: any;
@@ -18,10 +18,8 @@ interface SignupState {
 
 var emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
-export default class SignupComponent extends React.Component<SignupProps, SignupState>
-    implements Fluxxor.FluxMixin, Fluxxor.StoreWatchMixin<{}> {
-
-    getFlux: () => Fluxxor.Flux;
+export default class SignupComponent extends BaseFluxxorComponent<SignupProps, SignupState> {
+    getWatchers() { return ['auth']; }
 
     isValid(): boolean {
         return !this.state.errors;
@@ -101,21 +99,21 @@ export default class SignupComponent extends React.Component<SignupProps, Signup
                     </p>
                 </div> :
                 <form onSubmit={this.onSubmit}>
-                    <div className={"form-group " + (this.state.errors["email"] ? '.has-error' : '')} key="1">
+                    <div className={"form-group " + (this.state.errors["email"] ? 'has-error' : '')} key="1">
                         <label className="control-label" htmlFor="email">Email:</label>
                         <input className="form-control" id="email" name="email" value={this.state.email}
                                onChange={this.handleTextChange.bind(this, "email")}/>
                         {this.state.errors["email"] ? <span
                             className="help-block">{this.state.errors["email"]}</span> : null}
                     </div>
-                    <div className={"form-group " + (this.state.errors["password"] ? '.has-error' : '')} key="1">
+                    <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="1">
                         <label className="control-label" htmlFor="password">Password:</label>
                         <input className="form-control" id="password" name="password" type="password"
                                value={this.state.email} onChange={this.handleTextChange.bind(this, "password")}/>
                         {this.state.errors["password"] ? <span
                             className="help-block">{this.state.errors["password"]}</span> : null}
                     </div>
-                    <div className={"form-group " + (this.state.errors["confirm"] ? '.has-error' : '')} key="1">
+                    <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="1">
                         <label className="control-label" htmlFor="confirm">Confirm Password:</label>
                         <input className="form-control" id="confirm" name="confirm" type="password"
                                value={this.state.email} onChange={this.handleTextChange.bind(this, "confirm")}/>
