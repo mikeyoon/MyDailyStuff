@@ -32,7 +32,10 @@ export default class SignupComponent extends BaseFluxxorComponent<SignupProps, S
     getStateFromFlux() {
         var result = {
             auth: this.getFlux().store("auth"),
-            errors: {}
+            errors: {},
+            email: '',
+            confirm: '',
+            password: '',
         };
 
         return result;
@@ -98,7 +101,7 @@ export default class SignupComponent extends BaseFluxxorComponent<SignupProps, S
                         Click <a href="/login">here</a> to return to the login page
                     </p>
                 </div> :
-                <form onSubmit={this.onSubmit}>
+                <form onSubmit={this.onSubmit.bind(this)}>
                     <div className={"form-group " + (this.state.errors["email"] ? 'has-error' : '')} key="1">
                         <label className="control-label" htmlFor="email">Email:</label>
                         <input className="form-control" id="email" name="email" value={this.state.email}
@@ -106,17 +109,17 @@ export default class SignupComponent extends BaseFluxxorComponent<SignupProps, S
                         {this.state.errors["email"] ? <span
                             className="help-block">{this.state.errors["email"]}</span> : null}
                     </div>
-                    <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="1">
+                    <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
                         <label className="control-label" htmlFor="password">Password:</label>
                         <input className="form-control" id="password" name="password" type="password"
-                               value={this.state.email} onChange={this.handleTextChange.bind(this, "password")}/>
+                               value={this.state.password} onChange={this.handleTextChange.bind(this, "password")}/>
                         {this.state.errors["password"] ? <span
                             className="help-block">{this.state.errors["password"]}</span> : null}
                     </div>
-                    <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="1">
+                    <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="3">
                         <label className="control-label" htmlFor="confirm">Confirm Password:</label>
                         <input className="form-control" id="confirm" name="confirm" type="password"
-                               value={this.state.email} onChange={this.handleTextChange.bind(this, "confirm")}/>
+                               value={this.state.confirm} onChange={this.handleTextChange.bind(this, "confirm")}/>
                         {this.state.errors["confirm"] ? <span
                             className="help-block">{this.state.errors["confirm"]}</span> : null}
                     </div>

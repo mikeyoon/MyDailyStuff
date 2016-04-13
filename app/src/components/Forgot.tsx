@@ -26,7 +26,8 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
     getStateFromFlux() {
         return {
             auth: this.getFlux().store("auth"),
-            errors: {}
+            errors: {},
+            email: ''
         };
     }
 
@@ -81,11 +82,11 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
                     </div>
                     <p>Click <a href="/login">here</a> to return to the login page</p>
                 </div> :
-                <form onSubmit={this.onSubmit}>
+                <form onSubmit={this.onSubmit.bind(this)}>
                     <div className={emailFormClass} key="1">
                         <label className="control-label" htmlFor="email">Email:</label>
                         <input className="form-control" id="email" name="email" value={this.state.email}
-                               onChange={(event) => this.handleTextChange("email", event)}/>
+                               onChange={this.handleTextChange.bind(this, "email")}/>
                         {this.state.errors["email"] ? <span
                             className="help-block">{this.state.errors["email"]}</span> : null}
                     </div>

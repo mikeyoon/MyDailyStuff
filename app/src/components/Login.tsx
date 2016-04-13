@@ -46,7 +46,10 @@ export default class LoginComponent extends BaseFluxxorComponent<LoginProps, Log
     getStateFromFlux() {
         return {
             auth: this.getFlux().store("auth"),
-            errors: {}
+            errors: {},
+            email: '',
+            password: '',
+            persist: false,
         };
     }
 
