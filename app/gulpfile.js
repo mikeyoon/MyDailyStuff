@@ -21,7 +21,12 @@ gulp.task('enable-watch-mode', function() {
 gulp.task('browserify', function() {
     var bundler = browserify({ debug: !isProd, packageCache: {} })
         .add('./src/index.ts')
-        .plugin(tsify, { noImplicitAny: true, target: 'ES5' });
+        .plugin(tsify, {
+            noImplicitAny: true,
+            target: 'es5',
+            jsx: "react",
+            allowSyntheticDefaultImports: true
+        });
 
     if (watching) {
         bundler = watchify(bundler);
@@ -33,7 +38,7 @@ gulp.task('browserify', function() {
                     console.log(err.message);
                 })
                 .pipe(source('app.js'))
-                .pipe(gulp.dest('../public'));
+                .pipe(gulp.dest('../public/js'));
         });
 
         bundler.on('bytes', function(bytes) {

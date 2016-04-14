@@ -1,4 +1,4 @@
-import Requests = require("./models/requests");
+import * as Requests from "./models/requests";
 
 var c = {
     ACCOUNT: {
@@ -110,4 +110,4 @@ var actions = {
     constants: c
 };
 
-export = actions;
+export default actions;

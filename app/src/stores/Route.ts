@@ -1,7 +1,7 @@
-import Fluxxor = require('fluxxor');
-import page = require('page');
-import actions = require('../actions');
-import Requests = require('../models/requests');
+import * as Fluxxor from 'fluxxor';
+import * as page from 'page';
+import actions from '../actions';
+import * as Requests from '../models/requests';
 
 var RouteStore = Fluxxor.createStore({
     initialize: function() {
@@ -16,4 +16,4 @@ var RouteStore = Fluxxor.createStore({
     }
 });
 
-export = RouteStore;
+export default RouteStore;

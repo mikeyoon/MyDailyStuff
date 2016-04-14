@@ -1,15 +1,10 @@
-/// <reference path='../../typings/page/page.d.ts' />
-/// <reference path='../../typings/rest/rest.d.ts' />
-/// <reference path='../../typings/fluxxor/fluxxor.d.ts' />
-
 import rest = require('rest');
 import mime = require('rest/interceptor/mime');
 import errorCode = require('rest/interceptor/errorCode');
-import Fluxxor = require('fluxxor');
-import actions = require('../actions');
+import * as Fluxxor from 'fluxxor';
+import actions from '../actions';
 import moment = require('moment');
-import Requests = require("../models/requests");
-import Responses = require("../models/responses");
+import * as Requests from "../models/requests";
 
 var JournalStore = Fluxxor.createStore({
     initialize: function() {
@@ -179,4 +174,4 @@ var JournalStore = Fluxxor.createStore({
     }
 });
 
-export = JournalStore;
+export default JournalStore;

@@ -1,16 +1,13 @@
-/// <reference path='../../typings/page/page.d.ts' />
-/// <reference path='../../typings/rest/rest.d.ts' />
-/// <reference path='../../typings/fluxxor/fluxxor.d.ts' />
+/// <reference path='../../typings/browser.d.ts' />
 
 import rest = require('rest');
 import mime = require('rest/interceptor/mime');
 import errorCode = require('rest/interceptor/errorCode');
 import csrf = require('rest/interceptor/csrf');
-import Fluxxor = require('fluxxor');
-import actions = require('../actions');
-import Requests = require("../models/requests");
-import Responses = require("../models/responses");
-import page = require('page');
+import * as Fluxxor from 'fluxxor';
+import actions from '../actions';
+import * as Requests from "../models/requests";
+import * as page from 'page';
 import moment = require('moment');
 
 const CSRF_HEADER = "X-Csrf-Token";
@@ -95,7 +92,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 this.csrf = response.headers[CSRF_HEADER];
                 this.isLoggedIn = false;
                 this.emit("change");
@@ -122,7 +119,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 this.loading = false;
                 this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
@@ -151,7 +148,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 this.loading = false;
                 this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
@@ -181,7 +178,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
 
                 this.loading = false;
                 this.error = "Error contacting server. Please try again later.";
@@ -201,7 +198,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 this.emit("change");
             }
         );
@@ -236,7 +233,7 @@ var AuthStore = Fluxxor.createStore({
             },
             (response: rest.Response) => {
                 this.loading = false;
-                console.log(response);
+                //console.log(response);
 
                 this.error = "Error contacting server. Please try again later.";
                 this.emit("change");
@@ -259,7 +256,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 page('/login');
 
                 this.emit("change");
@@ -292,7 +289,7 @@ var AuthStore = Fluxxor.createStore({
                 this.emit("change");
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 this.csrf = response.headers[CSRF_HEADER];
                 this.loading = false;
                 this.error = "Unknown error updating your profile. Please refresh the page and try again.";
@@ -303,4 +300,4 @@ var AuthStore = Fluxxor.createStore({
     }
 });
 
-export = AuthStore;
+export default AuthStore;
