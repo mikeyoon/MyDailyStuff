@@ -110,6 +110,21 @@ var _ = Describe("Service", func() {
 		conn.DeleteByQuery([]string{TestIndex}, []string{UserType, ResetType, VerifyType, JournalType}, nil, elastigo.Search("").Query(elastigo.Query().All()))
 	})
 
+	Describe("Init with login", func() {
+		It("should fail to initialize", func() {
+			serviceWithAuth := MdsService{}
+			serviceWithAuth.Init(ServiceOptions{
+				MainIndex: TestIndex,
+				ElasticUrl: "http://test:pass@localhost:9200",
+				SendGridUsername: "sg_user",
+			})
+
+			Expect(serviceWithAuth.es.Username).To(Equal("test"))
+			Expect(serviceWithAuth.es.Password).To(Equal("pass"))
+			Expect(serviceWithAuth.sg).NotTo(BeNil())
+		})
+	})
+
 	Describe("Storing mapping", func() {
 		Context("On Initialization", func() {
 			It("should have each type", func() {
@@ -195,10 +210,10 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("Update user password", func() {
+	Describe("Update user email and password", func() {
 		Context("Where the user exists", func() {
-			It("should modify the user password", func() {
-				service.UpdateUser(testUser1.UserId, "", "newpass")
+			It("should modify the user email and password", func() {
+				service.UpdateUser(testUser1.UserId, "something@else.com", "newpass")
 				var actual User
 				err := conn.GetSource(TestIndex, UserType, testUser1.UserId, nil, &actual)
 
@@ -209,7 +224,7 @@ var _ = Describe("Service", func() {
 				err = bcrypt.CompareHashAndPassword(hash, []byte("newpass"))
 
 				Expect(err).To(BeNil(), "Password must be newpass")
-				Expect(actual.Email).To(Equal(testUser1.Email), "Email should be the same")
+				Expect(actual.Email).To(Equal("something@else.com"), "Email should be new")
 			})
 		})
 
@@ -217,6 +232,13 @@ var _ = Describe("Service", func() {
 			It("should return UserNotFound error", func() {
 				err := service.UpdateUser(uuid.New(), "", "newpass")
 				Expect(err).To(Equal(UserNotFound))
+			})
+		})
+
+		Context("Where the user exists but password too short", func() {
+			It("should do nothing", func() {
+				err := service.UpdateUser(testUser1.UserId, "", "")
+				Expect(err).To(BeNil())
 			})
 		})
 	})
