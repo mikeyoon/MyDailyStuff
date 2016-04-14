@@ -1,13 +1,13 @@
 package lib
 
 import (
+	"code.google.com/p/go-uuid/uuid"
+	"github.com/go-martini/martini"
+	"github.com/jinzhu/now"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"code.google.com/p/go-uuid/uuid"
-	"github.com/go-martini/martini"
-	"github.com/jinzhu/now"
 	"github.com/stretchr/testify/mock"
 	"html/template"
 	"net/http"

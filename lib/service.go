@@ -694,8 +694,8 @@ func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (Journa
 	query := elastigo.Query().
 		All().
 		Filter(elastigo.Filter().
-		And(elastigo.Filter().Term("user_id", userId)).
-		And(elastigo.Filter().Term("date", createDate)))
+			And(elastigo.Filter().Term("user_id", userId)).
+			And(elastigo.Filter().Term("date", createDate)))
 
 	search := elastigo.Search(EsIndex).Query(query)
 	result, err := s.es.Search(EsIndex, JournalType, nil, search)
@@ -839,7 +839,7 @@ func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, er
 						retval++
 						current = rdate.Add(-time.Hour * 24)
 					} else {
-						break;
+						break
 					}
 				}
 			}

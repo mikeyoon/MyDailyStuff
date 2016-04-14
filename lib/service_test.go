@@ -6,10 +6,33 @@ import (
 	elastigo "github.com/mikeyoon/elastigo/lib"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/sendgrid/sendgrid-go"
+	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
+	"net/url"
 	"strings"
 	"time"
+	"net/http"
 )
+
+type MockSendGridClient struct {
+	mock.Mock
+	apiUser string
+	apiPwd  string
+	APIMail string
+	Client  *http.Client
+}
+
+func (sg MockSendGridClient) buildURL(m *SGMail) (url.Values, error) {
+	args := sg.Called(m)
+	return args.Get(0).(url.Values), args.Error(1)
+}
+
+// Send will send mail using SG web API
+func (sg MockSendGridClient) Send(m *SGMail) error {
+	args := sg.Called(m)
+	return args.Error(0)
+}
 
 var _ = Describe("Service", func() {
 	service := MdsService{}
@@ -114,8 +137,8 @@ var _ = Describe("Service", func() {
 		It("should fail to initialize", func() {
 			serviceWithAuth := MdsService{}
 			serviceWithAuth.Init(ServiceOptions{
-				MainIndex: TestIndex,
-				ElasticUrl: "http://test:pass@localhost:9200",
+				MainIndex:        TestIndex,
+				ElasticUrl:       "http://test:pass@localhost:9200",
 				SendGridUsername: "sg_user",
 			})
 

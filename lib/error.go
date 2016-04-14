@@ -1,7 +1,7 @@
 package lib
 
 import (
-    "errors"
+	"errors"
 )
 
 var UserUnauthorized = errors.New("User not logged in")
