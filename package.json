@@ -1,0 +1,15 @@
+{
+  "name": "mydailystuff",
+  "version": "1.0.0",
+  "description": "Dummy file for heroku",
+  "scripts": {
+    "postinstall": "(cd app && npm i)"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mikeyoon/MyDailyStuff/issues"
+  },
+  "homepage": "https://github.com/mikeyoon/MyDailyStuff#readme",
+  "cache_directories": ["app/node_modules"]
+}
