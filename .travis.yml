@@ -4,7 +4,7 @@ go:
   - tip
 
 install:
-  - export GOPATH=$GOPATH:$TRAVIS_BUILD_DIR/Godeps/_workspace
+  - export GOPATH=$GOPATH:$TRAVIS_BUILD_DIR/vendor/
   - go get github.com/onsi/ginkgo
   - go get github.com/onsi/gomega
   - go get github.com/stretchr/testify/mock
