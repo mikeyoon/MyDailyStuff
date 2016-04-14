@@ -42,7 +42,7 @@ export default class StreakComponent extends BaseFluxxorComponent<StreakProps, S
 
     render() {
         return <span data-toggle="tooltip" data-placement="left" title="Number of contiguous entries over the last ten days">
-            Streak
+            Streak {" "}
             <span className="badge">
                 {this.state.streak}
                 {this.state.streak >= 10 ? <span className="glyphicon glyphicon-star" /> : null}

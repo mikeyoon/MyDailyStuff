@@ -160,7 +160,7 @@ interface MarkedOptions {
 }
 
 declare module "marked" {
-    export default marked;
+    export = marked;
 }
 
 declare var marked: MarkedStatic;

@@ -8,6 +8,7 @@
 /// <reference path='../eventemitter3/index.d.ts' />
 
 declare namespace Fluxxor {
+    import ComponentLifecycle = __React.ComponentLifecycle;
     class Dispatcher {
         constructor(stores: any);
         addStore(name: string, store: Store): void;

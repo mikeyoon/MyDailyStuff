@@ -21,7 +21,12 @@ gulp.task('enable-watch-mode', function() {
 gulp.task('browserify', function() {
     var bundler = browserify({ debug: !isProd, packageCache: {} })
         .add('./src/index.ts')
-        .plugin(tsify, { noImplicitAny: true, target: 'ES5', jsx: "react", allowSyntheticDefaultImports: true });
+        .plugin(tsify, {
+            noImplicitAny: true,
+            target: 'es5',
+            jsx: "react",
+            allowSyntheticDefaultImports: true
+        });
 
     if (watching) {
         bundler = watchify(bundler);

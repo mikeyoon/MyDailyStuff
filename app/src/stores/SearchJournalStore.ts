@@ -92,7 +92,7 @@ var SearchJournalStore = Fluxxor.createStore({
                 }
             },
             (response: rest.Response) => {
-                console.log(response);
+                //console.log(response);
                 this.nextOffset = null;
                 this.prevOffset = null;
                 this.searching = false;

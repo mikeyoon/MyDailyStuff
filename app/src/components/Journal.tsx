@@ -5,9 +5,10 @@ import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import * as moment from 'moment';
 import * as page from 'page';
-import DatePicker from 'react-date-picker';
+import * as marked from 'marked';
 import Streak from './Streak';
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
+import DatePicker = require("react-date-picker");
 
 declare var $:any;
 
@@ -72,8 +73,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
     }
 
     componentDidMount() {
-        window.addEventListener('touchend', this.closeCalendar, false);
-        window.addEventListener('click', this.closeCalendar, false);
+
     }
 
     componentWillUnmount() {
@@ -94,7 +94,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
         return !Object.keys(errors).length;
     }
 
-    handleAddEntry(ev:any) {
+    handleAddEntry = (ev:any) => {
         ev.preventDefault();
 
         if (this.validate()) {
@@ -104,7 +104,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
                 this.getFlux().actions.journal.add(this.state.newEntry);
             }
         }
-    }
+    };
 
     handleEditEntry(entry:string, index:number, ev:any) {
         this.getFlux().actions.journal.edit(new Requests.EditJournalEntry(entry, index));
@@ -142,26 +142,33 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
         page('/journal/' + date.format("YYYY-M-D"));
     }
 
-    closeCalendar(ev:any) {
+    closeCalendar = (ev:any) => {
         if (this.state.showCalendar && !$(ev.target).closest('.popover').length) {
+            window.removeEventListener('click', this.closeCalendar, false);
+            window.removeEventListener('touchend', this.closeCalendar, false);
             this.getFlux().actions.journal.toggleCalendar(false);
         }
-    }
+    };
 
     handleToggleCalendar(show:boolean, ev:any) {
         ev.preventDefault();
-        if (!this.state.showCalendar) this.getFlux().actions.journal.toggleCalendar(show);
-    }
-
-    handleKeyDown(ev:any) {
-        if ((ev.keyCode == 10 || ev.keyCode == 13) && ev.ctrlKey) {
-            this.handleAddEntry(ev);
+        ev.stopPropagation();
+        if (!this.state.showCalendar) {
+            window.addEventListener('touchend', this.closeCalendar, false);
+            window.addEventListener('click', this.closeCalendar, false);
+            this.getFlux().actions.journal.toggleCalendar(show);
         }
     }
 
-    handleBlur(ev:any) {
+    handleKeyDown = (ev:any) => {
+        if ((ev.keyCode == 10 || ev.keyCode == 13) && ev.ctrlKey) {
+            this.handleAddEntry(ev);
+        }
+    };
+
+    handleBlur = (ev:any) => {
         this.validate();
-    }
+    };
 
     renderEntries() {
         if (this.state.hasEntry) {
@@ -172,6 +179,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
                                 onClick={(ev) => this.handleDeleteEntry(index, ev)}>
                             <span className="glyphicon glyphicon-remove"/>
                         </button>
+                        <div className="journal-entry" dangerouslySetInnerHTML={{ __html: marked(e) }}></div>
                     </div>)
                 }
             </div>;
@@ -195,22 +203,22 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
         return <div className="row">
             <div className="col-md-8 col-md-offset-2">
                 <h2 className="text-center">
-                    <button className={"btn btn-link " + this.state.loading ? "disabled" : ""} key="prev"
-                            onClick={(ev) => this.handlePrev(prev, ev)}>
+                    <button className={"btn btn-link " + (this.state.loading ? "disabled" : "")} key="prev"
+                            onClick={this.handlePrev.bind(this, prev)}>
                         <span className="glyphicon glyphicon-menu-left"/>
                     </button>
                     <a href="#" className={this.state.showCalendar ? "active" : ""}
-                       onClick={(ev) => this.handleToggleCalendar(true, ev)}>
+                       onClick={this.handleToggleCalendar.bind(this, true)}>
                         {today.format("ddd, MMM Do YYYY")}
                     </a>
-                    <button className={"btn btn-link " + this.state.loading ? "disabled" : ""} key="next"
+                    <button className={"btn btn-link " + (this.state.loading ? "disabled" : "")} key="next"
                             style={{visibility: moment().diff(next) >= 0 ? 'visible' : 'hidden'}}
                             onClick={(ev) => this.handleNext(next, ev)}>
                         <span className="glyphicon glyphicon-menu-right"/>
                     </button>
                 </h2>
 
-                <div className={"popover-container " + this.state.showCalendar ? "" : "hidden"}>
+                <div className={"popover-container " + (this.state.showCalendar ? "" : "hidden")}>
                     <div className="popover bottom" ref="popover" style={{display: "block", margin: "0 auto"}}>
                         <div className="arrow" style={{left: "50%"}}></div>
                         <div className="popover-content">
@@ -227,7 +235,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
 
                 {(!this.state.current || this.state.current.entries.length < 7) ?
                 <form onSubmit={this.handleAddEntry}>
-                    <div className={"form-group " + this.state.errors["newEntry"] ? "has-error" : ""}>
+                    <div className={"form-group " + (this.state.errors["newEntry"] ? "has-error" : "")}>
                         <label className="control-label pull-left">Add a new entry (markdown)</label>
                         <label className="pull-right"><Streak flux={this.getFlux()} update={this.refreshStreak}/></label>
                         <textarea placeholder="New entry..." className="form-control"
@@ -238,7 +246,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
                     </div>
 
                     <button
-                        className={"btn btn-primary " + (Object.keys(this.state.errors).length || !this.state.newEntry) ? 'disabled' : ''}
+                        className={"btn btn-primary " + ((Object.keys(this.state.errors).length || !this.state.newEntry) ? 'disabled' : '')}
                         type="submit" onClick={this.handleAddEntry}>
                         Add
                     </button>

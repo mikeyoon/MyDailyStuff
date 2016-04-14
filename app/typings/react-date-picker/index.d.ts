@@ -42,9 +42,19 @@ declare module 'react-date-picker' {
         navOnDateClick?: boolean;
     }
 
-    export class DatePicker extends React.Component<DatePickerProps, {}>
+    class DatePicker extends React.Component<DatePickerProps, {}>
     {
     }
 
-    export default DatePicker;
+    export = DatePicker;
 }
+
+
+
+//import main = require('react-date-picker');
+
+//
+//declare var picker: main.DatePicker;
+
+
+

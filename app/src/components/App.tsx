@@ -22,7 +22,7 @@ export default class AppComponent extends React.Component<AppProps, {}> {
             <footer className="footer">
                 <div className="container">
                     <p className="text-muted">
-                        Created by
+                        Created by {" "}
                         <a href="https://github.com/mikeyoon/">Mike Yoon</a>
                         <a href="/about" className="pull-right">About</a>
                     </p>

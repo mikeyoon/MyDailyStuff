@@ -87,29 +87,30 @@ export default class ProfileComponent extends BaseFluxxorComponent<ProfileProps,
                 <br />
                 {this.renderProfileError()}
                 {this.state.auth.saveProfileResult.success ? <div className="alert alert-success">Profile Updated Successfully</div> : null}
-            </div>
-            <form onSubmit={this.onSubmit}>
-                <div className="form-group" key="1">
-                    <label className="control-label" htmlFor="email">Email:</label>
-                    <input className="form-control" id="email" name="email" defaultValue={this.state.email} disabled="disabled" />
-                </div>
-                <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
-                    <label className="control-label" htmlFor="password">Password:</label>
-                    <input className="form-control" id="password" name="password" type="password" value={this.state.password}
-                           onChange={this.handleTextChange.bind(this, "password")} />
-                    {this.state.errors["password"] ? <span className="help-block">{this.state.errors["password"]}</span> : null}
-                </div>
 
-                <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="3">
-                    <label className="control-label" htmlFor="password">Confirm Password:</label>
-                    <input className="form-control" id="confirm" name="confirm" type="password" value={this.state.confirm}
-                           onChange={this.handleTextChange.bind(this, "confirm")} />
-                    {this.state.errors["confirm"] ? <span className="help-block">{this.state.errors["confirm"]}</span> : null}
-                </div>
-                <div className="text-center">
-                    <button className="btn btn-primary" type="submit">Save Changes</button>
-                </div>
-            </form>
+                <form onSubmit={this.onSubmit.bind(this)}>
+                    <div className="form-group" key="1">
+                        <label className="control-label" htmlFor="email">Email:</label>
+                        <input className="form-control" id="email" name="email" defaultValue={this.state.email} disabled="disabled" />
+                    </div>
+                    <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
+                        <label className="control-label" htmlFor="password">Password:</label>
+                        <input className="form-control" id="password" name="password" type="password" value={this.state.password}
+                               onChange={this.handleTextChange.bind(this, "password")} />
+                        {this.state.errors["password"] ? <span className="help-block">{this.state.errors["password"]}</span> : null}
+                    </div>
+
+                    <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="3">
+                        <label className="control-label" htmlFor="password">Confirm Password:</label>
+                        <input className="form-control" id="confirm" name="confirm" type="password" value={this.state.confirm}
+                               onChange={this.handleTextChange.bind(this, "confirm")} />
+                        {this.state.errors["confirm"] ? <span className="help-block">{this.state.errors["confirm"]}</span> : null}
+                    </div>
+                    <div className="text-center">
+                        <button className="btn btn-primary" type="submit">Save Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>;
     }
 }

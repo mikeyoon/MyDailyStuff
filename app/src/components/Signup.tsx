@@ -134,5 +134,3 @@ export default class SignupComponent extends BaseFluxxorComponent<SignupProps, S
         </div>
     }
 }
-
-//export var Component = TypedReact.createClass(SignupComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);

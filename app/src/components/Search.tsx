@@ -64,7 +64,7 @@ export default class SearchComponent extends BaseFluxxorComponent<SearchProps, S
                     {this.state.results.map((result, index) => {
                         return <div className="panel panel-default" key={index}>
                             <div className="panel-body">
-                                {index + 1 + this.state.offset}.
+                                {index + 1 + this.state.offset}. {" "}
                                 <a href={"/journal/" + moment(result.date).utc().format('YYYY-M-D')}>
                                     {moment(result.date).utc().format('dddd, MMMM Do YYYY')}
                                 </a>

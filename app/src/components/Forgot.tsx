@@ -35,7 +35,7 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
         this.getFlux().actions.account.clearResults();
     }
 
-    onSubmit(ev: any) {
+    onSubmit = (ev: any) => {
         ev.preventDefault();
         if (this.validate()) {
             this.getFlux().actions.account.sendReset(this.state.email);

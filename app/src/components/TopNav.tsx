@@ -27,15 +27,15 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
         };
     }
 
-    handleLogout(ev: any) {
+    handleLogout = (ev: any) => {
         ev.preventDefault();
         this.getFlux().actions.account.logout();
-    }
+    };
 
-    handleSearch(ev: any) {
+    handleSearch = (ev: any) => {
         ev.preventDefault();
         if (this.state.query && !this.state.searching) this.getFlux().actions.routes.search(this.state.query, 0);
-    }
+    };
 
     handleTextChange(name:string, ev:any) {
         var state:any = {};
@@ -43,11 +43,11 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
         this.setState(state);
     }
 
-    handleSearchKeyDown(ev: any) {
+    handleSearchKeyDown = (ev: any) => {
         if ((ev.keyCode == 10 || ev.keyCode == 13) && ev.ctrlKey) {
             this.handleSearch(ev);
         }
-    }
+    };
 
     render() {
         return <nav className="navbar navbar-default">
@@ -71,7 +71,7 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
                                    onKeyDown={this.handleSearchKeyDown}/>
                             <div className="input-group-btn">
                                 <button type="submit"
-                                        className={"btn btn-primary " + this.state.searching ? 'disabled' : ''}>
+                                        className={"btn btn-primary " + (this.state.searching ? 'disabled' : '')}>
                                     <i className="glyphicon glyphicon-search"/>
                                 </button>
                             </div>

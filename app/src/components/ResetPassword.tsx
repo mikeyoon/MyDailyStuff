@@ -38,12 +38,12 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
         this.getFlux().actions.account.clearResults();
     }
 
-    onSubmit(ev: any) {
+    onSubmit = (ev: any) => {
         ev.preventDefault();
         if (this.validate()) {
             this.getFlux().actions.account.resetPassword(new Requests.PasswordReset(this.props.token, this.state.password));
         }
-    }
+    };
 
     handleTextChange(name: string, ev: any) {
         var state: any = {};

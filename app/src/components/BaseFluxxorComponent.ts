@@ -6,15 +6,31 @@ interface BaseState {
     flux: Fluxxor.Flux
 }
 
-abstract class BaseFluxxorComponent<P extends BaseState,S> extends React.Component<P,S>{
+const storeMixin = StoreWatchMixin as any;
+
+abstract class BaseFluxxorComponent<P extends BaseState,S> extends React.Component<P,S> {
     constructor(props: P) {
         super(props);
 
-        assign(this, StoreWatchMixin.apply(this, this.getWatchers()));
-        bindAll(this);
+        let mixin = StoreWatchMixin.apply(this, this.getWatchers());
+        this.__patch('componentDidMount', mixin);
+        this.__patch('componentWillUnmount', mixin);
+        this.__patch('getInitialState', mixin);
 
         delete (this as any).getInitialState; // Fluxxor is so outdated :(
         this.state = this.getStateFromFlux();
+    }
+
+    __patch(name: string, mixin: any) {
+        if ((this as any)[name]) {
+            let fn = (this as any)[name] as Function;
+            (this as any)[name] = function() {
+                mixin[name].apply(this, arguments);
+                fn.apply(this, arguments);
+            }
+        } else {
+            (this as any)[name] = mixin[name];
+        }
     }
 
     getFlux() { return this.props.flux; }
