@@ -13,9 +13,9 @@ export default class AboutComponent extends React.Component<{}, {}> {
                 <div key="about">
                     MyDailyStuff is designed as a simplified tool for journaling your daily activities. The
                     basic premise is that by keeping track of three things you do each day, you can have more
-                    interesting conversations with others. It was inspired by
+                    interesting conversations with others. It was inspired by {" "}
                     <a href="http://www.reddit.com/r/LifeProTips/comments/2chg5w/lpt_be_more_exciting_to_peoplefriendsdates_and/">this</a>
-                    reddit thread.
+                    {" "} reddit thread.
                 </div>
                 <h3>Development</h3>
                 <div key="dev">
