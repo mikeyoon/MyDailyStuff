@@ -85,9 +85,13 @@ type Service interface {
 	GetStreak(userId string, date time.Time, limit int) (int, error)
 }
 
+type MailService interface {
+	Send(m *sendgrid.SGMail) error
+}
+
 type MdsService struct {
-	es *elastigo.Conn
-	sg *sendgrid.SGClient
+	es         *elastigo.Conn
+	MailClient MailService
 }
 
 type IndexSettings struct {
@@ -129,7 +133,7 @@ func (s *MdsService) Init(options ServiceOptions) error {
 	if err == nil {
 		s.es = conn
 		if options.SendGridUsername != "" {
-			s.sg = sendgrid.NewSendGridClient(options.SendGridUsername, options.SendGridPassword)
+			s.MailClient = sendgrid.NewSendGridClient(options.SendGridUsername, options.SendGridPassword)
 		}
 	}
 
@@ -445,8 +449,8 @@ MyDailyStuff.com`)
 </body>
 </html>`)
 
-		if s.sg != nil {
-			err = s.sg.Send(message)
+		if s.MailClient != nil {
+			err = s.MailClient.Send(message)
 		}
 
 		return err
@@ -551,8 +555,8 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 </body>
 </html>`)
 
-			if s.sg != nil {
-				err = s.sg.Send(message)
+			if s.MailClient != nil {
+				err = s.MailClient.Send(message)
 			}
 		}
 	}

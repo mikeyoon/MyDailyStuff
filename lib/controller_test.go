@@ -226,18 +226,21 @@ var _ = Describe("Controller", func() {
 		session = MockSession{}
 		render = MockRender{}
 		service = MockService{}
+		csrf = MockCsrf{}
 	})
 
 	Describe("Login", func() {
 		Context("Where the username and password are invalid", func() {
 			It("should return not found result", func() {
-				service.On("GetUserByLogin", "asdf@asdf.com", "password").Return(User{}, UserNotFound)
+				req := LoginRequest{Email: "asdf@asdf.com", Password: "password"}
+				service.On("GetUserByLogin", req.Email, req.Password).Return(User{}, UserNotFound)
 				render.On("JSON", 200, ErrorResponse("User not found")).Return()
 
 				controller.SetOptions(service, false)
+				controller.Login(req, session, render)
 
-				controller.Login(LoginRequest{Email: "asdf@asdf.com", Password: "password"},
-					session, render)
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -257,6 +260,10 @@ var _ = Describe("Controller", func() {
 
 				controller.Login(LoginRequest{Email: mockUser1.Email, Password: "password"},
 					session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -276,6 +283,10 @@ var _ = Describe("Controller", func() {
 
 				controller.Login(LoginRequest{Email: mockUser1.Email, Password: "password", Persist: true},
 					session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -289,6 +300,10 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.Logout(session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -312,6 +327,11 @@ var _ = Describe("Controller", func() {
 				controller.Profile(session, render, csrf)
 
 				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
+				csrf.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -321,14 +341,18 @@ var _ = Describe("Controller", func() {
 
 				session.On("Get", "userId").Return(mockUser1.UserId)
 				service.On("GetUserById", mockUser1.UserId).Return(User{}, UserNotFound)
-				render.On("JSON", 404, ErrorResponse(UserNotFound.Error())).Return()
 				render.On("Header").Return(header)
+				render.On("JSON", 404, ErrorResponse(UserNotFound.Error())).Return()
 				csrf.On("GetToken").Return("123")
 
 				controller.SetOptions(service, false)
 				controller.Profile(session, render, csrf)
 
 				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
+				csrf.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -341,6 +365,8 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.Register(RegisterRequest{Email: "test@test.com", Password: "password"}, render)
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -351,6 +377,9 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.Register(RegisterRequest{Email: "test@test.com", Password: "password"}, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -370,6 +399,10 @@ var _ = Describe("Controller", func() {
 				controller.UpdateProfile(ModifyAccountRequest{Password: "password"}, session, render, csrf)
 
 				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
+				csrf.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -387,6 +420,10 @@ var _ = Describe("Controller", func() {
 				controller.UpdateProfile(ModifyAccountRequest{Password: "password"}, session, render, csrf)
 
 				Expect(header.Get("X-Csrf-Token")).To(Equal("123"))
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
+				csrf.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -409,6 +446,8 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.CreateForgotPasswordRequest(martini.Params{"email": "asdf@asdf.com"}, session, render)
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -421,6 +460,8 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.GetResetPasswordRequest(martini.Params{"token": "token"}, session, render)
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -431,6 +472,8 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.GetResetPasswordRequest(martini.Params{"token": "token"}, session, render)
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -443,6 +486,9 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.ResetPassword(ResetPasswordRequest{Token: "token", Password: "password"}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -453,6 +499,8 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.ResetPassword(ResetPasswordRequest{Token: "token", Password: "password"}, session, render)
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -466,6 +514,9 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.VerifyAccount(martini.Params{"token": "token"}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -476,6 +527,9 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.VerifyAccount(martini.Params{"token": "token"}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -489,6 +543,10 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.GetEntryByDate(render, martini.Params{"date": "2005-5-1"}, session)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -500,6 +558,10 @@ var _ = Describe("Controller", func() {
 				controller.SetOptions(service, false)
 
 				controller.GetEntryByDate(render, martini.Params{"date": "2005-5-1"}, session)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -513,6 +575,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.DeleteEntry(martini.Params{"id": mockEntry1.Id}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -524,6 +590,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.DeleteEntry(martini.Params{"id": mockEntry1.Id}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -537,6 +607,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.CreateEntry(CreateEntryRequest{Date: "2001-5-1", Entries: mockEntry1.Entries}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -549,6 +623,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.CreateEntry(CreateEntryRequest{Date: "2001-5-1", Entries: mockEntry1.Entries}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -574,6 +652,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.UpdateEntry(ModifyEntryRequest{Entries: mockEntry1.Entries}, session, martini.Params{"id": "id"}, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -593,6 +675,10 @@ var _ = Describe("Controller", func() {
 					Query: "query",
 					Start: "2005-1-1",
 				}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -610,6 +696,10 @@ var _ = Describe("Controller", func() {
 					Query: "query",
 					End:   "2005-2-1",
 				}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -625,6 +715,10 @@ var _ = Describe("Controller", func() {
 				controller.SearchJournal(SearchJournalRequest{
 					Query: "query",
 				}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -636,6 +730,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.SearchJournal(SearchJournalRequest{}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -651,6 +749,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.SearchJournalDates(SearchJournalRequest{Start: "2005-1-1"}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -664,6 +766,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.SearchJournalDates(SearchJournalRequest{End: "2005-2-1"}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -675,6 +781,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.SearchJournalDates(SearchJournalRequest{}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -686,6 +796,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.SearchJournalDates(SearchJournalRequest{}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})
@@ -700,6 +814,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.GetStreak(martini.Params{"date": date}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 
@@ -713,6 +831,10 @@ var _ = Describe("Controller", func() {
 
 				controller.SetOptions(service, false)
 				controller.GetStreak(martini.Params{"date": date}, session, render)
+
+				render.AssertExpectations(GinkgoT())
+				service.AssertExpectations(GinkgoT())
+				session.AssertExpectations(GinkgoT())
 			})
 		})
 	})

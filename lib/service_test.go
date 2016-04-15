@@ -9,27 +9,16 @@ import (
 	. "github.com/sendgrid/sendgrid-go"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
-	"net/url"
 	"strings"
 	"time"
-	"net/http"
 )
 
 type MockSendGridClient struct {
 	mock.Mock
-	apiUser string
-	apiPwd  string
-	APIMail string
-	Client  *http.Client
-}
-
-func (sg MockSendGridClient) buildURL(m *SGMail) (url.Values, error) {
-	args := sg.Called(m)
-	return args.Get(0).(url.Values), args.Error(1)
 }
 
 // Send will send mail using SG web API
-func (sg MockSendGridClient) Send(m *SGMail) error {
+func (sg *MockSendGridClient) Send(m *SGMail) error {
 	args := sg.Called(m)
 	return args.Error(0)
 }
@@ -144,7 +133,7 @@ var _ = Describe("Service", func() {
 
 			Expect(serviceWithAuth.es.Username).To(Equal("test"))
 			Expect(serviceWithAuth.es.Password).To(Equal("pass"))
-			Expect(serviceWithAuth.sg).NotTo(BeNil())
+			Expect(serviceWithAuth.MailClient).NotTo(BeNil())
 		})
 	})
 
@@ -296,7 +285,21 @@ var _ = Describe("Service", func() {
 		})
 
 		Context("Where the email is new", func() {
+			It("should send the message", func() {
+				client := new(MockSendGridClient)
+				service.MailClient = client
 
+				client.On("Send", mock.AnythingOfType("*sendgrid.SGMail")).Return(nil)
+				err := service.CreateUserVerification("newemail@new.com", "Some Password")
+				Expect(err).To(BeNil())
+
+				actual := client.Calls[0].Arguments[0].(*SGMail)
+				Expect(actual.To[0]).To(Equal("newemail@new.com"))
+				Expect(actual.From).To(Equal("no-reply@mydailystuff.com"))
+				Expect(actual.Subject).To(Equal("Activate your MyDailyStuff.com account"))
+
+				client.AssertExpectations(GinkgoT())
+			})
 		})
 	})
 
@@ -346,7 +349,21 @@ var _ = Describe("Service", func() {
 
 	Describe("Create and send reset password", func() {
 		Context("Where the reset token exists", func() {
+			It("should send reset token email", func() {
+				client := new(MockSendGridClient)
+				service.MailClient = client
 
+				client.On("Send", mock.AnythingOfType("*sendgrid.SGMail")).Return(nil)
+				err := service.CreateAndSendResetPassword(testUser1.Email)
+				Expect(err).To(BeNil())
+
+				actual := client.Calls[0].Arguments[0].(*SGMail)
+				Expect(actual.To[0]).To(Equal(testUser1.Email))
+				Expect(actual.From).To(Equal("no-reply@mydailystuff.com"))
+				Expect(actual.Subject).To(Equal("Reset your MyDailyStuff.com password"))
+
+				client.AssertExpectations(GinkgoT())
+			})
 		})
 
 		Context("Where the email address not found", func() {

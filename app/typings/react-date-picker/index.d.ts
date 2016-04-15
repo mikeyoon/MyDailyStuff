@@ -48,13 +48,3 @@ declare module 'react-date-picker' {
 
     export = DatePicker;
 }
-
-
-
-//import main = require('react-date-picker');
-
-//
-//declare var picker: main.DatePicker;
-
-
-
