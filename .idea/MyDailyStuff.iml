@@ -6,7 +6,6 @@
       <excludeFolder url="file://$MODULE_DIR$/Godeps/_workspace" />
       <excludeFolder url="file://$MODULE_DIR$/app/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/public/js" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
