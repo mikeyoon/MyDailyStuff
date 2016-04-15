@@ -7,7 +7,7 @@ Web application for recording your daily activities. Inspired by http://www.redd
 
 # License
 
-All files created by myself, except for any Typescript definitions, are licensed under the
+All files created by myself, except for any Typescript definitions (.d.ts files), are licensed under the
 GNU Affero General Public License (AGPL).
 
 Typescript definitions written by myself are licensed under MIT.
