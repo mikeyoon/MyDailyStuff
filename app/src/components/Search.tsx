@@ -1,6 +1,6 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import * as Fluxxor from 'fluxxor';
+import Fluxxor from 'fluxxor';
 import * as React from 'react';
 import * as Responses from "../models/responses";
 import moment from 'moment';

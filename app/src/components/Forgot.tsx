@@ -1,7 +1,7 @@
 /// <reference path='../../typings/browser.d.ts' />
 
 import * as React from 'react';
-import * as classNames from 'classnames';
+import classNames from 'classnames';
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
 
 interface ForgotProps {
@@ -40,7 +40,7 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
         if (this.validate()) {
             this.getFlux().actions.account.sendReset(this.state.email);
         }
-    }
+    };
 
     handleTextChange(name: string, ev: any) {
         var state: any = {};
