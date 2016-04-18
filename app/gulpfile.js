@@ -92,6 +92,11 @@ gulp.task('copy-html', function() {
         .pipe(gulp.dest('../public'));
 });
 
+gulp.task('copy-favicon', function() {
+    return gulp.src('favicon.ico')
+        .pipe(gulp.dest('../public'));
+});
+
 gulp.task('tsc', function() {
     return watching ? null : gulp.src('./src/index.ts')
         .pipe(ts({
@@ -146,8 +151,8 @@ gulp.task('less-watch', function() {
 
 gulp.task('watch', ['enable-watch-mode', 'tsc-watch', 'less-watch']);
 
-gulp.task('deploy', ['build-assets'], function() {
-    return gulp.src(['index.html', 'favicon.ico', 'app.html'])
+gulp.task('deploy', ['build-assets', 'copy-favicon'], function() {
+    return gulp.src(['index.html', 'app.html'])
         .pipe(isProd ? checksum.references() : nop())
         .pipe(gulp.dest('../public'));
 });
