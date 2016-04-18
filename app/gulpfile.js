@@ -47,8 +47,8 @@ gulp.task('less', function() {
     return gulp.src('./less/main.less')
         .pipe(isProd ? nop() : sourcemaps.init())
         .pipe(less())
-        .pipe(isProd ? nop() : sourcemaps.write('./'))
         .pipe(isProd ? checksum.resources() : nop())
+        .pipe(isProd ? nop() : sourcemaps.write('./'))
         .pipe(gulp.dest('../public/css'));
 });
 
