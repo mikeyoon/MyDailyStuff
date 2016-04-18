@@ -1,3 +1,4 @@
+/// <reference path="browser/ambient/bootstrap/index.d.ts" />
 /// <reference path="browser/ambient/classnames/index.d.ts" />
 /// <reference path="browser/ambient/eventemitter3/index.d.ts" />
 /// <reference path="browser/ambient/fluxxor/index.d.ts" />

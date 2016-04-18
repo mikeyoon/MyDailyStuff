@@ -3,6 +3,7 @@
  */
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
 import * as React from 'react';
+import 'bootstrap';
 
 declare var $: any;
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import TopNav from '../components/TopNav';
 import {assign} from 'lodash';
-(React as any).__spread = assign;
+//(React as any).__spread = assign;
 
 interface AppProps {
     flux: Fluxxor.Flux;

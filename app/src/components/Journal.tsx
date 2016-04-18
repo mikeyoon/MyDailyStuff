@@ -1,14 +1,14 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import * as React from 'react';
+import React from 'react';
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
-import * as moment from 'moment';
+import moment from 'moment';
 import * as page from 'page';
 import * as marked from 'marked';
 import Streak from './Streak';
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
-import DatePicker = require("react-date-picker");
+import DatePicker from "react-date-picker";
 
 declare var $:any;
 
@@ -226,7 +226,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
                         </div>
                     </div>
                 </div>
-
+                
                 {this.renderEntries()}
 
                 <hr />

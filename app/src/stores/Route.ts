@@ -1,4 +1,4 @@
-import * as Fluxxor from 'fluxxor';
+import Fluxxor = require('fluxxor');
 import * as page from 'page';
 import actions from '../actions';
 import * as Requests from '../models/requests';

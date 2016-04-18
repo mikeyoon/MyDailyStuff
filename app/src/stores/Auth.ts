@@ -1,14 +1,14 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import rest = require('rest');
-import mime = require('rest/interceptor/mime');
-import errorCode = require('rest/interceptor/errorCode');
-import csrf = require('rest/interceptor/csrf');
-import * as Fluxxor from 'fluxxor';
+import * as rest from 'rest';
+import mime from 'rest/interceptor/mime';
+import errorCode from 'rest/interceptor/errorCode';
+import csrf from 'rest/interceptor/csrf';
+import Fluxxor = require('fluxxor');
 import actions from '../actions';
 import * as Requests from "../models/requests";
 import * as page from 'page';
-import moment = require('moment');
+import moment from 'moment';
 
 const CSRF_HEADER = "X-Csrf-Token";
 

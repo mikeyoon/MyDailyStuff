@@ -1,7 +1,7 @@
-import * as Fluxxor from 'fluxxor';
+import Fluxxor = require('fluxxor');
 import actions from '../actions'
 import * as Requests from "../models/requests";
-import * as moment from 'moment';
+import moment from 'moment';
 
 declare var _gaq: any;
 

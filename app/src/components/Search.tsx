@@ -3,7 +3,7 @@
 import * as Fluxxor from 'fluxxor';
 import * as React from 'react';
 import * as Responses from "../models/responses";
-import * as moment from 'moment';
+import moment from 'moment';
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
 
 interface SearchProps {
