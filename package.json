@@ -11,5 +11,5 @@
     "url": "https://github.com/mikeyoon/MyDailyStuff/issues"
   },
   "homepage": "https://github.com/mikeyoon/MyDailyStuff#readme",
-  "cache_directories": ["app/node_modules"]
+  "cache_directories": ["app/node_modules", "app/jspm_packages"]
 }
