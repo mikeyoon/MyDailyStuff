@@ -4,8 +4,8 @@ import React from 'react';
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import moment from 'moment';
-import * as page from 'page';
-import * as marked from 'marked';
+import page from 'page';
+import marked from 'marked';
 import Streak from './Streak';
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
 import DatePicker from "react-date-picker";
@@ -226,7 +226,7 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
                         </div>
                     </div>
                 </div>
-                
+
                 {this.renderEntries()}
 
                 <hr />

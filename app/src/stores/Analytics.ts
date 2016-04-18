@@ -1,4 +1,4 @@
-import Fluxxor = require('fluxxor');
+import Fluxxor from 'fluxxor';
 import actions from '../actions'
 import * as Requests from "../models/requests";
 import moment from 'moment';

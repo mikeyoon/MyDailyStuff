@@ -1,8 +1,7 @@
-import Fluxxor = require('fluxxor');
-import * as rest from 'rest';
+import Fluxxor from 'fluxxor';
+import rest from 'rest';
 import mime from 'rest/interceptor/mime';
 import errorCode from 'rest/interceptor/errorCode';
-import csrf from 'rest/interceptor/csrf';
 import actions from '../actions';
 import moment from 'moment';
 import * as Requests from "../models/requests";

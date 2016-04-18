@@ -1,7 +1,7 @@
-import * as rest from 'rest';
+import rest from 'rest';
 import mime from 'rest/interceptor/mime';
 import errorCode from 'rest/interceptor/errorCode';
-import Fluxxor = require('fluxxor');
+import Fluxxor from 'fluxxor';
 import actions from '../actions';
 import moment from 'moment';
 import * as Requests from "../models/requests";
