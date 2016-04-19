@@ -76,13 +76,13 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
                 <br />
                 {this.renderErrors()}
                 {this.state.auth.sendResetResult.success ?
-                <div>
+                <div ref="success">
                     <div className="alert alert-success">
                         You will receive an email from us shortly if the address you provided is in our system.
                     </div>
                     <p>Click <a href="/login">here</a> to return to the login page</p>
                 </div> :
-                <form onSubmit={this.onSubmit.bind(this)}>
+                <form onSubmit={this.onSubmit.bind(this)} ref="form">
                     <div className={emailFormClass} key="1">
                         <label className="control-label" htmlFor="email">Email:</label>
                         <input className="form-control" id="email" name="email" value={this.state.email}

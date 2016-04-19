@@ -65,11 +65,20 @@
       "<rootDir>/node_modules/react-dom",
       "<rootDir>/node_modules/react-addons-test-utils"
     ],
-    "moduleFileExtensions": ["js", "json", "ts", "tsx"],
-    "modulePathIgnorePatterns": [
-      "jspm_packages\/npm\/isarray@0\\.0\\.1\/"
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts",
+      "tsx"
     ],
-    "testFileExtensions": [ "ts", "tsx", "js" ],
+    "modulePathIgnorePatterns": [
+      "jspm_packages/npm/isarray@0\\.0\\.1/"
+    ],
+    "testFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
     "testPathDirs": [
       "src"
     ]
