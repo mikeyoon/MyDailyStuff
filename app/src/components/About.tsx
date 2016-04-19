@@ -9,7 +9,7 @@ export default class AboutComponent extends React.Component<{}, {}> {
     render() {
         return <div className="row">
             <div className="col-md-8 col-md-offset-2">
-                <h1 className="page-header">About</h1>
+                <h1 className="page-header" ref="header">About</h1>
                 <div key="about">
                     MyDailyStuff is designed as a simplified tool for journaling your daily activities. The
                     basic premise is that by keeping track of three things you do each day, you can have more
