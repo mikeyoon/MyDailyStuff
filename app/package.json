@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "bootstrap": "3.3.6",
+    "fbjs": "^0.8.1",
     "gulp": "^3.9.0",
     "gulp-cachebust": "0.0.6",
     "gulp-less": "^3.0.3",
@@ -20,7 +21,10 @@
     "gulp-watch": "^4.3.5",
     "jest-cli": "^11.0.1",
     "jspm": "^0.16.33",
+    "react": "^15.0.1",
+    "react-addons-test-utils": "^15.0.1",
     "react-date-picker": "^4.0.10",
+    "react-dom": "^15.0.1",
     "systemjs-builder": "^0.15.15",
     "typescript": "^1.8.10"
   },
@@ -48,5 +52,26 @@
         "main": "dist/react-dom"
       }
     }
+  },
+  "jest": {
+    "scriptPreprocessor": "./jest-preprocessor.js",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/jspm_packages"
+    ],
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/react",
+      "<rootDir>/node_modules/fbjs",
+      "<rootDir>/node_modules/react-dom",
+      "<rootDir>/node_modules/react-addons-test-utils"
+    ],
+    "moduleFileExtensions": ["js", "json", "ts", "tsx"],
+    "modulePathIgnorePatterns": [
+      "jspm_packages\/npm\/isarray@0\\.0\\.1\/"
+    ],
+    "testFileExtensions": [ "ts", "tsx", "js" ],
+    "testPathDirs": [
+      "src"
+    ]
   }
 }
