@@ -760,7 +760,8 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 		SetOptions(elastigo.NewHighlightOpts().Tags("<strong>", "</strong>"))
 
 	search := elastigo.Search(EsIndex).Query(query).
-		Highlight(highlight)
+		Highlight(highlight).
+		Sort(elastigo.Sort("date").Desc())
 
 	if jq.Limit > 0 {
 		search.Size(strconv.Itoa(jq.Limit))

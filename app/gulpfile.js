@@ -113,7 +113,7 @@ gulp.task('tsc', function() {
                 min: '.js'
             }
         }))
-        .pipe(checksum.resources({ root: '/js' }))
+        .pipe(isProd ? checksum.resources({ root: '/js' }) : nop())
         .pipe(gulp.dest('../public/js'))
 });
 

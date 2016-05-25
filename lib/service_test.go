@@ -545,8 +545,8 @@ var _ = Describe("Service", func() {
 
 	Describe("Search journal entries", func() {
 		BeforeEach(func() {
-			conn.IndexWithParameters(TestIndex, JournalType, journal2.Id, "", 0, "", "", "", 0, "", "", true, nil, journal2)
 			conn.IndexWithParameters(TestIndex, JournalType, journal3.Id, "", 0, "", "", "", 0, "", "", true, nil, journal3)
+			conn.IndexWithParameters(TestIndex, JournalType, journal2.Id, "", 0, "", "", "", 0, "", "", true, nil, journal2)
 		})
 
 		Context("When searching with an exact word match query", func() {
@@ -581,7 +581,7 @@ var _ = Describe("Service", func() {
 		})
 
 		Context("When searching with a end date and query", func() {
-			It("should find matching entries", func() {
+			It("should find matching entries in order", func() {
 				entries, total, err := service.SearchJournal(testUser1.UserId, JournalQuery{
 					Query: "entry",
 					End:   time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
@@ -607,6 +607,8 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil())
 				Expect(total).To(Equal(3))
 				Expect(len(entries)).To(Equal(3))
+				Expect(entries[0].Date.After(entries[1].Date)).To(BeTrue())
+				Expect(entries[1].Date.After(entries[2].Date)).To(BeTrue())
 			})
 		})
 

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Frontend web application to MyDailyStuff",
   "scripts": {
-    "postinstall": "(./node_modules/.bin/jspm install && ./node_modules/.bin/gulp deploy)",
-    "start": "./node_modules/.bin/gulp watch",
-    "jspm": "./node_modules/.bin/jspm install"
+    "postinstall": "(jspm install && gulp deploy)",
+    "start": "gulp watch",
+    "jspm": "jspm install"
   },
   "devDependencies": {
     "bootstrap": "3.3.6",
