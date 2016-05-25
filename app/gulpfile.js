@@ -1,5 +1,6 @@
 "use strict";
 
+var path = require('path');
 var gulp = require('gulp');
 var shell = require('gulp-shell');
 var ts = require('gulp-typescript');
@@ -133,7 +134,7 @@ gulp.task('build-assets', ['less', 'less-landing', 'copy-vendor', 'copy-fonts', 
 gulp.task('build', ['build-assets', 'copy-html']);
 
 gulp.task('tsc-watch', ['build'], shell.task([
-    './node_modules/.bin/tsc',
+    path.join('node_modules', '.bin', 'tsc'),
     '--pretty',
     '--allowSyntheticDefaultImports',
     '--module system',
