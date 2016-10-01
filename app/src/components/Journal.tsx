@@ -239,9 +239,9 @@ export default class JournalComponent extends BaseFluxxorComponent<JournalProps,
                         <label className="control-label pull-left">Add a new entry (markdown)</label>
                         <label className="pull-right"><Streak flux={this.getFlux()} update={this.refreshStreak}/></label>
                         <textarea placeholder="New entry..." className="form-control"
-                                  rows="4" style={{width: "100%"}} value={this.state.newEntry}
+                                  rows={4} style={{width: "100%"}} value={this.state.newEntry}
                                   onKeyDown={this.handleKeyDown} onBlur={this.handleBlur}
-                                  maxLength="500" onChange={(ev) => this.handleTextChange("newEntry", ev)}/>
+                                  maxLength={500} onChange={(ev) => this.handleTextChange("newEntry", ev)}/>
                         {this.state.errors["newEntry"] ? <span className="help-block">{this.state.errors["newEntry"]}</span> : null}
                     </div>
 

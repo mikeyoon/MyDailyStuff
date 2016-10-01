@@ -103,7 +103,7 @@ export default class LoginComponent extends BaseFluxxorComponent<LoginProps, Log
                     </div>
                     <div className="checkbox" key="3">
                         <label htmlFor="rememberMe">
-                            <input id="rememberMe" name="persist" type="checkbox" value={this.state.persist} onChange={this.handleCheckChange.bind(this, "persist")} />
+                            <input id="rememberMe" name="persist" type="checkbox" checked={this.state.persist} value="persist" onChange={this.handleCheckChange.bind(this, "persist")} />
                             Keep me logged in
                         </label>
                     </div>

@@ -4,8 +4,12 @@
     "target": "es5",
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": false,
-    "allowJs": true
+    "allowJs": true,
+    "jsx": "react",
+    "strictNullChecks": true
   },
+  "buildOnSave": false,
+  "compileOnSave": false,
   "exclude": [
     "node_modules",
     "jspm_packages"

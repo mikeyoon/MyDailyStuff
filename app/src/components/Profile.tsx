@@ -91,7 +91,7 @@ export default class ProfileComponent extends BaseFluxxorComponent<ProfileProps,
                 <form onSubmit={this.onSubmit.bind(this)}>
                     <div className="form-group" key="1">
                         <label className="control-label" htmlFor="email">Email:</label>
-                        <input className="form-control" id="email" name="email" defaultValue={this.state.email} disabled="disabled" />
+                        <input className="form-control" id="email" name="email" defaultValue={this.state.email} disabled={true} />
                     </div>
                     <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
                         <label className="control-label" htmlFor="password">Password:</label>
