@@ -37,8 +37,11 @@ var flux = new Fluxxor.Flux(stores, actions.methods);
 //});
 
 function renderApp(component: React.ComponentClass<{}>, options: any) {
-    var routeElement = React.createElement(App, { flux: flux, component: component, componentOptions: options });
-    DOM.render(routeElement, document.getElementById('content-root'));
+    const routeElement = React.createElement(App, { flux: flux, component: component, componentOptions: options });
+    const root = document.getElementById('content-root');
+    if (root != null) {
+        DOM.render(routeElement, root);
+    }
 }
 
 page('/', () => {

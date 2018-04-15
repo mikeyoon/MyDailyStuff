@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
     "module": "system",
-    "target": "es5",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": false,
+    "experimentalDecorators": true,
+    "strict": true,
+    "sourceMap": true,
     "allowJs": true,
     "jsx": "react",
-    "strictNullChecks": true
+    "target": "es5",
+    "outFile": "./build/app.js"
   },
+  "files": [
+    "src/index.ts"
+  ],
   "buildOnSave": false,
   "compileOnSave": false,
   "exclude": [
