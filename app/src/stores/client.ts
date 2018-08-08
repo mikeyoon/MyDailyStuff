@@ -15,10 +15,25 @@ export namespace RestClient {
             path: url
         }).then(response => csrfToken = response.headers[CSRF_HEADER]);
     }
+
+    export function del(url: string) {
+        return client({
+            method: 'DELETE',
+            path: url
+        }).then(response => csrfToken = response.headers[CSRF_HEADER]);
+    }
     
     export function post(url: string, entity?: any) {
         return client({
             method: 'POST',
+            path: url,
+            entity: JSON.stringify(entity)
+        }).then(response => csrfToken = response.headers[CSRF_HEADER]);
+    }
+
+    export function put(url: string, entity?: any) {
+        return client({
+            method: 'PUT',
             path: url,
             entity: JSON.stringify(entity)
         }).then(response => csrfToken = response.headers[CSRF_HEADER]);

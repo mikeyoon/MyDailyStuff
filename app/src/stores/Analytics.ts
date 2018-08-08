@@ -1,4 +1,4 @@
-import Fluxxor from 'fluxxor';
+import { observable, when } from 'mobx';
 import actions from '../actions'
 import * as Requests from "../models/requests";
 import moment from 'moment';

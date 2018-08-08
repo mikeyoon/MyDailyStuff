@@ -1,12 +1,11 @@
-import { action, autorun, observable, reaction, when } from 'mobx';
-import { types } from 'mobx-state-tree';
+import { observable } from 'mobx';
 import { RestClient } from './client';
 import actions from '../actions';
 import * as Requests from "../models/requests";
 import page from 'page';
 import moment from 'moment';
 
-class AuthStore {
+export class AuthStore {
     @observable loggingIn = false;
     @observable isLoggedIn = false
     @observable loginError: string | undefined;
@@ -26,6 +25,9 @@ class AuthStore {
 
     @observable registering = false;
     @observable registerError: string | undefined;
+
+    @observable saving = false;
+    @observable saveError: string | undefined;
 
     constructor() {
     }
@@ -115,6 +117,18 @@ class AuthStore {
             .finally(() => this.loggingIn = false);
     }
 
+    logout() {
+        RestClient.post("/api/account/logout")
+            .then(response => {
+                if (response.entity.success) {
+                    this.isLoggedIn = false;
+                    this.email = undefined;
+                    this.user_id = undefined;
+                    page('/login');
+                }
+            });
+    }
+
     register(request: Requests.Register) {
         this.registering = false;
         this.registerError = undefined;
@@ -127,6 +141,32 @@ class AuthStore {
             })
             .catch(err => this.registerError = err.message)
             .finally(() => this.registering = false);
+    }
+
+    verify(token: string) {
+        RestClient.get("/api/account/verify/" + token)
+            .then(response => {
+                if (response.entity.success) {
+                    this.isLoggedIn = true;
+                    this.getAccount();
+                    page('/journal');
+                }
+            })
+            .catch(err => page('/login'));
+    }
+
+    updateProfile(request: Requests.SaveProfile) {
+        this.saving = true;
+        this.saveError = undefined;
+
+        RestClient.put('/api/account', request)
+            .then(response => {
+                if (!response.entity.success) {
+                    this.saveError = response.entity.error;
+                }
+            })
+            .catch(err => this.saveError = err.message)
+            .finally(() => this.saving = false);
     }
 }
 
@@ -417,5 +457,3 @@ class AuthStore {
 //         )
 //     }
 // });
-
-export default AuthStore;

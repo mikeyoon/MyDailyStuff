@@ -5,7 +5,8 @@
   "scripts": {
     "postinstall": "(jspm install && gulp deploy)",
     "start": "webpack -w",
-    "jspm": "jspm install"
+    "jspm": "jspm install",
+    "build": "webpack"
   },
   "devDependencies": {
     "bootstrap": "3.3.6",
@@ -23,20 +24,21 @@
     "jquery": "^3.3.1",
     "jspm": "^0.16.46",
     "lodash": "^4.17.5",
-    "marked": "^0.3.19",
-    "mobx": "^4.1.1",
-    "mobx-react": "^5.0.0",
-    "mobx-state-tree": "^2.0.3",
-    "mobx-utils": "^4.0.0",
+    "marked": "0.4.0",
+    "mobx": "^5.0.3",
+    "mobx-react": "^5.2.3",
+    "mobx-state-tree": "^3.0.0",
+    "mobx-utils": "^5.0.0",
     "moment": "^2.18.1",
     "page": "^1.7.1",
-    "react": "^16.3.1",
-    "react-date-picker": "^6.10.1",
-    "react-datepicker": "^1.4.1",
-    "react-dom": "^16.3.1",
+    "react": "^16.4.1",
+    "react-date-picker": "6.11.2",
+    "react-datepicker": "1.5.0",
+    "react-dom": "16.4.1",
     "rest": "^2.0.0",
     "systemjs-builder": "^0.16.9",
-    "webpack-cli": "^2.0.14"
+    "webpack": "4.16.1",
+    "webpack-cli": "^3.1.0"
   },
   "jspm": {
     "dependencies": {
@@ -67,10 +69,11 @@
     "@types/lodash": "^4.14.107",
     "@types/page": "^1.5.32",
     "@types/react": "^16.3.10",
+    "@types/react-dom": "^16.0.5",
     "@types/rest": "^1.3.28",
     "rxjs": "^5.5.10",
-    "ts-loader": "^4.2.0",
-    "typescript": "2.8.1",
-    "webpack": "^4.5.0"
+    "ts-loader": "^4.3.0",
+    "typescript": "2.8.3",
+    "webpack": "^4.8.2"
   }
 }

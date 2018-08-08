@@ -1,9 +1,6 @@
-/// <reference path='../typings/browser.d.ts' />
-
 import * as React from 'react';
 import page from 'page';
 import actions from './actions';
-import * as Fluxxor from 'fluxxor';
 import moment from 'moment';
 import * as DOM from 'react-dom';
 
@@ -17,11 +14,11 @@ import Search from './components/Search';
 import Profile from './components/Profile';
 import About from './components/About';
 
-import AuthStore from './stores/Auth';
-import JournalStore from './stores/Journal';
-import SearchStore from './stores/SearchJournalStore';
-import RouteStore from './stores/Route';
-import AnalyticsStore from './stores/Analytics';
+import AuthStore from './stores/auth';
+import JournalStore from './stores/journal';
+import SearchStore from './stores/search';
+import RouteStore from './stores/route';
+import AnalyticsStore from './stores/analytics';
 
 var stores = {
     auth: new AuthStore(),

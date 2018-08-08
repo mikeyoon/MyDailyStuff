@@ -1,5 +1,3 @@
-/// <reference path='../../typings/browser.d.ts' />
-
 import * as React from 'react';
 import * as Requests from "../models/requests";
 import BaseFluxxorComponent from "./BaseFluxxorComponent";

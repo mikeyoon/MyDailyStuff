@@ -1,19 +1,31 @@
-import Fluxxor = require('fluxxor');
+import { observable, when } from 'mobx';
 import page from 'page';
 import actions from '../actions';
 import * as Requests from '../models/requests';
 
-var RouteStore = Fluxxor.createStore({
-    initialize: function() {
-        this.bindActions(
-            //actions.constants.ROUTE.HOME, this.onGet,
-            actions.constants.ROUTE.SEARCH, this.onSearch
-        );
-    },
+export enum Routes {
+    Journal,
+    Login,
+    Home,
+    Register,
+    Profile,
+    ForgotPassword
+}
 
-    onSearch: function(req: Requests.Search) {
+export class RouteStore {
+    @observable route: string;
+
+    constructor() {
+        this.route = '';
+        page.start();
+        
+    }
+
+    search(req: Requests.Search) {
         page('/search/' + req.query + "?offset=" + req.offset);
     }
-});
 
-export default RouteStore;
+    updateRoute(route: string) {
+        this.route = route;
+    }
+}

@@ -1,6 +1,7 @@
 /// <reference path='../../typings/browser.d.ts' />
 
-import React from 'react';
+import { Component } from 'react';
+import { inject, observer } from 'mobx-react';
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import moment from 'moment';
@@ -13,7 +14,6 @@ import DatePicker from "react-date-picker";
 declare var $:any;
 
 export interface JournalProps {
-    flux: any;
     date: Date;
 }
 
@@ -33,10 +33,12 @@ interface JournalState {
     showCalendar?: boolean;
 }
 
-export default class JournalComponent extends BaseFluxxorComponent<JournalProps, JournalState> {
+@inject('journal')
+@observer
+export default class JournalComponent extends Component<JournalProps, JournalState> {
     getWatchers() { return ['journal']; }
 
-    refreshStreak:boolean;
+    refreshStreak: boolean;
 
     getStateFromFlux():JournalState {
         var journal = this.getFlux().store("journal");

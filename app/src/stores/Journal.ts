@@ -1,73 +1,52 @@
-import rest from 'rest';
-import mime from 'rest/interceptor/mime';
-import errorCode from 'rest/interceptor/errorCode';
-import Fluxxor from 'fluxxor';
+import { observable } from 'mobx';
 import actions from '../actions';
 import moment from 'moment';
 import * as Requests from "../models/requests";
+import * as Responses from "../models/responses";
+import { RestClient } from "./client";
 
-var JournalStore = Fluxxor.createStore({
-    initialize: function() {
-        this.bindActions(
-            actions.constants.JOURNAL.GET, this.onGet,
-            actions.constants.JOURNAL.DELETE, this.onDelete,
-            actions.constants.JOURNAL.EDIT, this.onEdit,
-            actions.constants.JOURNAL.ADD, this.onAdd,
-            actions.constants.JOURNAL.TOGGLE_CALENDAR, this.onToggleCalendar
-        );
+export class JournalStore {
+    editing = false;
+    adding = false;
+    loading = false;
+    deleting = false;
+    started = false; //Whether the journal page has loaded
+    error: string | undefined;
 
-        this.editing = false;
-        this.adding = false;
-        this.loading = false;
-        this.deleting = false;
-        this.started = false; //Whether the journal page has loaded
-        this.error = null;
+    current: Responses.JournalEntry | null;
+    hasEntry = false;
+    date: Date | undefined;
+    showCalendar = false;
 
-        this.current = null;
-        this.hasEntry = false;
-        this.date = null;
-        this.showCalendar = false;
-
-        this.client = rest.wrap(mime).wrap(errorCode);
-    },
-
-    onAdd: function(entry: string) {
+    add(entry: string) {
         this.adding = true;
-        this.emit('change');
+        this.error = undefined;
 
-        this.client({
-            method: "POST",
-            path: "/api/journal",
-            entity: JSON.stringify({
-                entries: [ entry ],
-                date: moment(this.date).format("YYYY-M-D")
-            })
-        }).then(
-            (response: rest.Response) => {
-                this.adding = false;
-                if (response.entity.success) {
-                    this.current = response.entity.result;
-                    this.hasEntry = true;
-                    this.error = null;
-                } else {
-                    this.error = response.entity.error;
-                }
-
-                this.emit('change');
-            },
-            (response: rest.Response) => {
-                this.adding = false;
-                console.log(response);
-                this.emit('change');
+        RestClient.post("/api/journal", {
+            entries: [ entry ],
+            date: moment(this.date).format("YYYY-M-D")
+        })
+        .then(response => {
+            this.adding = false;
+            if (response.entity.success) {
+                this.current = response.entity.result;
+                this.hasEntry = true;
+            } else {
+                this.error = response.entity.error;
             }
-        )
-    },
+        })
+        .catch(err => this.error = err.message)
+        .finally(() => this.adding = false);
+    }
 
-    onEdit: function(req: Requests.EditJournalEntry) {
+    edit(req: Requests.EditJournalEntry) {
         this.editing = true;
-        this.emit('change');
+        this.error = undefined;
+        if (this.current == null) {
+            return;
+        }
 
-        var entries = this.current.entries.slice(0);
+        let entries = this.current.entries.slice(0);
 
         if (!req.entry) {
             entries.splice(req.index, 1);
@@ -75,70 +54,54 @@ var JournalStore = Fluxxor.createStore({
             entries[req.index] = req.entry;
         }
 
-        this.client({
-            method: "PUT",
-            path: "/api/journal/" + this.current.id,
-            entity: JSON.stringify({
-                entries: entries
-            })
-        }).then(
-            (response: rest.Response) => {
-                this.editing = false;
-                if (response.entity.success) {
-                    //We're relying on the current to be updated client-side due to delays in indexing in ES
-                    this.error = null;
+        RestClient.put("/api/journal/" + this.current.id, {
+            entries: entries
+        })
+        .then(response => {
+            this.editing = false;
+            if (response.entity.success) {
+                //We're relying on the current to be updated client-side due to delays in indexing in ES
+                if (this.current != null) {
                     this.current.entries = entries;
                 } else {
-                    this.error = response.entity.error;
+                    this.error = "Something went wrong, please refresh";
                 }
-                this.emit("change");
-            },
-            (response: rest.Response) => {
-                this.editing = false;
-                console.log(response);
-                this.emit('change');
+            } else {
+                this.error = response.entity.error;
             }
-        )
-    },
+        })
+        .catch(err => this.error = err.message)
+        .finally(() => this.editing = false);
+    }
 
-    onDelete: function() {
+    delete() {
         this.deleting = true;
-        this.emit('change');
+        this.error = undefined;
 
-        this.client({
-            method: "DELETE",
-            path: "/api/journal/" + this.current.id
-        }).then(
-            (response: rest.Response) => {
-                this.deleting = false;
+        if (this.current == null) {
+            return;
+        }
 
+        RestClient.del("/api/journal/" + this.current.id)
+            .then(response => {
                 if (response.entity.success) {
                     this.hasEntry = false;
                     this.current = null;
-                    this.error = null;
+                    
                 } else {
                     this.error = response.entity.error;
                 }
+            })
+            .catch(err => this.error = err.message)
+            .finally(() => this.deleting = false);
+    }
 
-                this.emit("change");
-            },
-            (response: rest.Response) => {
-                this.deleting = false;
-                console.log(response);
-                this.emit('change');
-            }
-        )
-    },
-
-    onGet: function(date: Date) {
+    get(date: Date) {
         this.loading = true;
-        this.emit('change');
+        this.error = undefined;
 
-        this.client({
-            method: "GET",
-            path: "/api/journal/" + moment(date).format("YYYY-M-D")
-        }).then(
-            (response: rest.Response) => {
+        RestClient.get("/api/journal/" + moment(date).format("YYYY-M-D"))
+            .then(response => {
                 this.loading = false;
                 this.date = date;
                 this.started = true;
@@ -147,31 +110,23 @@ var JournalStore = Fluxxor.createStore({
                 if (response.entity.success) {
                     this.current = response.entity.result;
                     this.hasEntry = true;
-                    this.error = null;
                 } else {
                     this.hasEntry = false;
                     this.current = null;
                 }
-
-                this.emit("change");
-            },
-            (response: rest.Response) => {
+            })
+            .catch(err => {
                 this.started = true;
                 this.loading = false;
                 this.showCalendar = false;
-                console.log(response);
                 this.hasEntry = false;
                 this.current = null;
-
-                this.emit("change");
-            }
-        );
-    },
-
-    onToggleCalendar: function(show: boolean) {
-        this.showCalendar = show;
-        this.emit('change');
+                this.error = err.message;
+            })
+            .finally(() => this.loading = false);
     }
-});
 
-export default JournalStore;
+    toggleCalendar(show: boolean) {
+        this.showCalendar = show;
+    }
+}
