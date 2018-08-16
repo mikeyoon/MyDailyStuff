@@ -1,29 +1,38 @@
 import * as React from 'react';
-import TopNav from '../components/TopNav';
 
-interface AppProps {
-    flux: Fluxxor.Flux;
-    component: React.ComponentClass<{}>;
-    componentOptions: any;
-}
+import { BaseProps } from '../types';
+import { TopNav } from './TopNav';
+import { Routes } from '../stores/route.store';
+// import { JournalComponent } from './Journal';
+import { LoginComponent } from './Login';
 
-export default class AppComponent extends React.Component<AppProps, {}> {
+export class AppComponent extends React.Component<BaseProps, {}> {
+    renderComponent() {
+        switch (this.props.store.routeStore.route) {
+            // case Routes.Journal:
+            //     return <JournalComponent store={this.props.store} />;
+            case Routes.Login:
+                return <LoginComponent store={this.props.store} />;
+        }
+    }
 
     render() {
-        let Component = this.props.component;
-
         return <div>
-            <TopNav flux={this.props.flux} />
+            <TopNav store={this.props.store} />
             <div className="container">
-                <Component {...this.props.componentOptions} />
+                {this.renderComponent()}
             </div>
-            <footer className="footer">
-                <div className="container">
-                    <p className="text-muted">
-                        Created by {" "}
-                        <a href="https://github.com/mikeyoon/">Mike Yoon</a>
+            <footer className="footer container-fluid">
+                <div className="row align-items-center h-100">
+                    <div className="col-6">
+                        <span className="text-muted">
+                            Created by {" "}
+                            <a href="https://github.com/mikeyoon/">Mike Yoon</a>
+                        </span>
+                    </div>
+                    <div className="col-6 text-right">
                         <a href="/about" className="pull-right">About</a>
-                    </p>
+                    </div>
                 </div>
             </footer>
         </div>

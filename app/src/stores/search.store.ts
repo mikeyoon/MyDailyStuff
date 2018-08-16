@@ -1,5 +1,4 @@
-import { computed, observable } from 'mobx';
-import actions from '../actions';
+import { action, computed, observable } from 'mobx';
 import moment from 'moment';
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
@@ -30,6 +29,7 @@ export class SearchStore {
         this.dates = [];
     }
 
+    @action
     clear() {
         this.query = "";
         this.total = 0;
@@ -38,6 +38,7 @@ export class SearchStore {
         this.searchResults = [];
     }
 
+    @action
     searchByMonth(date: Date) {
         const month = date.getMonth() + 1;
         const year = date.getFullYear();
@@ -59,6 +60,7 @@ export class SearchStore {
         }
     }
 
+    @action
     search(request: Requests.Search) {
         this.searching = true;
 

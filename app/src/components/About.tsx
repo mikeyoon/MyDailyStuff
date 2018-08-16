@@ -21,7 +21,7 @@ export default class AboutComponent extends React.Component<{}, {}> {
                 <div key="dev">
                     I wrote this application to learn Go and Typescript. All the source code is
                     available at github (link in the left side of the footer). It is powered on the
-                    backend using ElasticSearch and Martini. The frontend is React and Fluxxor with the stereotypical
+                    backend using ElasticSearch and Martini. The frontend is React and Mobx with the stereotypical
                     bootstrap styling. The Go backend has a fairly comprehensive set of automated tests.
                 </div>
             </div>

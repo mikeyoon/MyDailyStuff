@@ -1,9 +1,10 @@
 import { observable } from 'mobx';
-import actions from '../actions';
 import moment from 'moment';
+
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import { RestClient } from "./client";
+import { AnalyticsStore } from './analytics.store'; 
 
 export class JournalStore {
     editing = false;
@@ -13,14 +14,22 @@ export class JournalStore {
     started = false; //Whether the journal page has loaded
     error: string | undefined;
 
-    current: Responses.JournalEntry | null;
+    @observable
+    current: Responses.JournalEntry | null = null;
     hasEntry = false;
+    @observable
     date: Date | undefined;
+    @observable
     showCalendar = false;
+
+    constructor(private analyticsStore: AnalyticsStore) {
+    }
 
     add(entry: string) {
         this.adding = true;
         this.error = undefined;
+
+        this.analyticsStore.onJournalAdd(entry);
 
         RestClient.post("/api/journal", {
             entries: [ entry ],
@@ -42,6 +51,9 @@ export class JournalStore {
     edit(req: Requests.EditJournalEntry) {
         this.editing = true;
         this.error = undefined;
+
+        this.analyticsStore.onJournalEdit(req);
+
         if (this.current == null) {
             return;
         }
@@ -77,6 +89,8 @@ export class JournalStore {
     delete() {
         this.deleting = true;
         this.error = undefined;
+
+        this.analyticsStore.onJournalDelete();
 
         if (this.current == null) {
             return;

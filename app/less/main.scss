@@ -1,5 +1,5 @@
-@import "../node_modules/bootstrap/less/bootstrap";
-@import (inline) "../node_modules/react-date-picker/index.css";
+@import "../node_modules/bootstrap/dist/css/bootstrap";
+@import "../node_modules/react-datepicker/dist/react-datepicker";
 
 html {
   position: relative;
@@ -26,7 +26,6 @@ a:hover {
 }
 
 .btn-clear {
-  .button-variant(@btn-default-color; transparent; transparent);
 }
 
 .footer {
@@ -61,7 +60,7 @@ a:hover {
   margin-left: -141px;
 }
 
-@media (max-width: @screen-sm) {
+@media (max-width: 768px) {
   body {
     /* Margin bottom by footer height */
     margin-bottom: 48px;

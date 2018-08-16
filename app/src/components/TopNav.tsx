@@ -1,46 +1,30 @@
-import * as Fluxxor from 'fluxxor';
+import { observer } from 'mobx-react';
 import * as React from 'react';
-import BaseFluxxorComponent from "./BaseFluxxorComponent";
+import { BaseProps } from '../types';
+import { observable, action } from 'mobx';
+import classnames from 'classnames';
+import { Search } from '../models/requests';
 
-interface TopNavProps {
-    flux: Fluxxor.Flux;
-}
-
-interface TopNavState {
-    isLoggedIn: boolean;
-    query?: string;
-    email?: string;
-    searching?: boolean;
-}
-
-export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, TopNavState> {
-    getWatchers() { return ['auth', 'search'] };
-
-    getStateFromFlux() {
-        var store = this.getFlux().store("auth");
-        var search = this.getFlux().store("search");
-
-        return {
-            isLoggedIn: store.isLoggedIn,
-            email: store.user ? store.user.email : null,
-            searching: search.searching,
-        };
-    }
+@observer
+export class TopNav extends React.Component<BaseProps> {
+    @observable query: string = '';
 
     handleLogout = (ev: any) => {
         ev.preventDefault();
-        this.getFlux().actions.account.logout();
+        this.props.store.authStore.logout();
     };
 
     handleSearch = (ev: any) => {
         ev.preventDefault();
-        if (this.state.query && !this.state.searching) this.getFlux().actions.routes.search(this.state.query, 0);
+        
+        if (this.query && !this.props.store.searchStore.searching) {
+            this.props.store.routeStore.search(new Search(this.query, 0));
+        }
     };
 
-    handleTextChange(name:string, ev:any) {
-        var state:any = {};
-        state[name] = ev.target.value;
-        this.setState(state);
+    @action.bound
+    updateQueryText(query: string) {
+        this.query = query;
     }
 
     handleSearchKeyDown = (ev: any) => {
@@ -50,10 +34,13 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
     };
 
     render() {
+        const searchBtnClasses = classnames('btn', 'btn-primary', { disabled: this.props.store.searchStore.searching });
+        const isLoggedIn = this.props.store.authStore.isLoggedIn;
+
         return <nav className="navbar navbar-default">
             <div className="container">
                 <div className="navbar-header">
-                    <button className="navbar-toggle collapsed" data="" data-toggle="collapse" data-target="#navbar">
+                    <button className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
                         <span className="sr-only">Toggle Navigation</span>
                         <span className="icon-bar" key="1"/>
                         <span className="icon-bar" key="2"/>
@@ -63,15 +50,15 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
                 </div>
 
                 <div className="collapse navbar-collapse navbar-ex1-collapse" id="navbar">
-                    {this.state.isLoggedIn ?
+                    {this.props.store.authStore.isLoggedIn ?
                     <form className="navbar-form navbar-left" role="search" onSubmit={this.handleSearch}>
                         <div className="input-group">
                             <input className="form-control" type="search" placeholder="Search"
-                                   onChange={this.handleTextChange.bind(this, "query")}
+                                   onChange={e => this.updateQueryText(e.target.value)}
                                    onKeyDown={this.handleSearchKeyDown}/>
                             <div className="input-group-btn">
                                 <button type="submit"
-                                        className={"btn btn-primary " + (this.state.searching ? 'disabled' : '')}>
+                                        className={searchBtnClasses}>
                                     <i className="glyphicon glyphicon-search"/>
                                 </button>
                             </div>
@@ -80,10 +67,10 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
                         }
 
                     <ul className="nav navbar-nav navbar-right">
-                        {this.state.isLoggedIn ?
+                        {isLoggedIn ?
                         <li className="dropdown">
                             <a className="dropdown-toggle" data-toggle="dropdown" role="button">
-                                {this.state.email}
+                                {this.props.store.authStore.email}
                                 <span className="caret"/>
                             </a>
                             <ul className="dropdown-menu" role="menu">
@@ -92,7 +79,7 @@ export default class TopNavComponent extends BaseFluxxorComponent<TopNavProps, T
                             </ul>
                         </li> :
                         <li key="Login"><a href="/login">Login</a></li>}
-                        {this.state.isLoggedIn ? null : <li key="Register"><a href="/register">Register</a></li>}
+                        {isLoggedIn ? null : <li key="Register"><a href="/register">Register</a></li>}
                     </ul>
                 </div>
             </div>

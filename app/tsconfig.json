@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "system",
+    "module": "esnext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
@@ -8,11 +8,11 @@
     "sourceMap": true,
     "allowJs": true,
     "jsx": "react",
-    "target": "es5",
+    "target": "es2017",
     "outFile": "./build/app.js"
   },
   "files": [
-    "src/index.ts"
+    "src/index.tsx"
   ],
   "buildOnSave": false,
   "compileOnSave": false,

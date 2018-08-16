@@ -10,6 +10,8 @@ import marked from 'marked';
 import Streak from './Streak';
 import BaseFluxxorComponent from "./BaseFluxxorComponent";
 import DatePicker from "react-date-picker";
+import { BaseProps } from '../types';
+import { observable } from 'mobx';
 
 declare var $:any;
 
@@ -33,37 +35,35 @@ interface JournalState {
     showCalendar?: boolean;
 }
 
-@inject('journal')
 @observer
-export default class JournalComponent extends Component<JournalProps, JournalState> {
-    getWatchers() { return ['journal']; }
-
+export class JournalComponent extends Component<BaseProps> {
+    @observable
     refreshStreak: boolean;
 
-    getStateFromFlux():JournalState {
-        var journal = this.getFlux().store("journal");
+    // getStateFromFlux():JournalState {
+    //     var journal = this.getFlux().store("journal");
 
-        return {
-            current: journal.current,
-            date: journal.date,
-            hasEntry: journal.hasEntry,
-            newEntry: '',
-            errors: {},
-            serviceError: journal.error,
-            adding: journal.adding,
-            loading: journal.loading,
-            editing: journal.editing,
-            deleting: journal.deleting,
-            started: journal.started,
-            showCalendar: journal.showCalendar
-        };
-    }
+    //     return {
+    //         current: journal.current,
+    //         date: journal.date,
+    //         hasEntry: journal.hasEntry,
+    //         newEntry: '',
+    //         errors: {},
+    //         serviceError: journal.error,
+    //         adding: journal.adding,
+    //         loading: journal.loading,
+    //         editing: journal.editing,
+    //         deleting: journal.deleting,
+    //         started: journal.started,
+    //         showCalendar: journal.showCalendar
+    //     };
+    // }
 
-    componentWillReceiveProps(nextProps:JournalProps) {
-        this.getFlux().actions.journal.get(nextProps.date);
-        //this.getFlux().actions.search.date(nextProps.date);
-        this.validate();
-    }
+    // componentWillReceiveProps(nextProps:JournalProps) {
+    //     this.getFlux().actions.journal.get(nextProps.date);
+    //     //this.getFlux().actions.search.date(nextProps.date);
+    //     this.validate();
+    // }
 
     componentWillMount() {
         this.getFlux().actions.journal.get(this.props.date);
