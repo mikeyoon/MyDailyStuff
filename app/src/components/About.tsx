@@ -1,14 +1,12 @@
-/**
- * Created by myoon on 6/4/2015.
- */
-
 import * as React  from 'react';
 
-export default class AboutComponent extends React.Component<{}, {}> {
+import { BaseProps } from '../types';
+
+export class AboutComponent extends React.Component<BaseProps> {
 
     render() {
         return <div className="row">
-            <div className="col-md-8 col-md-offset-2">
+            <div className="col-lg-8 offset-lg-2 col-md-8 offset-md-2 col-sm-12">
                 <h1 className="page-header">About</h1>
                 <div key="about">
                     MyDailyStuff is designed as a simplified tool for journaling your daily activities. The

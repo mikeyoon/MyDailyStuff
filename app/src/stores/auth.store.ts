@@ -25,9 +25,11 @@ export class AuthStore {
 
     @observable registering = false;
     @observable registerError: string | undefined;
+    @observable registered = false;
 
     @observable saving = false;
     @observable saveError: string | undefined;
+    @observable saved = false;
 
     constructor(private analyticsStore: AnalyticsStore) {
     }
@@ -148,6 +150,8 @@ export class AuthStore {
             .then(response => {
                 if (!response.entity.success) {
                     this.registerError = response.entity.error;
+                } else {
+                    this.registered = true;
                 }
             })
             .catch(err => this.registerError = err.message)
@@ -169,12 +173,15 @@ export class AuthStore {
 
     updateProfile(request: Requests.SaveProfile) {
         this.saving = true;
+        this.saved = false;
         this.saveError = undefined;
 
         RestClient.put('/api/account', request)
             .then(response => {
                 if (!response.entity.success) {
                     this.saveError = response.entity.error;
+                } else {
+                    this.saved = true;
                 }
             })
             .catch(err => this.saveError = err.message)

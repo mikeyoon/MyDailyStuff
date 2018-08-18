@@ -4,6 +4,7 @@ import * as Requests from '../models/requests';
 import { AuthStore } from './auth.store';
 
 export enum Routes {
+    About = 'about',
     Journal = 'journal',
     Login = 'login',
     Home = 'home',
@@ -23,6 +24,8 @@ export class RouteStore {
 
         page('/', () => this.setDefaultRoute());
         page('/login', () => this.setLoginRoute());
+        page('/register', () => this.setRegisterRoute());
+        page('/about', () => this.setAboutRoute());
         page('/journal', ctx => this.setJournalRoute(ctx));
         page('/journal/:date', ctx => this.setJournalRoute(ctx));
         page('/search/:query', ctx => this.setSearchRoute(ctx));
@@ -47,6 +50,22 @@ export class RouteStore {
             this.route = Routes.Login;
             this.params = {};
         }
+    }
+
+    @action
+    setRegisterRoute() {
+        if (this.authStore.isLoggedIn) {
+            page.show('/journal');
+        } else {
+            this.route = Routes.Register;
+            this.params = {};
+        }
+    }
+
+    @action
+    setAboutRoute() {
+        this.route = Routes.About;
+        this.params = {};
     }
 
     @action

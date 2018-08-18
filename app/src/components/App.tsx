@@ -1,11 +1,15 @@
 import * as React from 'react';
+import { observer } from 'mobx-react';
 
 import { BaseProps } from '../types';
 import { TopNav } from './TopNav';
 import { Routes } from '../stores/route.store';
-// import { JournalComponent } from './Journal';
 import { LoginComponent } from './Login';
+import { AboutComponent } from './About';
+import { ForgotComponent } from './Forgot';
+import { SignupComponent } from './Signup';
 
+@observer
 export class AppComponent extends React.Component<BaseProps, {}> {
     renderComponent() {
         switch (this.props.store.routeStore.route) {
@@ -13,6 +17,12 @@ export class AppComponent extends React.Component<BaseProps, {}> {
             //     return <JournalComponent store={this.props.store} />;
             case Routes.Login:
                 return <LoginComponent store={this.props.store} />;
+            case Routes.About:
+                return <AboutComponent store={this.props.store} />;
+            case Routes.Register:
+                return <SignupComponent store={this.props.store} />
+            case Routes.ForgotPassword:
+                return <ForgotComponent store={this.props.store} />
         }
     }
 

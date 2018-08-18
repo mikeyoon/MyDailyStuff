@@ -1,6 +1,9 @@
 import * as React from 'react';
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
+
 import * as Requests from "../models/requests";
-import BaseFluxxorComponent from "./BaseFluxxorComponent";
+import { BaseProps } from '../types';
 
 interface ProfileProps {
     flux: any;
@@ -14,55 +17,42 @@ interface ProfileState {
     errors?: any;
 }
 
-export default class ProfileComponent extends BaseFluxxorComponent<ProfileProps, ProfileState> {
-    getWatchers() { return ['auth']; }
-    
+@observer
+export class ProfileComponent extends React.Component<BaseProps> {
+    @observable errors: { [field: string]: string } = {};
+    @observable password = '';
+    @observable confirm = '';
+
     isValid(): boolean {
-        return !this.state.errors;
-    }
-
-    componentDidMount() {
-        this.getFlux().actions.account.clearResults();
-    }
-
-    getStateFromFlux() {
-        var store = this.getFlux().store("auth");
-
-        var result = {
-            auth: store,
-            email: store.user ? store.user.email : null,
-            password: '',
-            confirm: '',
-            errors: {}
-        };
-
-        return result;
+        return !this.errors;
     }
 
     onSubmit(ev: any) {
         ev.preventDefault();
         if (this.validate()) {
-            if (this.state.confirm == this.state.password) {
-                this.getFlux().actions.account.saveProfile(new Requests.SaveProfile(this.state.password));
+            if (this.confirm == this.password) {
+                this.props.store.authStore.updateProfile(new Requests.SaveProfile(this.password));
             }
         }
     }
 
-    handleTextChange(name: string, ev: any) {
-        var state: any = {};
-        state[name] = ev.target.value;
-        this.setState(state);
+    passwordChanged(password: string) {
+        this.password = password;
+    }
+
+    confirmChanged(password: string) {
+        this.confirm = password;
     }
 
     validate(): boolean {
         var errors: any = {};
 
-        if (this.state.confirm != this.state.password) {
+        if (this.confirm != this.password) {
             errors["password"] = "passwords do not match";
             errors["confirm"] = "passwords do not match";
-        } else if (!this.state.password || this.state.password.length < 6) {
+        } else if (!this.password || this.password.length < 6) {
             errors["password"] = "Password needs to be 6 or more characters";
-        } else if (this.state.password && this.state.password.length > 50) {
+        } else if (this.password && this.password.length > 50) {
             errors["password"] = "Password needs to be less than 50 characters";
         }
 
@@ -71,8 +61,8 @@ export default class ProfileComponent extends BaseFluxxorComponent<ProfileProps,
     }
 
     renderProfileError() {
-        if (this.state.auth.error) {
-            return <div className="alert alert-danger">{this.state.auth.error}</div>;
+        if (this.props.store.authStore.saveError) {
+            return <div className="alert alert-danger">{this.props.store.authStore.saveError}</div>;
         }
 
         return null;
@@ -84,25 +74,25 @@ export default class ProfileComponent extends BaseFluxxorComponent<ProfileProps,
                 <h3 className="text-center">Update Your Profile</h3>
                 <br />
                 {this.renderProfileError()}
-                {this.state.auth.saveProfileResult.success ? <div className="alert alert-success">Profile Updated Successfully</div> : null}
+                {this.props.store.authStore.saved ? <div className="alert alert-success">Profile Updated Successfully</div> : null}
 
                 <form onSubmit={this.onSubmit.bind(this)}>
                     <div className="form-group" key="1">
                         <label className="control-label" htmlFor="email">Email:</label>
-                        <input className="form-control" id="email" name="email" defaultValue={this.state.email} disabled={true} />
+                        <input className="form-control" id="email" name="email" defaultValue={this.props.store.authStore.email} disabled={true} />
                     </div>
-                    <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
+                    <div className={"form-group " + (this.errors["password"] ? 'has-error' : '')} key="2">
                         <label className="control-label" htmlFor="password">Password:</label>
-                        <input className="form-control" id="password" name="password" type="password" value={this.state.password}
-                               onChange={this.handleTextChange.bind(this, "password")} />
-                        {this.state.errors["password"] ? <span className="help-block">{this.state.errors["password"]}</span> : null}
+                        <input className="form-control" id="password" name="password" type="password" value={this.password}
+                               onChange={e => this.passwordChanged(e.target.value)} />
+                        {this.errors["password"] ? <span className="help-block">{this.errors["password"]}</span> : null}
                     </div>
 
-                    <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="3">
+                    <div className={"form-group " + (this.errors["confirm"] ? 'has-error' : '')} key="3">
                         <label className="control-label" htmlFor="password">Confirm Password:</label>
-                        <input className="form-control" id="confirm" name="confirm" type="password" value={this.state.confirm}
-                               onChange={this.handleTextChange.bind(this, "confirm")} />
-                        {this.state.errors["confirm"] ? <span className="help-block">{this.state.errors["confirm"]}</span> : null}
+                        <input className="form-control" id="confirm" name="confirm" type="password" value={this.confirm}
+                               onChange={e => this.confirmChanged(e.target.value)} />
+                        {this.errors["confirm"] ? <span className="help-block">{this.errors["confirm"]}</span> : null}
                     </div>
                     <div className="text-center">
                         <button className="btn btn-primary" type="submit">Save Changes</button>
