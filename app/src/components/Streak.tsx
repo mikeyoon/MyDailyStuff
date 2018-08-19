@@ -1,10 +1,10 @@
 import * as React from 'react';
+import { observer } from 'mobx-react';
 import 'bootstrap';
 import { BaseProps } from "../types";
 
-export default class StreakComponent extends React.Component<BaseProps> {
-    getWatchers() { return ['auth']; }
-
+@observer
+export class StreakComponent extends React.Component<BaseProps> {
     componentDidMount() {
         this.props.store.authStore.getStreak();
         // $('[data-toggle="tooltip"]').tooltip();

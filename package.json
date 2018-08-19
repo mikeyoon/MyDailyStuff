@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Dummy file for heroku",
   "scripts": {
-    "postinstall": "(cd app && npm i)"
+    "postinstall": "(cd app && yarn)"
   },
   "author": "",
   "license": "ISC",
@@ -11,5 +11,5 @@
     "url": "https://github.com/mikeyoon/MyDailyStuff/issues"
   },
   "homepage": "https://github.com/mikeyoon/MyDailyStuff#readme",
-  "cache_directories": ["app/node_modules", "app/jspm_packages"]
+  "cache_directories": ["app/node_modules"]
 }
