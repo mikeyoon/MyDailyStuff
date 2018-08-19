@@ -8,8 +8,7 @@
     "sourceMap": true,
     "allowJs": true,
     "jsx": "react",
-    "target": "es2017",
-    "outFile": "./build/app.js"
+    "target": "es2017"
   },
   "files": [
     "src/index.tsx"

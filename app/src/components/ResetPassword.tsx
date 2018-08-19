@@ -1,45 +1,27 @@
 import * as React from 'react';
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
+
 import * as Requests from "../models/requests";
-import BaseFluxxorComponent from "./BaseFluxxorComponent";
+import { BaseProps} from '../types';
 
-interface ForgotProps {
-    flux: any;
-    token: string;
-}
-
-interface ForgotState {
-    auth?: any;
-    password?: string;
-    confirm?: string;
-    errors?: any;
-}
-
-var emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
-
-export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, ForgotState> {
-    getWatchers() { return ['auth']; }
+@observer
+export default class ForgotComponent extends React.Component<BaseProps> {
+    @observable password = '';
+    @observable confirm = '';
+    @observable errors: { [field: string]: string } = {};
 
     isValid(): boolean {
-        return !this.state.errors;
-    }
-
-    getStateFromFlux() {
-        var result = {
-            auth: this.getFlux().store("auth"),
-            errors: {}
-        };
-
-        return result;
-    }
-
-    componentDidMount() {
-        this.getFlux().actions.account.clearResults();
+        return Object.keys(this.errors).length <= 0;
     }
 
     onSubmit = (ev: any) => {
         ev.preventDefault();
         if (this.validate()) {
-            this.getFlux().actions.account.resetPassword(new Requests.PasswordReset(this.props.token, this.state.password));
+            this.props.store.authStore.resetPassword(new Requests.PasswordReset(
+                this.props.store.routeStore.params.token,
+                this.password)
+            );
         }
     };
 
@@ -49,15 +31,23 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
         this.setState(state);
     }
 
+    passwordChanged(password: string) {
+        this.password = password;
+    }
+
+    confirmChanged(password: string) {
+        this.confirm = password;
+    }
+
     validate(): boolean {
         var errors: any = {};
 
-        if (this.state.confirm != this.state.password) {
+        if (this.confirm != this.password) {
             errors["password"] = "passwords do not match";
             errors["confirm"] = "passwords do not match";
-        } else if (!this.state.password || this.state.password.length < 6) {
+        } else if (!this.password || this.password.length < 6) {
             errors["password"] = "Password needs to be 6 or more characters";
-        } else if (this.state.password && this.state.password.length > 50) {
+        } else if (this.password && this.password.length > 50) {
             errors["password"] = "Password needs to be less than 50 characters";
         }
 
@@ -66,8 +56,8 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
     }
 
     renderErrors() {
-        if (this.state.auth.error) {
-            return <div className="alert alert-danger">{this.state.auth.error}</div>;
+        if (this.props.store.authStore.resetError) {
+            return <div className="alert alert-danger">{this.props.store.authStore.resetError}</div>;
         }
 
         return null;
@@ -80,7 +70,7 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
                 <br />
                 {this.renderErrors()}
 
-                {this.state.auth.resetPasswordResult.success ?
+                {this.props.store.authStore.resetSuccess ?
                     <div>
                         <div className="alert alert-success">
                             Your password has been reset. Click
@@ -88,17 +78,17 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
                         </div>
                     </div> :
                     <form onSubmit={this.onSubmit}>
-                        <div className={"form-group " + (this.state.errors["password"] ? 'has-error' : '')} key="2">
+                        <div className={"form-group " + (this.errors["password"] ? 'has-error' : '')} key="2">
                             <label className="control-label" htmlFor="password">Password:</label>
-                            <input className="form-control" id="password" name="password" type="password" value={this.state.password}
-                                   onChange={this.handleTextChange.bind(this, "password")} />
-                            {this.state.errors["password"] ? <span className="help-block">{this.state.errors["password"]}</span> : null}
+                            <input className="form-control" id="password" name="password" type="password" value={this.password}
+                                   onChange={e => this.passwordChanged(e.target.value)} />
+                            {this.errors["password"] ? <span className="help-block">{this.errors["password"]}</span> : null}
                         </div>
-                        <div className={"form-group " + (this.state.errors["confirm"] ? 'has-error' : '')} key="2">
+                        <div className={"form-group " + (this.errors["confirm"] ? 'has-error' : '')} key="2">
                             <label className="control-label" htmlFor="confirm">Confirm Password:</label>
-                            <input className="form-control" id="confirm" name="confirm" type="password" value={this.state.confirm}
-                                   onChange={this.handleTextChange.bind(this, "confirm")} />
-                            {this.state.errors["confirm"] ? <span className="help-block">{this.state.errors["confirm"]}</span> : null}
+                            <input className="form-control" id="confirm" name="confirm" type="password" value={this.confirm}
+                                   onChange={e => this.confirmChanged(e.target.value)} />
+                            {this.errors["confirm"] ? <span className="help-block">{this.errors["confirm"]}</span> : null}
                         </div>
                         <div className="text-center"><button className="btn btn-primary" type="submit">Reset Password</button></div>
                     </form>
@@ -107,5 +97,3 @@ export default class ForgotComponent extends BaseFluxxorComponent<ForgotProps, F
         </div>;
     }
 }
-
-//export var Component = TypedReact.createClass(ForgotComponent, [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("auth")]);
