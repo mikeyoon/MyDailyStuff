@@ -1,8 +1,10 @@
-import { action, computed, observable, runInAction } from "mobx";
+import { action, computed, observable, runInAction, autorun, reaction, when } from "mobx";
 import moment from "moment";
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import { RestClient } from "./client";
+import { SearchResult } from "../types";
+import { RouteStore, Routes } from "./route.store";
 
 const LIMIT = 10;
 
@@ -10,11 +12,11 @@ export class SearchStore {
   @observable
   searchError: string | undefined;
   @observable
-  searchResults: any[];
+  searchResults: ReadonlyArray<SearchResult>;
   @observable
   dates: any[];
-  @observable
-  query = "";
+  @computed
+  get query() { return this.router.route === Routes.Search ? this.router.params.query : ''; }
   @observable
   lastQuery = "";
   @observable
@@ -25,8 +27,8 @@ export class SearchStore {
   nextOffset: number | undefined;
   @observable
   prevOffset: number | undefined;
-  @observable
-  offset: number | undefined;
+  @computed
+  get offset() { return this.router.route === Routes.Search ? parseInt(this.router.params.offset) : 0; }
   @observable
   month: number | undefined;
   @observable
@@ -37,14 +39,19 @@ export class SearchStore {
     return this.month + "-" + this.year;
   }
 
-  constructor() {
+  constructor(private router: RouteStore) {
     this.searchResults = [];
     this.dates = [];
+    
+    reaction(() => router.route === Routes.Search && router.params, params => {
+      if (params) {
+        this.search();
+      }
+    });
   }
 
   @action
   clear() {
-    this.query = "";
     this.total = 0;
     this.nextOffset = 0;
     this.prevOffset = 0;
@@ -76,13 +83,13 @@ export class SearchStore {
   }
 
   @action
-  async search(request: Requests.Search) {
+  async search() {
     this.searching = true;
 
     try {
       const response = await RestClient.post("/api/search/", {
         query: this.query,
-        offset: request.offset,
+        offset: this.offset,
         limit: LIMIT
       });
       if (response.entity.success) {
@@ -94,15 +101,16 @@ export class SearchStore {
               date: r.date
             })
           );
+          const offset = this.offset || 0;
 
           this.total = response.entity.total || 0;
           this.searching = false;
           this.nextOffset =
-            request.offset + LIMIT < (this.total || 0)
-              ? request.offset + LIMIT
+            offset + LIMIT < (this.total || 0)
+              ? offset + LIMIT
               : undefined;
           this.prevOffset =
-            request.offset > 0 ? request.offset - LIMIT : undefined;
+          offset > 0 ? offset - LIMIT : undefined;
         });
       }
     } catch (err) {
@@ -113,5 +121,11 @@ export class SearchStore {
     } finally {
       runInAction(() => (this.searching = false));
     }
+  }
+
+  @action
+  setQuery(query: string, offset: number) {
+    this.query = query;
+    this.offset = offset;
   }
 }

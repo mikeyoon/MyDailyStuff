@@ -2,6 +2,7 @@ import { observable, action } from "mobx";
 import page from "page";
 import * as Requests from "../models/requests";
 import { AuthStore } from "./auth.store";
+import { Moment } from "moment";
 
 export enum Routes {
   About = "about",
@@ -88,7 +89,11 @@ export class RouteStore {
     this.params = ctx.params;
   }
 
-  search(req: Requests.Search) {
-    page("/search/" + req.query + "?offset=" + req.offset);
+  search(query: string, offset: number) {
+    page("/search/" + query + "?offset=" + offset);
+  }
+
+  setDate(date: Moment) {
+    page('/journal/' + date.format("YYYY-M-D"));
   }
 }

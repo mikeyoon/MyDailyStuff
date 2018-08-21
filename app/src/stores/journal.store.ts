@@ -1,4 +1,4 @@
-import { observable, action, runInAction } from "mobx";
+import { observable, action, runInAction, computed } from "mobx";
 import moment from "moment";
 
 import * as Requests from "../models/requests";
@@ -22,8 +22,8 @@ export class JournalStore {
 
   @observable
   current: Responses.JournalEntry | null = null;
-  @observable
-  hasEntry = false;
+  @computed
+  get hasEntry() { return this.current != null }
   @observable
   date: Date | undefined;
   @observable
@@ -47,7 +47,6 @@ export class JournalStore {
         this.adding = false;
         if (response.entity.success) {
           this.current = response.entity.result;
-          this.hasEntry = true;
         } else {
           this.error = response.entity.error;
         }
@@ -117,7 +116,6 @@ export class JournalStore {
       const response = await RestClient.del("/api/journal/" + this.current.id);
       runInAction(() => {
         if (response.entity.success) {
-          this.hasEntry = false;
           this.current = null;
         } else {
           this.error = response.entity.error;
@@ -147,9 +145,7 @@ export class JournalStore {
 
         if (response.entity.success) {
           this.current = response.entity.result;
-          this.hasEntry = true;
         } else {
-          this.hasEntry = false;
           this.current = null;
         }
       });
@@ -158,7 +154,6 @@ export class JournalStore {
         this.started = true;
         this.loading = false;
         this.showCalendar = false;
-        this.hasEntry = false;
         this.current = null;
         this.error = err.message;
       });

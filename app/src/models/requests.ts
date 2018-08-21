@@ -3,10 +3,10 @@
  */
 
 export class EditJournalEntry {
-    entry: string;
+    entry: string | null;
     index: number;
 
-    constructor(entry: string, index: number) {
+    constructor(entry: string | null, index: number) {
         this.entry = entry;
         this.index = index;
     }
@@ -53,11 +53,9 @@ export class PasswordReset {
 }
 
 export class Search {
-    query: string;
     offset: number;
 
-    constructor(query: string, offset: number) {
+    constructor(offset: number) {
         this.offset = offset;
-        this.query = query;
     }
 }

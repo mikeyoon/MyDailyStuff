@@ -11,11 +11,13 @@ export class StreakComponent extends React.Component<BaseProps> {
     }
 
     render() {
+        let streak = this.props.store.authStore.streak != null ? this.props.store.authStore.streak : 0;
+
         return <span data-toggle="tooltip" data-placement="left" title="Number of contiguous entries over the last ten days">
             Streak {" "}
             <span className="badge">
-                {this.props.store.authStore.streak} {" "}
-                {this.props.store.authStore.streak >= 10 ? <span className="glyphicon glyphicon-star" /> : null}
+                {streak} {" "}
+                {streak >= 10 ? <span className="glyphicon glyphicon-star" /> : null}
             </span>
         </span>
     }
