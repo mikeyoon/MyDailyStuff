@@ -3,6 +3,7 @@ import { action, observable } from 'mobx';
 
 import * as Requests from "../models/requests";
 import { BaseProps } from '../types';
+import { observer } from 'mobx-react';
 
 interface SignupProps {
     flux: any;
@@ -18,6 +19,7 @@ interface SignupState {
 
 var emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
+@observer
 export class SignupComponent extends React.Component<BaseProps> {
     @observable errors: { [field: string]: string } = {};
     @observable email = '';
@@ -36,13 +38,6 @@ export class SignupComponent extends React.Component<BaseProps> {
                 this.props.store.authStore.register(new Requests.Register(this.email, this.password));
             }
         }
-    }
-
-    
-    handleTextChange(name: string, ev: any) {
-        var state: any = {};
-        state[name] = ev.target.value;
-        this.setState(state);
     }
 
     emailChanged(email: string) {

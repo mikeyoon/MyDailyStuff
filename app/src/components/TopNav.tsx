@@ -18,7 +18,7 @@ export class TopNav extends React.Component<BaseProps> {
         ev.preventDefault();
         
         if (this.query && !this.props.store.searchStore.searching) {
-            this.props.store.routeStore.search(new Search(this.query, 0));
+            this.props.store.routeStore.search(this.query, 0);
         }
     };
 

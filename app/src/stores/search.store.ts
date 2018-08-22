@@ -64,7 +64,7 @@ export class SearchStore {
     const year = date.getFullYear();
 
     if (this.month !== month || this.year !== year) {
-      const response = await RestClient.post("/api/search/date", {
+      const response = await RestClient.post("/search/date", {
         start: year + "-" + month + "-1",
         end: moment(year + "-" + month + "-1", "YYYY-M-D")
           .add(1, "months")
@@ -87,7 +87,7 @@ export class SearchStore {
     this.searching = true;
 
     try {
-      const response = await RestClient.post("/api/search/", {
+      const response = await RestClient.post("/search/", {
         query: this.query,
         offset: this.offset,
         limit: LIMIT
@@ -121,11 +121,5 @@ export class SearchStore {
     } finally {
       runInAction(() => (this.searching = false));
     }
-  }
-
-  @action
-  setQuery(query: string, offset: number) {
-    this.query = query;
-    this.offset = offset;
   }
 }

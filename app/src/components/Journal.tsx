@@ -3,7 +3,7 @@ import { observable, action } from "mobx";
 import { observer } from "mobx-react";
 import DatePicker from "react-datepicker";
 import marked from "marked";
-import * as moment from "moment";
+import moment from "moment";
 
 import * as Requests from "../models/requests";
 import { StreakComponent } from "./Streak";
@@ -14,12 +14,17 @@ class ExampleCustomInput extends React.Component<{
   onClick: (ev: React.MouseEvent) => void;
   value: string;
 }> {
+  handleClick(ev: React.MouseEvent) {
+    ev.preventDefault();
+    this.props.onClick(ev);
+  }
+
   render() {
     return (
       <a
         href="#"
         className={this.props.showCalendar ? "active" : ""}
-        onClick={e => this.props.onClick(e)}
+        onClick={e => this.handleClick(e)}
       >
         {/*value.format("ddd, MMM Do YYYY")*/ this.props.value}
       </a>
@@ -118,7 +123,7 @@ export class JournalComponent extends React.Component<BaseProps> {
     this.props.store.routeStore.setDate(date.add(1, "day"));
   }
 
-  handleDateChange(date: moment.Moment, ev: React.SyntheticEvent) {
+  handleDateChange(date: moment.Moment) {
     this.props.store.routeStore.setDate(date);
   }
 
@@ -215,10 +220,11 @@ export class JournalComponent extends React.Component<BaseProps> {
             </button>
 
             <DatePicker
-              customInput={ExampleCustomInput}
+              customInput={<ExampleCustomInput />}
+              dateFormat="ddd, MMM Do YYYY"
               maxDate={moment()}
               selected={today}
-              onChange={this.handleDateChange}
+              onChange={date => this.handleDateChange(date)}
             />
 
             <button

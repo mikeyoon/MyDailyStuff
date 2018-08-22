@@ -11,34 +11,49 @@ const client = rest
 
 let csrfToken = "";
 
+const meta = document.head.querySelectorAll('meta[name="api-url"]');
+const baseUrl = meta.length > 0 ? meta[0].getAttribute('content') : 'http://localhost/api';
+
 export namespace RestClient {
   export function get(url: string) {
     return client({
       method: "GET",
-      path: url
-    }).then(response => (csrfToken = response.headers[CSRF_HEADER]));
+      path: baseUrl + url
+    }).then(response => {
+      csrfToken = response.headers[CSRF_HEADER];
+      return response;
+    });
   }
 
   export function del(url: string) {
     return client({
       method: "DELETE",
-      path: url
-    }).then(response => (csrfToken = response.headers[CSRF_HEADER]));
+      path: baseUrl + url
+    }).then(response => {
+      csrfToken = response.headers[CSRF_HEADER];
+      return response;
+    });
   }
 
   export function post(url: string, entity?: any) {
     return client({
       method: "POST",
-      path: url,
+      path: baseUrl + url,
       entity: JSON.stringify(entity)
-    }).then(response => (csrfToken = response.headers[CSRF_HEADER]));
+    }).then(response => {
+      csrfToken = response.headers[CSRF_HEADER];
+      return response;
+    });
   }
 
   export function put(url: string, entity?: any) {
     return client({
       method: "PUT",
-      path: url,
+      path: baseUrl + url,
       entity: JSON.stringify(entity)
-    }).then(response => (csrfToken = response.headers[CSRF_HEADER]));
+    }).then(response => {
+      csrfToken = response.headers[CSRF_HEADER];
+      return response;
+    });
   }
 }

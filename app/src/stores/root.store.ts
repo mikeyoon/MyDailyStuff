@@ -14,8 +14,8 @@ export class RootStore {
   constructor() {
     this.analyticsStore = new AnalyticsStore();
     this.authStore = new AuthStore(this.analyticsStore);
-    this.journalStore = new JournalStore(this.analyticsStore);
     this.routeStore = new RouteStore(this.authStore);
-    this.searchStore = new SearchStore();
+    this.journalStore = new JournalStore(this.analyticsStore, this.routeStore);
+    this.searchStore = new SearchStore(this.routeStore);
   }
 }

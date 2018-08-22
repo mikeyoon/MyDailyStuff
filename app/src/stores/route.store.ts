@@ -12,6 +12,7 @@ export enum Routes {
   Register = "register",
   Profile = "profile",
   ForgotPassword = "forgot",
+  ResetPassword = "reset",
   Search = "search"
 }
 
@@ -33,6 +34,8 @@ export class RouteStore {
     page("/journal/:date", ctx => this.setJournalRoute(ctx));
     page("/search/:query", ctx => this.setSearchRoute(ctx));
     page("/forgot-password", () => this.setForgotRoute());
+    page("/account/verify/:token", ctx => this.setVerifyRoute(ctx));
+    page("/account/reset/:token", ctx => this.setResetRoute(ctx));
     page.start();
   }
 
@@ -86,6 +89,17 @@ export class RouteStore {
   @action
   setJournalRoute(ctx: PageJS.Context) {
     this.route = Routes.Journal;
+    this.params = ctx.params;
+  }
+
+  @action
+  setVerifyRoute(ctx: PageJS.Context) {
+    this.authStore.verify(ctx.params.token);
+  }
+
+  @action
+  setResetRoute(ctx: PageJS.Context) {
+    this.route = Routes.ResetPassword;
     this.params = ctx.params;
   }
 

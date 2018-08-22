@@ -1,28 +1,34 @@
 package lib
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/kennygrant/sanitize"
-	elastigo "github.com/mikeyoon/elastigo/lib"
-	"github.com/sendgrid/sendgrid-go"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"code.google.com/p/go-uuid/uuid"
+	"github.com/kennygrant/sanitize"
+	elastigo "github.com/mikeyoon/elastigo/lib"
+	"github.com/sendgrid/sendgrid-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
+// EsIndex the main ES index
 var EsIndex = "mds"
 
 const (
-	UserType    = "user"
-	ResetType   = "pwreset"
-	VerifyType  = "verify"
+	// UserType ES index for user data
+	UserType = "user"
+	// ResetType ES index for password reset requests
+	ResetType = "pwreset"
+	// VerifyType ES index for pending account verifications
+	VerifyType = "verify"
+	// JournalType ES index for journal entries
 	JournalType = "journal"
 )
 
@@ -38,7 +44,7 @@ type UserVerification struct {
 	Email        string    `json:"email"`
 	Token        string    `json:"token"`
 	PasswordHash string    `json:"password_hash"`
-	CreateDate   time.Time `json"create_date"`
+	CreateDate   time.Time `json:"create_date"`
 }
 
 type PasswordReset struct {

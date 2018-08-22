@@ -1,10 +1,11 @@
-import { observable, action, runInAction, computed } from "mobx";
+import { observable, action, runInAction, computed, reaction } from "mobx";
 import moment from "moment";
 
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
 import { RestClient } from "./client";
 import { AnalyticsStore } from "./analytics.store";
+import { RouteStore, Routes } from "./route.store";
 
 export class JournalStore {
   @observable
@@ -23,13 +24,26 @@ export class JournalStore {
   @observable
   current: Responses.JournalEntry | null = null;
   @computed
-  get hasEntry() { return this.current != null }
+  get hasEntry() {
+    return this.current != null;
+  }
   @observable
-  date: Date | undefined;
+  date: Date;
   @observable
   showCalendar = false;
 
-  constructor(private analyticsStore: AnalyticsStore) {}
+  constructor(
+    private analyticsStore: AnalyticsStore,
+    private router: RouteStore
+  ) {
+    this.date = new Date();
+    reaction(() => this.router.params, params => {
+      if (this.router.route === Routes.Journal) {
+        this.date = new Date(params.date);
+        this.get(this.date);
+      }
+    });
+  }
 
   @action
   async add(entry: string) {
@@ -39,7 +53,7 @@ export class JournalStore {
     this.analyticsStore.onJournalAdd(entry);
 
     try {
-      const response = await RestClient.post("/api/journal", {
+      const response = await RestClient.post("/journal", {
         entries: [entry],
         date: moment(this.date).format("YYYY-M-D")
       });
@@ -78,7 +92,7 @@ export class JournalStore {
     }
 
     try {
-      const response = await RestClient.put("/api/journal/" + this.current.id, {
+      const response = await RestClient.put("/journal/" + this.current.id, {
         entries: entries
       });
       runInAction(() => {
@@ -113,7 +127,7 @@ export class JournalStore {
     }
 
     try {
-      const response = await RestClient.del("/api/journal/" + this.current.id);
+      const response = await RestClient.del("/journal/" + this.current.id);
       runInAction(() => {
         if (response.entity.success) {
           this.current = null;
@@ -135,11 +149,10 @@ export class JournalStore {
 
     try {
       const response = await RestClient.get(
-        "/api/journal/" + moment(date).format("YYYY-M-D")
+        "/journal/" + moment(date).format("YYYY-M-D")
       );
       runInAction(() => {
         this.loading = false;
-        this.date = date;
         this.started = true;
         this.showCalendar = false;
 

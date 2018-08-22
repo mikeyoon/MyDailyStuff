@@ -60,7 +60,7 @@ export class AuthStore {
 
     try {
       const response = await RestClient.get(
-        "/api/account/streak/" + moment(new Date()).format("YYYY-M-D")
+        "/account/streak/" + moment(new Date()).format("YYYY-M-D")
       );
       this.getStreakSuccess(response);
     } catch (err) {
@@ -82,7 +82,7 @@ export class AuthStore {
     this.gettingAccount = true;
 
     try {
-      const response = await RestClient.get("/api/account");
+      const response = await RestClient.get("/account");
       runInAction(() => {
         if (response.entity.success) {
           this.isLoggedIn = true;
@@ -111,7 +111,7 @@ export class AuthStore {
     this.resetError = undefined;
 
     try {
-      const response = await RestClient.post("/api/account/forgot/" + email);
+      const response = await RestClient.post("/account/forgot/" + email);
       runInAction(() => {
         let result = response.entity;
         this.resetSuccess = result.success;
@@ -133,7 +133,7 @@ export class AuthStore {
     this.resetError = undefined;
 
     try {
-      const response = await RestClient.post("/api/account/reset/", request);
+      const response = await RestClient.post("/account/reset/", request);
       runInAction(() => {
         if (response.entity.success) {
           this.resetSuccess = true;
@@ -156,7 +156,7 @@ export class AuthStore {
     this.analyticsStore.onLogin(info);
 
     try {
-      const response = await RestClient.post("/api/account/login", info);
+      const response = await RestClient.post("/account/login", info);
       if (response.entity.success) {
         runInAction(() => (this.isLoggedIn = true));
         // GetAccount
@@ -177,7 +177,7 @@ export class AuthStore {
   @action
   async logout() {
     this.analyticsStore.onLogout();
-    const response = await RestClient.post("/api/account/logout");
+    const response = await RestClient.post("/account/logout");
     if (response.entity.success) {
       runInAction(() => {
         this.isLoggedIn = false;
@@ -196,7 +196,7 @@ export class AuthStore {
     this.analyticsStore.onRegister(request);
 
     try {
-      const response = await RestClient.post("/api/account/register", request);
+      const response = await RestClient.post("/account/register", request);
       runInAction(() => {
         if (!response.entity.success) {
           this.registerError = response.entity.error;
@@ -215,7 +215,7 @@ export class AuthStore {
   async verify(token: string) {
     this.analyticsStore.onVerify(token);
     try {
-      const response = await RestClient.get("/api/account/verify/" + token);
+      const response = await RestClient.get("/account/verify/" + token);
       if (response.entity.success) {
         runInAction(() => (this.isLoggedIn = true));
         this.getAccount();
@@ -233,7 +233,7 @@ export class AuthStore {
     this.saveError = undefined;
 
     try {
-      const response = await RestClient.put("/api/account", request);
+      const response = await RestClient.put("/account", request);
       runInAction(() => {
         if (!response.entity.success) {
           this.saveError = response.entity.error;

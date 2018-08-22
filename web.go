@@ -89,7 +89,7 @@ func main() {
 			http.Error(w, "CSRF token validation failed", http.StatusBadRequest)
 		},
 	}))
-	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "app.html", Exclude: "/api"}))
+	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "dist/app.html", Exclude: "/api"}))
 
 	c := lib.Controller{}
 	c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)

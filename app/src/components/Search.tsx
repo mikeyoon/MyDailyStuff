@@ -12,7 +12,7 @@ export class SearchComponent extends React.Component<BaseProps> {
   }
 
   componentDidMount() {
-      this.props.store.searchStore.search(new Search())
+      this.props.store.searchStore.search();
   }
 
   handlePageLink(offset: number, ev: React.MouseEvent) {
