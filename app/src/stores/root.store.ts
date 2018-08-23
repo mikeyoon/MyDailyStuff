@@ -12,6 +12,7 @@ export class RootStore {
   public readonly searchStore: SearchStore;
 
   constructor() {
+    console.log('init1');
     this.analyticsStore = new AnalyticsStore();
     this.authStore = new AuthStore(this.analyticsStore);
     this.routeStore = new RouteStore(this.authStore);

@@ -8,12 +8,14 @@ import { AboutComponent } from "./About";
 import { ForgotComponent } from "./Forgot";
 import { JournalComponent } from "./Journal";
 import { LoginComponent } from "./Login";
+import { ProfileComponent } from "./Profile";
 import { SearchComponent } from "./Search";
 import { SignupComponent } from "./Signup";
 
 @observer
 export class AppComponent extends React.Component<BaseProps> {
   renderComponent() {
+    console.log("rendering", this.props.store.routeStore.route);
     switch (this.props.store.routeStore.route) {
       case Routes.About:
         return <AboutComponent store={this.props.store} />;
@@ -27,6 +29,8 @@ export class AppComponent extends React.Component<BaseProps> {
         return <SignupComponent store={this.props.store} />;
       case Routes.Search:
         return <SearchComponent store={this.props.store} />;
+      case Routes.Profile:
+        return <ProfileComponent store={this.props.store} />;
     }
   }
 
@@ -43,7 +47,7 @@ export class AppComponent extends React.Component<BaseProps> {
               </span>
             </div>
             <div className="col-6 text-right">
-              <a href="/about" className="pull-right">
+              <a href="/about" className="float-right">
                 About
               </a>
             </div>

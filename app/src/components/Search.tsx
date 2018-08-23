@@ -1,18 +1,12 @@
 import * as React from "react";
 import moment from "moment";
 import { BaseProps } from "../types";
-import { observable } from "mobx";
 import { observer } from "mobx-react";
-import { Search } from "../models/requests";
 
 @observer
 export class SearchComponent extends React.Component<BaseProps> {
   componentWillUnmount() {
     this.props.store.searchStore.clear();
-  }
-
-  componentDidMount() {
-      this.props.store.searchStore.search();
   }
 
   handlePageLink(offset: number, ev: React.MouseEvent) {

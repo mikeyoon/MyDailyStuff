@@ -25,8 +25,6 @@ a:hover {
   overflow-x: auto;
 }
 
-.btn-clear {
-}
 
 .footer {
   position: absolute;
@@ -58,6 +56,26 @@ a:hover {
   position: absolute;
   left:50%;
   margin-left: -141px;
+}
+
+.page-header {
+  padding-bottom: 9px;
+  margin: 40px 0 20px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.journal {
+  .btn-journal-delete {
+    position: absolute;
+    right: 16px;
+    top: calc(50% - 12px);
+  }
+
+  .card {
+    &:not(:last-of-type) {
+      margin-bottom: 12px;
+    }
+  }
 }
 
 @media (max-width: 768px) {

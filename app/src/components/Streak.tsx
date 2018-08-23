@@ -15,7 +15,7 @@ export class StreakComponent extends React.Component<BaseProps> {
 
         return <span data-toggle="tooltip" data-placement="left" title="Number of contiguous entries over the last ten days">
             Streak {" "}
-            <span className="badge">
+            <span className="badge badge-primary badge-pill">
                 {streak} {" "}
                 {streak >= 10 ? <span className="glyphicon glyphicon-star" /> : null}
             </span>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { observable, action } from "mobx";
+import { observable, action, when } from "mobx";
 import { observer } from "mobx-react";
 import DatePicker from "react-datepicker";
 import marked from "marked";
@@ -26,7 +26,7 @@ class ExampleCustomInput extends React.Component<{
         className={this.props.showCalendar ? "active" : ""}
         onClick={e => this.handleClick(e)}
       >
-        {/*value.format("ddd, MMM Do YYYY")*/ this.props.value}
+        {this.props.value}
       </a>
     );
   }
@@ -40,14 +40,9 @@ export class JournalComponent extends React.Component<BaseProps> {
   newEntry = "";
   @observable
   showCalendar = false;
-
-  componentDidMount() {
-    this.props.store.journalStore.get(new Date());
-  }
-
   componentWillUnmount() {
-    window.removeEventListener("click", this.closeCalendar, false);
-    window.removeEventListener("touchend", this.closeCalendar, false);
+    // window.removeEventListener("click", this.closeCalendar, false);
+    // window.removeEventListener("touchend", this.closeCalendar, false);
   }
 
   @action
@@ -83,8 +78,22 @@ export class JournalComponent extends React.Component<BaseProps> {
             this.props.store.journalStore.current.entries.length
           )
         );
+
+        const done = when(() => !this.props.store.journalStore.editing, () => {
+          done();
+          if (this.props.store.journalStore.error == null) {
+            this.newEntry = '';
+          }
+        });
       } else {
         this.props.store.journalStore.add(this.newEntry);
+
+        const done = when(() => !this.props.store.journalStore.adding, () => {
+          done();
+          if (this.props.store.journalStore.error == null) {
+            this.newEntry = '';
+          }
+        });
       }
     }
   };
@@ -93,6 +102,7 @@ export class JournalComponent extends React.Component<BaseProps> {
     this.props.store.journalStore.edit(
       new Requests.EditJournalEntry(entry, index)
     );
+    
   }
 
   handleDeleteEntry(index: number, ev: React.MouseEvent) {
@@ -111,7 +121,7 @@ export class JournalComponent extends React.Component<BaseProps> {
     this.props.store.journalStore.delete();
   }
 
-  handlePrev(ev: Event) {
+  handlePrev(ev: React.MouseEvent) {
     ev.preventDefault();
     const date = moment(this.props.store.journalStore.date);
     this.props.store.routeStore.setDate(date.subtract(1, "day"));
@@ -127,24 +137,11 @@ export class JournalComponent extends React.Component<BaseProps> {
     this.props.store.routeStore.setDate(date);
   }
 
-  closeCalendar = (ev: any) => {
-    if (
-      this.props.store.journalStore.showCalendar &&
-      !$(ev.target).closest(".popover").length
-    ) {
-      window.removeEventListener("click", this.closeCalendar, false);
-      window.removeEventListener("touchend", this.closeCalendar, false);
-      this.props.store.journalStore.toggleCalendar(false);
-    }
-  };
-
   handleToggleCalendar(show: boolean, ev: React.MouseEvent) {
     ev.preventDefault();
     ev.stopPropagation();
 
     if (!this.props.store.journalStore.showCalendar) {
-      window.addEventListener("touchend", this.closeCalendar, false);
-      window.addEventListener("click", this.closeCalendar, false);
       this.props.store.journalStore.toggleCalendar(show);
     }
   }
@@ -162,19 +159,19 @@ export class JournalComponent extends React.Component<BaseProps> {
   renderEntries() {
     if (this.props.store.journalStore.current != null) {
       return (
-        <div className="margin-top-md">
+        <div className="margin-top-md journal">
           {this.props.store.journalStore.current.entries.map(
             (e: string, index: number) => (
-              <div className="well" key={index}>
+              <div className="card" key={index}>
                 <button
-                  className="btn btn-clear pull-right"
+                  className="btn btn-clear btn-journal-delete"
                   key="delete"
                   onClick={ev => this.handleDeleteEntry(index, ev)}
                 >
                   <span className="glyphicon glyphicon-remove" />
                 </button>
                 <div
-                  className="journal-entry"
+                  className="card-body journal-entry"
                   dangerouslySetInnerHTML={{ __html: marked(e) }}
                 />
               </div>
@@ -206,7 +203,7 @@ export class JournalComponent extends React.Component<BaseProps> {
 
     return (
       <div className="row">
-        <div className="col-md-8 col-md-offset-2">
+        <div className="col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-sm-12">
           <h2 className="text-center">
             <button
               className={
@@ -214,7 +211,7 @@ export class JournalComponent extends React.Component<BaseProps> {
                 (this.props.store.journalStore.loading ? "disabled" : "")
               }
               key="prev"
-              onClick={this.handlePrev.bind(this, prev)}
+              onClick={e => this.handlePrev(e)}
             >
               <span className="glyphicon glyphicon-menu-left" />
             </button>
@@ -224,7 +221,7 @@ export class JournalComponent extends React.Component<BaseProps> {
               dateFormat="ddd, MMM Do YYYY"
               maxDate={moment()}
               selected={today}
-              onChange={date => this.handleDateChange(date)}
+              onChange={date => date != null && this.handleDateChange(date)}
             />
 
             <button
@@ -279,7 +276,7 @@ export class JournalComponent extends React.Component<BaseProps> {
                 <label className="control-label pull-left">
                   Add a new entry (markdown)
                 </label>
-                <label className="pull-right">
+                <label className="float-right">
                   <StreakComponent store={this.props.store} />
                 </label>
                 <textarea

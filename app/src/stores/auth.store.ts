@@ -227,13 +227,18 @@ export class AuthStore {
   }
 
   @action
-  async updateProfile(request: Requests.SaveProfile) {
+  async updateProfile(password: string) {
     this.saving = true;
     this.saved = false;
     this.saveError = undefined;
 
+    if (this.email == null) {
+      this.saveError = "Email is null";
+      return;
+    }
+
     try {
-      const response = await RestClient.put("/account", request);
+      const response = await RestClient.put("/account", new Requests.SaveProfile(this.email, password));
       runInAction(() => {
         if (!response.entity.success) {
           this.saveError = response.entity.error;

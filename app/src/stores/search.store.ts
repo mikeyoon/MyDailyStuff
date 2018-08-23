@@ -43,8 +43,8 @@ export class SearchStore {
     this.searchResults = [];
     this.dates = [];
     
-    reaction(() => router.route === Routes.Search && router.params, params => {
-      if (params) {
+    reaction(() => router.params, params => {
+      if (router.route === Routes.Search && params.query) {
         this.search();
       }
     });

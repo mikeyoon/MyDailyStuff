@@ -14,6 +14,14 @@ let csrfToken = "";
 const meta = document.head.querySelectorAll('meta[name="api-url"]');
 const baseUrl = meta.length > 0 ? meta[0].getAttribute('content') : 'http://localhost/api';
 
+declare module 'rest' {
+  namespace rest {
+    export interface Request {
+			csrfToken?: string;
+		}
+  }
+}
+
 export namespace RestClient {
   export function get(url: string) {
     return client({
@@ -28,7 +36,10 @@ export namespace RestClient {
   export function del(url: string) {
     return client({
       method: "DELETE",
-      path: baseUrl + url
+      path: baseUrl + url,
+      headers: {
+        [CSRF_HEADER]: csrfToken
+      }
     }).then(response => {
       csrfToken = response.headers[CSRF_HEADER];
       return response;
@@ -39,7 +50,10 @@ export namespace RestClient {
     return client({
       method: "POST",
       path: baseUrl + url,
-      entity: JSON.stringify(entity)
+      entity: JSON.stringify(entity),
+      headers: {
+        [CSRF_HEADER]: csrfToken
+      }
     }).then(response => {
       csrfToken = response.headers[CSRF_HEADER];
       return response;
@@ -50,7 +64,10 @@ export namespace RestClient {
     return client({
       method: "PUT",
       path: baseUrl + url,
-      entity: JSON.stringify(entity)
+      entity: JSON.stringify(entity),
+      headers: {
+        [CSRF_HEADER]: csrfToken
+      }
     }).then(response => {
       csrfToken = response.headers[CSRF_HEADER];
       return response;

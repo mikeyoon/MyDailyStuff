@@ -1,4 +1,4 @@
-import { observable, action } from "mobx";
+import { observable, action, when } from "mobx";
 import page from "page";
 import * as Requests from "../models/requests";
 import { AuthStore } from "./auth.store";
@@ -13,7 +13,8 @@ export enum Routes {
   Profile = "profile",
   ForgotPassword = "forgot",
   ResetPassword = "reset",
-  Search = "search"
+  Search = "search",
+  None = "none"
 }
 
 export class RouteStore {
@@ -23,7 +24,7 @@ export class RouteStore {
   params: { [name: string]: string };
 
   constructor(private authStore: AuthStore) {
-    this.route = Routes.Search;
+    this.route = Routes.None;
     this.params = {};
 
     page("/", () => this.setDefaultRoute());
@@ -36,7 +37,16 @@ export class RouteStore {
     page("/forgot-password", () => this.setForgotRoute());
     page("/account/verify/:token", ctx => this.setVerifyRoute(ctx));
     page("/account/reset/:token", ctx => this.setResetRoute(ctx));
-    page.start();
+    page("/profile", () => this.setProfileRoute());
+    this.authorize();
+  }
+
+  authorize() {
+    this.authStore.getAccount();
+    const stop = when(() => !this.authStore.gettingAccount, () => {
+      stop()
+      page.start();
+    });
   }
 
   @action
@@ -103,11 +113,17 @@ export class RouteStore {
     this.params = ctx.params;
   }
 
+  @action
+  setProfileRoute() {
+    this.route = Routes.Profile;
+    this.params = {};
+  }
+
   search(query: string, offset: number) {
     page("/search/" + query + "?offset=" + offset);
   }
 
   setDate(date: Moment) {
-    page('/journal/' + date.format("YYYY-M-D"));
+    page("/journal/" + date.format("YYYY-M-D"));
   }
 }

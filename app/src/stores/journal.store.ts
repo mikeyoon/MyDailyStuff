@@ -37,12 +37,15 @@ export class JournalStore {
     private router: RouteStore
   ) {
     this.date = new Date();
-    reaction(() => this.router.params, params => {
-      if (this.router.route === Routes.Journal) {
-        this.date = new Date(params.date);
-        this.get(this.date);
+    reaction(
+      () => this.router.params,
+      params => {
+        if (this.router.route === Routes.Journal) {
+          this.date = params.date != null ? new Date(params.date) : new Date();
+          this.get(this.date);
+        }
       }
-    });
+    );
   }
 
   @action
