@@ -41,12 +41,12 @@ export class AppComponent extends React.Component<BaseProps> {
         <div className="container">{this.renderComponent()}</div>
         <footer className="footer container-fluid">
           <div className="row align-items-center h-100">
-            <div className="col-6">
+            <div className="col-8">
               <span className="text-muted">
                 Created by <a href="https://github.com/mikeyoon/">Mike Yoon</a>
               </span>
             </div>
-            <div className="col-6 text-right">
+            <div className="col-4 text-right">
               <a href="/about" className="float-right">
                 About
               </a>

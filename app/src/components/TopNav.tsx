@@ -38,8 +38,6 @@ export class TopNav extends React.Component<BaseProps> {
     const searchBtnClasses = classnames(
       "btn",
       "btn-primary",
-      "my-2",
-      "my-sm-0",
       {
         disabled: this.props.store.searchStore.searching
       }
@@ -47,7 +45,7 @@ export class TopNav extends React.Component<BaseProps> {
     const isLoggedIn = this.props.store.authStore.isLoggedIn;
 
     return (
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <nav className="navbar navbar-expand-sm navbar-light bg-light">
         <a className="navbar-brand" href="/journal">
           My Daily Stuff
         </a>
@@ -63,60 +61,63 @@ export class TopNav extends React.Component<BaseProps> {
           <span className="navbar-toggler-icon" />
         </button>
 
-        <div
-          className="collapse navbar-collapse justify-content-end"
-          id="navbar"
-        >
-          {this.props.store.authStore.isLoggedIn ? (
-            <form
-              className="form-inline my-2 my-lg-0"
-              role="search"
-              onSubmit={this.handleSearch}
-            >
-              <input
-                className="form-control mr-sm-2"
-                type="search"
-                placeholder="Search"
-                onChange={e => this.updateQueryText(e.target.value)}
-                onKeyDown={this.handleSearchKeyDown}
-              />
-              <button type="submit" className={searchBtnClasses}>
-                <i className="glyphicon glyphicon-search" />
-              </button>
-            </form>
-          ) : null}
+        <div className="collapse navbar-collapse" id="navbar">
+          <ul className="navbar-nav mr-auto">
+            <li className="nav-item">
+              {this.props.store.authStore.isLoggedIn ? (
+                <form
+                  className="form-inline my-2 my-lg-0"
+                  role="search"
+                  onSubmit={this.handleSearch}
+                >
+                  <div className="input-group">
+                    <input
+                      className="form-control"
+                      type="search"
+                      placeholder="Search"
+                      onChange={e => this.updateQueryText(e.target.value)}
+                      onKeyDown={this.handleSearchKeyDown}
+                    />
+                    <div className="input-group-append">
+                      <button type="submit" className={searchBtnClasses}>
+                        <i className="glyphicon glyphicon-search" />
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              ) : null}
+            </li>
+          </ul>
 
-          <ul className="nav navbar-nav navbar-right">
+          <ul className="nav navbar-nav">
             {isLoggedIn ? (
               <li className="dropdown">
                 <a
-                  className="dropdown-toggle"
+                  className="btn btn-link nav-link dropdown-toggle"
                   data-toggle="dropdown"
                   role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
                 >
                   {this.props.store.authStore.email}
                   <span className="caret" />
                 </a>
-                <ul className="dropdown-menu" role="menu">
-                  <li key="1">
-                    <a href="/profile">My Profile</a>
-                  </li>
-                  <li key="2">
-                    <a href="#" onClick={this.handleLogout}>
-                      Logout
-                    </a>
-                  </li>
-                </ul>
+                <div className="dropdown-menu dropdown-menu-right" role="menu">
+                  <a className="dropdown-item" href="/profile">My Profile</a>
+                  <a className="dropdown-item" href="#" onClick={this.handleLogout}>
+                    Logout
+                  </a>
+                </div>
               </li>
             ) : (
-              <li key="Login">
-                <a href="/login">Login</a>
-              </li>
-            )}
-            {isLoggedIn ? null : (
-              <li key="Register">
-                <a href="/register">Register</a>
-              </li>
+              [
+                <li key="Login">
+                  <a href="/login">Login</a>
+                </li>,
+                <li key="Register">
+                  <a href="/register">Register</a>
+                </li>
+              ]
             )}
           </ul>
         </div>

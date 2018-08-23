@@ -18,9 +18,9 @@ export class SearchComponent extends React.Component<BaseProps> {
 
   render() {
     return (
-      <div className="row">
+      <div className="row mt-4">
         {this.props.store.searchStore.query ? (
-          <div className="col-md-8 col-md-offset-2">
+          <div className="col-md-10 offset-md-1">
             <h4>
               {this.props.store.searchStore.total} results for "
               {this.props.store.searchStore.query}"
@@ -29,8 +29,8 @@ export class SearchComponent extends React.Component<BaseProps> {
               {this.props.store.searchStore.searchResults.map(
                 (result, index) => {
                   return (
-                    <div className="panel panel-default" key={index}>
-                      <div className="panel-body">
+                    <div className="card panel-default" key={index}>
+                      <div className="card-body">
                         {index + 1 + this.props.store.searchStore.offset}.{" "}
                         <a
                           href={
@@ -69,7 +69,7 @@ export class SearchComponent extends React.Component<BaseProps> {
                 }
               >
                 <a
-                  href={`/search/${this.props.store.searchStore.query}?offset=${
+                  href={`/search/${this.props.store.searchStore.query}/${
                     this.props.store.searchStore.prevOffset
                   }`}
                   onClick={this.handlePageLink.bind(
@@ -94,7 +94,7 @@ export class SearchComponent extends React.Component<BaseProps> {
                 }
               >
                 <a
-                  href={`/search/${this.props.store.searchStore.query}?offset=${
+                  href={`/search/${this.props.store.searchStore.query}/${
                     this.props.store.searchStore.nextOffset
                   }`}
                   onClick={this.handlePageLink.bind(

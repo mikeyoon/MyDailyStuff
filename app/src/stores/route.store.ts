@@ -34,6 +34,7 @@ export class RouteStore {
     page("/journal", ctx => this.setJournalRoute(ctx));
     page("/journal/:date", ctx => this.setJournalRoute(ctx));
     page("/search/:query", ctx => this.setSearchRoute(ctx));
+    page("/search/:query/:offset", ctx => this.setSearchRoute(ctx));
     page("/forgot-password", () => this.setForgotRoute());
     page("/account/verify/:token", ctx => this.setVerifyRoute(ctx));
     page("/account/reset/:token", ctx => this.setResetRoute(ctx));
@@ -120,7 +121,7 @@ export class RouteStore {
   }
 
   search(query: string, offset: number) {
-    page("/search/" + query + "?offset=" + offset);
+    page("/search/" + query + "/" + offset);
   }
 
   setDate(date: Moment) {
