@@ -124,7 +124,7 @@ export class RouteStore {
     page("/search/" + query + "/" + offset);
   }
 
-  setDate(date: Moment) {
-    page("/journal/" + date.format("YYYY-M-D"));
+  setDate(date: Date) {
+    page(`/journal/${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`);
   }
 }

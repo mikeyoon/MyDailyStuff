@@ -1,7 +1,8 @@
 import * as React from "react";
 import { observable, action, when } from "mobx";
 import { observer } from "mobx-react";
-import DatePicker from "react-datepicker";
+import DayPicker from "react-day-picker";
+import { Manager, Reference, Popper } from "react-popper";
 import marked from "marked";
 import moment from "moment";
 
@@ -9,28 +10,7 @@ import * as Requests from "../models/requests";
 import { StreakComponent } from "./Streak";
 import { BaseProps } from "../types";
 
-class ExampleCustomInput extends React.Component<{
-  showCalendar: boolean;
-  onClick: (ev: React.MouseEvent) => void;
-  value: string;
-}> {
-  handleClick(ev: React.MouseEvent) {
-    ev.preventDefault();
-    this.props.onClick(ev);
-  }
-
-  render() {
-    return (
-      <a
-        href="#"
-        className={this.props.showCalendar ? "active" : ""}
-        onClick={e => this.handleClick(e)}
-      >
-        {this.props.value}
-      </a>
-    );
-  }
-}
+import "react-day-picker/lib/style.css";
 
 @observer
 export class JournalComponent extends React.Component<BaseProps> {
@@ -40,9 +20,23 @@ export class JournalComponent extends React.Component<BaseProps> {
   newEntry = "";
   @observable
   showCalendar = false;
+
+  node: any;
+
+  componentDidMount() {
+    window.addEventListener("click", e => this.handleClickOutside(e), false);
+    window.addEventListener("touchend", e => this.handleClickOutside(e), false);
+  }
+
   componentWillUnmount() {
-    // window.removeEventListener("click", this.closeCalendar, false);
-    // window.removeEventListener("touchend", this.closeCalendar, false);
+    window.removeEventListener("click", e => this.handleClickOutside(e), false);
+    window.removeEventListener("touchend", e => this.handleClickOutside(e), false);
+  }
+
+  @action handleClickOutside(ev: MouseEvent | TouchEvent) {
+    if (this.node != null && !this.node.contains(ev.target)) {
+      this.showCalendar = false;
+    }
   }
 
   @action
@@ -79,21 +73,27 @@ export class JournalComponent extends React.Component<BaseProps> {
           )
         );
 
-        const done = when(() => !this.props.store.journalStore.editing, () => {
-          done();
-          if (this.props.store.journalStore.error == null) {
-            this.newEntry = '';
+        const done = when(
+          () => !this.props.store.journalStore.editing,
+          () => {
+            done();
+            if (this.props.store.journalStore.error == null) {
+              this.newEntry = "";
+            }
           }
-        });
+        );
       } else {
         this.props.store.journalStore.add(this.newEntry);
 
-        const done = when(() => !this.props.store.journalStore.adding, () => {
-          done();
-          if (this.props.store.journalStore.error == null) {
-            this.newEntry = '';
+        const done = when(
+          () => !this.props.store.journalStore.adding,
+          () => {
+            done();
+            if (this.props.store.journalStore.error == null) {
+              this.newEntry = "";
+            }
           }
-        });
+        );
       }
     }
   };
@@ -102,7 +102,6 @@ export class JournalComponent extends React.Component<BaseProps> {
     this.props.store.journalStore.edit(
       new Requests.EditJournalEntry(entry, index)
     );
-    
   }
 
   handleDeleteEntry(index: number, ev: React.MouseEvent) {
@@ -124,26 +123,30 @@ export class JournalComponent extends React.Component<BaseProps> {
   handlePrev(ev: React.MouseEvent) {
     ev.preventDefault();
     const date = moment(this.props.store.journalStore.date);
-    this.props.store.routeStore.setDate(date.subtract(1, "day"));
+    this.props.store.routeStore.setDate(date.subtract(1, "day").toDate());
   }
 
   handleNext(ev: React.MouseEvent) {
     ev.preventDefault();
     const date = moment(this.props.store.journalStore.date);
-    this.props.store.routeStore.setDate(date.add(1, "day"));
+    this.props.store.routeStore.setDate(date.add(1, "day").toDate());
   }
 
-  handleDateChange(date: moment.Moment) {
-    this.props.store.routeStore.setDate(date);
+  @action
+  handleDateChange(date: Date) {
+    date.setHours(0, 0, 0, 0);
+    if (date <= new Date()) {
+      this.props.store.routeStore.setDate(date);
+      this.showCalendar = false;
+    }
   }
 
-  handleToggleCalendar(show: boolean, ev: React.MouseEvent) {
+  @action
+  handleToggleCalendar(ev: React.MouseEvent) {
     ev.preventDefault();
     ev.stopPropagation();
 
-    if (!this.props.store.journalStore.showCalendar) {
-      this.props.store.journalStore.toggleCalendar(show);
-    }
+    this.showCalendar = !this.showCalendar;
   }
 
   handleKeyDown = (ev: any) => {
@@ -204,7 +207,7 @@ export class JournalComponent extends React.Component<BaseProps> {
     return (
       <div className="row">
         <div className="col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-sm-12">
-          <h2 className="text-center">
+          <div className="text-center mt-4">
             <button
               className={
                 "btn btn-link " +
@@ -216,13 +219,47 @@ export class JournalComponent extends React.Component<BaseProps> {
               <span className="glyphicon glyphicon-menu-left" />
             </button>
 
-            <DatePicker
-              customInput={<ExampleCustomInput />}
-              dateFormat="ddd, MMM Do YYYY"
-              maxDate={moment()}
-              selected={today}
-              onChange={date => date != null && this.handleDateChange(date)}
-            />
+            <Manager>
+              <Reference>
+                {({ ref }) => (
+                  <button
+                    type="button"
+                    className="btn btn-link"
+                    ref={ref}
+                    onClick={e => this.handleToggleCalendar(e)}
+                  >
+                    <h2>{today.format("ddd, MMM Do YYYY")}</h2>
+                  </button>
+                )}
+              </Reference>
+              {this.showCalendar ? (
+                <Popper
+                  placement="bottom"
+                  eventsEnabled={true}
+                >
+                  {({ ref, style, placement, arrowProps }) => (
+                    <div
+                      className="daypicker-container"
+                      ref={node => (this.node = node) && ref(node)}
+                      style={style}
+                      data-placement={placement}
+                    >
+                      <DayPicker
+                        toMonth={new Date()}
+                        disabledDays={{ after: new Date() }}
+                        selectedDays={this.props.store.journalStore.date}
+                        onDayClick={e => this.handleDateChange(e)}
+                      />
+                      {/* <div
+                        ref={arrowProps.ref}
+                        style={arrowProps.style}
+                        data-placement={placement}
+                      /> */}
+                    </div>
+                  )}
+                </Popper>
+              ) : null}
+            </Manager>
 
             <button
               className={
@@ -237,22 +274,6 @@ export class JournalComponent extends React.Component<BaseProps> {
             >
               <span className="glyphicon glyphicon-menu-right" />
             </button>
-          </h2>
-
-          <div
-            className={
-              "popover-container " +
-              (this.props.store.journalStore.showCalendar ? "" : "hidden")
-            }
-          >
-            <div
-              className="popover bottom"
-              ref="popover"
-              style={{ display: "block", margin: "0 auto" }}
-            >
-              <div className="arrow" style={{ left: "50%" }} />
-              <div className="popover-content" />
-            </div>
           </div>
 
           {this.renderEntries()}
