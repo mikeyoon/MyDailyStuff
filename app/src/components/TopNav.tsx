@@ -3,7 +3,7 @@ import * as React from "react";
 import { BaseProps } from "../types";
 import { observable, action } from "mobx";
 import classnames from "classnames";
-import { Search } from "../models/requests";
+import { GoSearch } from 'react-icons/go';
 
 @observer
 export class TopNav extends React.Component<BaseProps> {
@@ -80,7 +80,7 @@ export class TopNav extends React.Component<BaseProps> {
                     />
                     <div className="input-group-append">
                       <button type="submit" className={searchBtnClasses}>
-                        <i className="glyphicon glyphicon-search" />
+                        <GoSearch />
                       </button>
                     </div>
                   </div>
@@ -111,11 +111,11 @@ export class TopNav extends React.Component<BaseProps> {
               </li>
             ) : (
               [
-                <li key="Login">
-                  <a href="/login">Login</a>
+                <li className="nav-item" key="Login">
+                  <a className="nav-link" href="/login">Login</a>
                 </li>,
-                <li key="Register">
-                  <a href="/register">Register</a>
+                <li className="nav-item" key="Register">
+                  <a className="nav-link" href="/register">Register</a>
                 </li>
               ]
             )}

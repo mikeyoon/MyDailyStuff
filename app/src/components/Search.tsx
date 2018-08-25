@@ -18,7 +18,7 @@ export class SearchComponent extends React.Component<BaseProps> {
 
   render() {
     return (
-      <div className="row mt-4">
+      <div className="row">
         {this.props.store.searchStore.query ? (
           <div className="col-md-10 offset-md-1">
             <h4>

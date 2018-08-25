@@ -14,7 +14,9 @@ install:
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
 
-script: $HOME/gopath/bin/goveralls -package=./lib -service=travis-ci
+script:
+  - $HOME/gopath/bin/goveralls -package=./lib -service=travis-ci
+  - (cd app && yarn tsc)
 
 before_script:
   - sleep 5

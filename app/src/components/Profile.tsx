@@ -87,7 +87,7 @@ export class ProfileComponent extends React.Component<BaseProps> {
 
   render() {
     return (
-      <div className="row mt-4">
+      <div className="row">
         <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-12">
           <h3 className="text-center">Update Your Profile</h3>
           <br />

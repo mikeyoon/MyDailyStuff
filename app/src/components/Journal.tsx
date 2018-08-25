@@ -5,6 +5,7 @@ import DayPicker from "react-day-picker";
 import { Manager, Reference, Popper } from "react-popper";
 import marked from "marked";
 import moment from "moment";
+import { GoChevronRight, GoChevronLeft, GoX } from "react-icons/go";
 
 import * as Requests from "../models/requests";
 import { StreakComponent } from "./Streak";
@@ -30,10 +31,15 @@ export class JournalComponent extends React.Component<BaseProps> {
 
   componentWillUnmount() {
     window.removeEventListener("click", e => this.handleClickOutside(e), false);
-    window.removeEventListener("touchend", e => this.handleClickOutside(e), false);
+    window.removeEventListener(
+      "touchend",
+      e => this.handleClickOutside(e),
+      false
+    );
   }
 
-  @action handleClickOutside(ev: MouseEvent | TouchEvent) {
+  @action
+  handleClickOutside(ev: MouseEvent | TouchEvent) {
     if (this.node != null && !this.node.contains(ev.target)) {
       this.showCalendar = false;
     }
@@ -167,11 +173,11 @@ export class JournalComponent extends React.Component<BaseProps> {
             (e: string, index: number) => (
               <div className="card" key={index}>
                 <button
-                  className="btn btn-clear btn-journal-delete"
+                  className="btn btn-outline-secondary btn-sm btn-journal-delete"
                   key="delete"
                   onClick={ev => this.handleDeleteEntry(index, ev)}
                 >
-                  <span className="glyphicon glyphicon-remove" />
+                  <GoX />
                 </button>
                 <div
                   className="card-body journal-entry"
@@ -207,7 +213,7 @@ export class JournalComponent extends React.Component<BaseProps> {
     return (
       <div className="row">
         <div className="col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-sm-12">
-          <div className="text-center mt-4">
+          <div className="text-center journal-header">
             <button
               className={
                 "btn btn-link " +
@@ -216,7 +222,7 @@ export class JournalComponent extends React.Component<BaseProps> {
               key="prev"
               onClick={e => this.handlePrev(e)}
             >
-              <span className="glyphicon glyphicon-menu-left" />
+              <GoChevronLeft />
             </button>
 
             <Manager>
@@ -224,7 +230,7 @@ export class JournalComponent extends React.Component<BaseProps> {
                 {({ ref }) => (
                   <button
                     type="button"
-                    className="btn btn-link"
+                    className="btn btn-link date-toggle"
                     ref={ref}
                     onClick={e => this.handleToggleCalendar(e)}
                   >
@@ -233,10 +239,7 @@ export class JournalComponent extends React.Component<BaseProps> {
                 )}
               </Reference>
               {this.showCalendar ? (
-                <Popper
-                  placement="bottom"
-                  eventsEnabled={true}
-                >
+                <Popper placement="bottom" eventsEnabled={true}>
                   {({ ref, style, placement, arrowProps }) => (
                     <div
                       className="daypicker-container"
@@ -272,13 +275,13 @@ export class JournalComponent extends React.Component<BaseProps> {
               }}
               onClick={ev => this.handleNext(ev)}
             >
-              <span className="glyphicon glyphicon-menu-right" />
+              <GoChevronRight />
             </button>
           </div>
 
           {this.renderEntries()}
 
-          <hr />
+          <hr className="mt-4" />
 
           {this.props.store.journalStore.error ? (
             <div className="alert alert-danger">

@@ -9,6 +9,7 @@ import { ForgotComponent } from "./Forgot";
 import { JournalComponent } from "./Journal";
 import { LoginComponent } from "./Login";
 import { ProfileComponent } from "./Profile";
+import { ResetComponent } from "./ResetPassword";
 import { SearchComponent } from "./Search";
 import { SignupComponent } from "./Signup";
 
@@ -31,6 +32,8 @@ export class AppComponent extends React.Component<BaseProps> {
         return <SearchComponent store={this.props.store} />;
       case Routes.Profile:
         return <ProfileComponent store={this.props.store} />;
+      case Routes.ResetPassword:
+        return <ResetComponent store={this.props.store} />;
     }
   }
 
@@ -38,7 +41,7 @@ export class AppComponent extends React.Component<BaseProps> {
     return (
       <div>
         <TopNav store={this.props.store} />
-        <div className="container">{this.renderComponent()}</div>
+        <div className="container mt-4 mb-4">{this.renderComponent()}</div>
         <footer className="footer container-fluid">
           <div className="row align-items-center h-100">
             <div className="col-8">

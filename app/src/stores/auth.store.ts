@@ -25,7 +25,7 @@ export class AuthStore {
   @observable
   resetError: string | undefined;
   @observable
-  resetSuccess: boolean | undefined;
+  resetSuccess = false;
 
   @observable
   gettingAccount = false;

@@ -50,10 +50,10 @@ export namespace RestClient {
     return client({
       method: "POST",
       path: baseUrl + url,
-      entity: JSON.stringify(entity),
       headers: {
         [CSRF_HEADER]: csrfToken
-      }
+      },
+      ...entity != null ? { entity: JSON.stringify(entity) } : {}
     }).then(response => {
       csrfToken = response.headers[CSRF_HEADER];
       return response;
