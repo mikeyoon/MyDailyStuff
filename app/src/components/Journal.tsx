@@ -79,10 +79,9 @@ export class JournalComponent extends React.Component<BaseProps> {
           )
         );
 
-        const done = when(
+        when(
           () => !this.props.store.journalStore.editing,
           () => {
-            done();
             if (this.props.store.journalStore.error == null) {
               this.newEntry = "";
             }
@@ -91,10 +90,9 @@ export class JournalComponent extends React.Component<BaseProps> {
       } else {
         this.props.store.journalStore.add(this.newEntry);
 
-        const done = when(
+        when(
           () => !this.props.store.journalStore.adding,
           () => {
-            done();
             if (this.props.store.journalStore.error == null) {
               this.newEntry = "";
             }
@@ -168,7 +166,7 @@ export class JournalComponent extends React.Component<BaseProps> {
   renderEntries() {
     if (this.props.store.journalStore.current != null) {
       return (
-        <div className="margin-top-md journal">
+        <div className="journal mt-4">
           {this.props.store.journalStore.current.entries.map(
             (e: string, index: number) => (
               <div className="card" key={index}>
@@ -192,7 +190,7 @@ export class JournalComponent extends React.Component<BaseProps> {
       return <h3 className="text-center">No entries...try to remember!</h3>;
     } else {
       return (
-        <div className="margin-top-md">
+        <div className="mt-4">
           <div className="progress">
             <div
               className="progress-bar progress-bar-striped active"

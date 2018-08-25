@@ -1,9 +1,10 @@
 import { observer } from "mobx-react";
 import * as React from "react";
 import { BaseProps } from "../types";
-import { observable, action } from "mobx";
+import { observable, reaction, action } from "mobx";
 import classnames from "classnames";
-import { GoSearch } from 'react-icons/go';
+import { GoSearch } from "react-icons/go";
+import { Routes } from "../stores/route.store";
 
 @observer
 export class TopNav extends React.Component<BaseProps> {
@@ -35,13 +36,9 @@ export class TopNav extends React.Component<BaseProps> {
   };
 
   render() {
-    const searchBtnClasses = classnames(
-      "btn",
-      "btn-primary",
-      {
-        disabled: this.props.store.searchStore.searching
-      }
-    );
+    const searchBtnClasses = classnames("btn", "btn-primary", {
+      disabled: this.props.store.searchStore.searching
+    });
     const isLoggedIn = this.props.store.authStore.isLoggedIn;
 
     return (
@@ -75,6 +72,7 @@ export class TopNav extends React.Component<BaseProps> {
                       className="form-control"
                       type="search"
                       placeholder="Search"
+                      value={this.query}
                       onChange={e => this.updateQueryText(e.target.value)}
                       onKeyDown={this.handleSearchKeyDown}
                     />
@@ -103,8 +101,14 @@ export class TopNav extends React.Component<BaseProps> {
                   <span className="caret" />
                 </a>
                 <div className="dropdown-menu dropdown-menu-right" role="menu">
-                  <a className="dropdown-item" href="/profile">My Profile</a>
-                  <a className="dropdown-item" href="#" onClick={this.handleLogout}>
+                  <a className="dropdown-item" href="/profile">
+                    My Profile
+                  </a>
+                  <a
+                    className="dropdown-item"
+                    href="#"
+                    onClick={this.handleLogout}
+                  >
                     Logout
                   </a>
                 </div>
@@ -112,10 +116,14 @@ export class TopNav extends React.Component<BaseProps> {
             ) : (
               [
                 <li className="nav-item" key="Login">
-                  <a className="nav-link" href="/login">Login</a>
+                  <a className="nav-link" href="/login">
+                    Login
+                  </a>
                 </li>,
                 <li className="nav-item" key="Register">
-                  <a className="nav-link" href="/register">Register</a>
+                  <a className="nav-link" href="/register">
+                    Register
+                  </a>
                 </li>
               ]
             )}

@@ -16,7 +16,7 @@ install:
 
 script:
   - $HOME/gopath/bin/goveralls -package=./lib -service=travis-ci
-  - (cd app && yarn tsc)
+  - (cd app && yarn && yarn tsc)
 
 before_script:
   - sleep 5

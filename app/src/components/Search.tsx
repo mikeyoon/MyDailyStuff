@@ -2,6 +2,7 @@ import * as React from "react";
 import moment from "moment";
 import { BaseProps } from "../types";
 import { observer } from "mobx-react";
+import { GoChevronLeft, GoChevronRight } from "react-icons/go";
 
 @observer
 export class SearchComponent extends React.Component<BaseProps> {
@@ -82,7 +83,7 @@ export class SearchComponent extends React.Component<BaseProps> {
                       : undefined
                   }
                 >
-                  <span className="glyphicon glyphicon-chevron-left" /> prev
+                  <GoChevronLeft /> prev
                 </a>
               </li>
               <li
@@ -107,14 +108,14 @@ export class SearchComponent extends React.Component<BaseProps> {
                       : undefined
                   }
                 >
-                  next <span className="glyphicon glyphicon-chevron-right" />
+                  next <GoChevronRight />
                 </a>
               </li>
             </ul>
           </div>
         ) : (
           <div className="col-md-8 col-md-offset-2">
-            <div className="margin-top-md">
+            <div className="mt-4">
               <div className="progress">
                 <div
                   className="progress-bar progress-bar-striped active"
