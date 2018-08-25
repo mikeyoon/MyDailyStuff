@@ -1,7 +1,7 @@
 .vagrant
 MyDailyStuff.exe
 MyDailyStuff
-public
+public/dist
 node_modules
 jspm_packages
 app/.idea/workspace.xml

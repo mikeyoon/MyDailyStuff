@@ -1,5 +1,6 @@
 import * as React from "react";
 import { action, observable } from "mobx";
+import classNames from "classnames";
 
 import * as Requests from "../models/requests";
 import { BaseProps } from "../types";
@@ -106,63 +107,56 @@ export class SignupComponent extends React.Component<BaseProps> {
             </div>
           ) : (
             <form onSubmit={this.onSubmit.bind(this)}>
-              <div
-                className={
-                  "form-group " + (this.errors["email"] ? "has-error" : "")
-                }
-                key="1"
-              >
+              <div className="form-group" key="1">
                 <label className="control-label" htmlFor="email">
                   Email:
                 </label>
                 <input
-                  className="form-control"
+                  className={classNames("form-control", {
+                    "is-invalid": this.errors["email"]
+                  })}
                   id="email"
                   name="email"
                   value={this.email}
                   onChange={e => this.emailChanged(e.target.value)}
                 />
-                <span className="help-block">{this.errors["email"]}</span>
+                <span className="invalid-feedback">{this.errors["email"]}</span>
               </div>
-              <div
-                className={
-                  "form-group " + (this.errors["password"] ? "has-error" : "")
-                }
-                key="2"
-              >
+              <div className="form-group" key="2">
                 <label className="control-label" htmlFor="password">
                   Password:
                 </label>
                 <input
-                  className="form-control"
+                  className={classNames("form-control", {
+                    "is-invalid": this.errors["password"]
+                  })}
                   id="password"
                   name="password"
                   type="password"
                   value={this.password}
                   onChange={e => this.passwordChanged(e.target.value)}
                 />
-                <span className="help-block">{this.errors["password"]}</span>
+                <span className="invalid-feedback">
+                  {this.errors["password"]}
+                </span>
               </div>
-              <div
-                className={
-                  "form-group " + (this.errors["confirm"] ? "has-error" : "")
-                }
-                key="3"
-              >
+              <div className="form-group" key="3">
                 <label className="control-label" htmlFor="confirm">
                   Confirm Password:
                 </label>
                 <input
-                  className="form-control"
+                  className={classNames("form-control", {
+                    "is-invalid": this.errors["confirm"]
+                  })}
                   id="confirm"
                   name="confirm"
                   type="password"
                   value={this.confirm}
                   onChange={e => this.confirmChanged(e.target.value)}
                 />
-                {this.errors["confirm"] ? (
-                  <span className="help-block">{this.errors["confirm"]}</span>
-                ) : null}
+                <span className="invalid-feedback">
+                  {this.errors["confirm"]}
+                </span>
               </div>
               <div className="text-center">
                 <button className="btn btn-primary" type="submit">

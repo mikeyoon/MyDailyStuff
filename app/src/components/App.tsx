@@ -16,7 +16,6 @@ import { SignupComponent } from "./Signup";
 @observer
 export class AppComponent extends React.Component<BaseProps> {
   renderComponent() {
-    console.log("rendering", this.props.store.routeStore.route);
     switch (this.props.store.routeStore.route) {
       case Routes.About:
         return <AboutComponent store={this.props.store} />;

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Dummy file for heroku",
   "scripts": {
-    "postinstall": "(cd app && yarn)"
+    "postinstall": "(cd app && yarn && yarn build)"
   },
   "author": "",
   "license": "ISC",
@@ -11,5 +11,9 @@
     "url": "https://github.com/mikeyoon/MyDailyStuff/issues"
   },
   "homepage": "https://github.com/mikeyoon/MyDailyStuff#readme",
-  "cache_directories": ["app/node_modules"]
+  "cache_directories": ["app/node_modules"],
+  "engines": {
+    "yarn": "1.9.4",
+    "node": "8.11.4"
+  }
 }

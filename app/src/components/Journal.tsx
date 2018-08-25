@@ -1,4 +1,5 @@
 import * as React from "react";
+import classNames from "classnames";
 import { observable, action, when } from "mobx";
 import { observer } from "mobx-react";
 import DayPicker from "react-day-picker";
@@ -46,7 +47,7 @@ export class JournalComponent extends React.Component<BaseProps> {
   }
 
   @action
-  validate(): boolean {
+  validate(validateEmpty = true): boolean {
     this.errors = {};
 
     if (this.newEntry.length > 500) {
@@ -56,6 +57,8 @@ export class JournalComponent extends React.Component<BaseProps> {
       this.props.store.journalStore.current.entries.length >= 10
     ) {
       this.errors["newEntry"] = "Only 10 entries are allowed per day";
+    } else if (this.newEntry.length <= 0 && validateEmpty) {
+      this.errors["newEntry"] = "Entry cannot be blank";
     }
 
     return Object.keys(this.errors).length <= 0;
@@ -64,6 +67,7 @@ export class JournalComponent extends React.Component<BaseProps> {
   @action
   newEntryChanged(text: string) {
     this.newEntry = text;
+    this.validate(false);
   }
 
   @action
@@ -290,11 +294,7 @@ export class JournalComponent extends React.Component<BaseProps> {
           {!this.props.store.journalStore.current ||
           this.props.store.journalStore.current.entries.length < 7 ? (
             <form onSubmit={this.handleAddEntry}>
-              <div
-                className={
-                  "form-group " + (this.errors["newEntry"] ? "has-error" : "")
-                }
-              >
+              <div className="form-group">
                 <label className="control-label pull-left">
                   Add a new entry (markdown)
                 </label>
@@ -303,7 +303,9 @@ export class JournalComponent extends React.Component<BaseProps> {
                 </label>
                 <textarea
                   placeholder="New entry..."
-                  className="form-control"
+                  className={classNames("form-control", {
+                    "is-invalid": this.errors["newEntry"]
+                  })}
                   rows={4}
                   style={{ width: "100%" }}
                   value={this.newEntry}
@@ -312,9 +314,7 @@ export class JournalComponent extends React.Component<BaseProps> {
                   maxLength={500}
                   onChange={ev => this.newEntryChanged(ev.target.value)}
                 />
-                {this.errors["newEntry"] ? (
-                  <span className="help-block">{this.errors["newEntry"]}</span>
-                ) : null}
+                <span className="invalid-feedback">{this.errors["newEntry"]}</span>
               </div>
 
               <button
