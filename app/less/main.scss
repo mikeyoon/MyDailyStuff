@@ -153,6 +153,21 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+  .journal-header {
+    .btn-link {
+      height: 32px;
+
+      svg {
+        height: 18px;
+        vertical-align: top;
+      }
+    }
+
+    h2 {
+      width: 250px;
+    }
+  }
+
   h2 {
     font-size: 24px;
   }
