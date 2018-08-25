@@ -7,8 +7,18 @@ html {
 
 body {
   /* Margin bottom by footer height plus padding */
-  margin-bottom: 76px;
+  margin-bottom: 80px;
   min-height: 100%;
+}
+
+.btn-link {
+  &:hover {
+    text-decoration: none;
+  }
+
+  &:focus {
+    text-decoration: none;
+  }
 }
 
 textarea {
@@ -43,8 +53,11 @@ a:hover {
 }
 
 .card.panel-default {
-  margin-bottom: 20px;
   box-shadow: 0 1px 1px rgba(0,0,0,.05);
+
+  &:not(:last-of-type) {
+    margin-bottom: 20px;
+  }
 
   .card-body {
     padding: 10px 15px;
@@ -61,7 +74,7 @@ a:hover {
 }
 
 .pager {
-  margin: 20px 0;
+  margin: 10px 0;
   list-style: none;
   text-align: center;
   padding: 0;
@@ -75,6 +88,10 @@ a:hover {
 
     &.next a {
       float: right;
+    }
+    
+    .btn-link {
+      padding: 0;
     }
   }
 }
@@ -102,16 +119,6 @@ a:hover {
     padding: 0;
     margin-left: 4px;
     margin-right: 4px;
-  }
-
-  .btn-link {
-    &:hover {
-      text-decoration: none;
-    }
-
-    &:focus {
-      text-decoration: none;
-    }
   }
 
   h2 {

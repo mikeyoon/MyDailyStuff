@@ -1,5 +1,6 @@
 import * as React from "react";
 import moment from "moment";
+import classNames from "classnames";
 import { BaseProps } from "../types";
 import { observer } from "mobx-react";
 import { GoChevronLeft, GoChevronRight } from "react-icons/go";
@@ -61,18 +62,14 @@ export class SearchComponent extends React.Component<BaseProps> {
               )}
             </div>
             <ul className="pager">
-              <li
-                className={
-                  "previous " +
-                  (this.props.store.searchStore.prevOffset == null
-                    ? "disabled"
-                    : "")
-                }
-              >
+              <li className="previous">
                 <a
                   href={`/search/${this.props.store.searchStore.query}/${
                     this.props.store.searchStore.prevOffset
                   }`}
+                  className={classNames("btn", "btn-link", {
+                    disabled: this.props.store.searchStore.prevOffset == null
+                  })}
                   onClick={this.handlePageLink.bind(
                     this,
                     this.props.store.searchStore.prevOffset
@@ -86,15 +83,11 @@ export class SearchComponent extends React.Component<BaseProps> {
                   <GoChevronLeft /> prev
                 </a>
               </li>
-              <li
-                className={
-                  "next " +
-                  (this.props.store.searchStore.nextOffset == null
-                    ? "disabled"
-                    : "")
-                }
-              >
+              <li className="next">
                 <a
+                  className={classNames("btn", "btn-link", {
+                    disabled: this.props.store.searchStore.nextOffset == null
+                  })}
                   href={`/search/${this.props.store.searchStore.query}/${
                     this.props.store.searchStore.nextOffset
                   }`}
