@@ -41,7 +41,7 @@ export class JournalStore {
       () => this.router.params,
       params => {
         if (this.router.route === Routes.Journal) {
-          this.date = params.date != null ? moment(params.date, 'YYYY-D-M').toDate() : new Date();
+          this.date = params.date != null ? moment(params.date, 'YYYY-M-D').toDate() : new Date();
           this.get(this.date);
         }
       }
