@@ -18,6 +18,7 @@ export class AnalyticsStore {
 
   constructor() {
     this.enabled = typeof _gaq !== "undefined";
+    console.log('GA Enabled: ' + this.enabled);
   }
 
   track(...args: any[]) {
