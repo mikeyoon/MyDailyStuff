@@ -1,19 +1,21 @@
 package lib
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
+	elastigo "github.com/mikeyoon/elastigo/lib"
+	"github.com/olivere/elastic"
+
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/kennygrant/sanitize"
-	elastigo "github.com/mikeyoon/elastigo/lib"
 	"github.com/sendgrid/sendgrid-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -96,7 +98,7 @@ type MailService interface {
 }
 
 type MdsService struct {
-	es         *elastigo.Conn
+	es         *elastic.Client
 	MailClient MailService
 }
 
@@ -113,7 +115,8 @@ type ServiceOptions struct {
 }
 
 func (s *MdsService) Init(options ServiceOptions) error {
-	conn := elastigo.NewConn()
+	conn, err := elastic.NewClient(
+		elastic.SetURL(options.ElasticUrl))
 
 	if options.MainIndex != "" {
 		EsIndex = options.MainIndex
@@ -121,18 +124,18 @@ func (s *MdsService) Init(options ServiceOptions) error {
 
 	u, err := url.Parse(options.ElasticUrl)
 
-	if err == nil {
-		host, port, e := net.SplitHostPort(u.Host)
-		err = e //Why go, why?
+	// if err == nil {
+	// 	host, port, e := net.SplitHostPort(u.Host)
+	// 	err = e //Why go, why?
 
-		conn.SetHosts([]string{host})
-		conn.SetPort(port)
-		conn.Protocol = u.Scheme
-		if u.User != nil {
-			conn.Username = u.User.Username()
-			conn.Password, _ = u.User.Password()
-		}
-	}
+	// 	conn.SetHosts([]string{host})
+	// 	conn.SetPort(port)
+	// 	conn.Protocol = u.Scheme
+	// 	if u.User != nil {
+	// 		conn.Username = u.User.Username()
+	// 		conn.Password, _ = u.User.Password()
+	// 	}
+	// }
 
 	err = s.createIndexes(conn)
 
@@ -146,8 +149,9 @@ func (s *MdsService) Init(options ServiceOptions) error {
 	return err
 }
 
-func (service *MdsService) createIndexes(c *elastigo.Conn) error {
-	indexExists, err := c.IndicesExists(EsIndex)
+func (service *MdsService) createIndexes(c *elastic.Client) error {
+	ctx := context.Background()
+	indexExists, err := c.IndexExists(EsIndex).Do(ctx)
 
 	if err != nil {
 		log.Println("Error retriving user index: " + err.Error())
@@ -158,10 +162,10 @@ func (service *MdsService) createIndexes(c *elastigo.Conn) error {
 		log.Println("Creating main index")
 
 		indexJson := []byte(`{
-            "mapper": {
-                "dynamic": false
-            },
-            "settings": {
+					"mapper": {
+							"dynamic": false
+					},
+					"settings": {
 			    "index": {
 			        "analysis": {
 			            "analyzer": {
@@ -254,12 +258,12 @@ func (service *MdsService) createIndexes(c *elastigo.Conn) error {
 			return err
 		}
 
-		resp, err := c.CreateIndexWithSettings(EsIndex, indexSettings)
+		resp, err := c.CreateIndex(EsIndex).BodyJson(indexSettings).Do(ctx)
 
 		if err != nil {
 			log.Println("Error creating index: " + err.Error())
 		} else {
-			log.Println(resp.Exists)
+			log.Println(resp.Acknowledged)
 		}
 	}
 
@@ -271,8 +275,8 @@ func (service *MdsService) createIndexes(c *elastigo.Conn) error {
 	return nil
 }
 
-func getSingleResult(result elastigo.SearchResult, output interface{}) error {
-	if result.Hits.Total > 0 {
+func getSingleResult(result *elastic.SearchResult, output interface{}) error {
+	if result.Hits.TotalHits > 0 {
 
 		bytes, err := result.Hits.Hits[0].Source.MarshalJSON()
 		if err != nil {
@@ -290,13 +294,10 @@ func getSingleResult(result elastigo.SearchResult, output interface{}) error {
 //User Functions
 func (s MdsService) GetUserByEmail(email string) (User, error) {
 	var retval User
+	ctx := context.Background()
 
-	query := elastigo.Query().
-		All().
-		Filter(elastigo.Filter().Term("email", strings.ToLower(email)))
-
-	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, UserType, nil, search)
+	query := elastic.NewTermQuery("email", strings.ToLower(email))
+	result, err := s.es.Search(EsIndex).Type(UserType).Query(query).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -311,13 +312,11 @@ func (s MdsService) GetUserByEmail(email string) (User, error) {
 
 func (s MdsService) GetUserByLogin(email string, password string) (User, error) {
 	var retval User
+	ctx := context.Background()
 
-	query := elastigo.Query().
-		All().
-		Filter(elastigo.Filter().Term("email", strings.ToLower(email)))
-
-	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, UserType, nil, search)
+	query := elastic.NewTermQuery("email", strings.ToLower(email))
+	result, err := s.es.Search(EsIndex).Type(UserType).Query(query).Do(ctx)
+	// result, err := s.es.Search(EsIndex, UserType, nil, search)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -341,17 +340,25 @@ func (s MdsService) GetUserByLogin(email string, password string) (User, error) 
 
 func (s MdsService) GetUserById(id string) (User, error) {
 	var retval User
-	err := s.es.GetSource(EsIndex, UserType, id, nil, &retval)
 
-	if err == elastigo.RecordNotFound {
-		return retval, UserNotFound
+	ctx := context.Background()
+	result, err := s.es.Get().Index(EsIndex).Type(UserType).Id(id).Do(ctx)
+
+	if err != nil {
+		return retval, err
 	}
 
-	return retval, err
+	if result.Found {
+		err = json.Unmarshal(*result.Source, &retval)
+		return retval, err
+	}
+
+	return retval, UserNotFound
 }
 
 func (s MdsService) UpdateUser(id string, email string, password string) error {
 	user, err := s.GetUserById(id)
+	ctx := context.Background()
 
 	if err != nil {
 		return UserNotFound
@@ -366,7 +373,7 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
 
-			_, err = s.es.Index(EsIndex, UserType, id, nil, user)
+			_, err = s.es.Index().Index(EsIndex).Type(UserType).Id(id).BodyJson(user).Do(ctx)
 		}
 
 		return err
@@ -377,13 +384,10 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 
 func (s MdsService) GetUserVerification(token string) (UserVerification, error) {
 	var retval UserVerification
+	ctx := context.Background()
 
-	query := elastigo.Query().
-		All().
-		Filter(elastigo.Filter().Term("token", token))
-
-	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, VerifyType, nil, search)
+	search := elastic.NewTermQuery("token", token)
+	result, err := s.es.Search(EsIndex).Type(VerifyType).Query(search).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -399,6 +403,7 @@ func (s MdsService) GetUserVerification(token string) (UserVerification, error) 
 
 func (s MdsService) CreateUserVerification(email string, password string) error {
 	_, err := s.GetUserByEmail(email)
+	ctx := context.Background()
 
 	if err == UserNotFound {
 		//Generate token
@@ -413,7 +418,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 				PasswordHash: base64.StdEncoding.EncodeToString(pass),
 				Token:        id}
 
-			_, err = s.es.Index(EsIndex, VerifyType, id, nil, verify)
+			_, err = s.es.Index().Index(EsIndex).Type(VerifyType).Id(id).BodyJson(verify).Do(ctx)
 		}
 
 		if err != nil {
@@ -466,6 +471,7 @@ MyDailyStuff.com`)
 }
 
 func (s MdsService) CreateUser(verificationToken string) (string, error) {
+	ctx := context.Background()
 	verify, err := s.GetUserVerification(verificationToken)
 	if err == nil {
 		_, getErr := s.GetUserByEmail(verify.Email)
@@ -476,14 +482,14 @@ func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	if err == UserNotFound {
 		id := uuid.New()
 
-		_, err = s.es.Index(EsIndex, UserType, id, nil, User{
+		_, err = s.es.Index().Index(EsIndex).Type(UserType).Id(id).BodyJson(User{
 			UserId:       id,
 			Email:        verify.Email,
 			CreateDate:   time.Now(),
-			PasswordHash: verify.PasswordHash})
+			PasswordHash: verify.PasswordHash}).Do(ctx)
 
 		if err == nil {
-			_, err = s.es.Delete(EsIndex, VerifyType, verify.Token, nil)
+			_, err = s.es.Delete().Index(EsIndex).Type(VerifyType).Id(verify.Token).Do(ctx)
 		}
 
 		return id, err
@@ -495,13 +501,15 @@ func (s MdsService) CreateUser(verificationToken string) (string, error) {
 
 func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 	var retval PasswordReset
+	ctx := context.Background()
 
-	query := elastigo.Query().
-		All().
-		Filter(elastigo.Filter().Term("token", token))
+	// query := elastigo.Query().
+	// 	All().
+	// 	Filter(elastigo.Filter().Term("token", token))
 
-	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, ResetType, nil, search)
+	// search := elastigo.Search(EsIndex).Query(query)
+	search := elastic.NewTermQuery("token", token)
+	result, err := s.es.Search(EsIndex).Type(ResetType).Query(search).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -515,12 +523,13 @@ func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 }
 
 func (s MdsService) CreateAndSendResetPassword(email string) error {
+	ctx := context.Background()
 	user, err := s.GetUserByEmail(email)
 	if err == nil {
 		id := uuid.New()
 		reset := PasswordReset{UserId: user.UserId, Token: id, CreateDate: time.Now()}
 
-		_, err = s.es.Index(EsIndex, ResetType, id, nil, reset)
+		_, err = s.es.Index().Index(EsIndex).Type(ResetType).Id(id).BodyJson(reset).Do(ctx)
 
 		if err == nil {
 			fmt.Println("Sending reset password to " + user.UserId)
@@ -571,6 +580,7 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 }
 
 func (s MdsService) ResetPassword(token string, password string) error {
+	ctx := context.Background()
 	reset, err := s.GetResetPassword(token)
 
 	if len(password) < 6 || len(password) > 50 {
@@ -583,7 +593,7 @@ func (s MdsService) ResetPassword(token string, password string) error {
 	}
 
 	if err == nil {
-		_, err = s.es.Delete(EsIndex, ResetType, token, nil)
+		_, err = s.es.Delete().Index(EsIndex).Type(ResetType).Id(token).Do(ctx)
 	}
 
 	return err

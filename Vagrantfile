@@ -71,10 +71,9 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
    config.vm.provision "shell", inline: <<-SHELL
-     wget -qO - https://packages.elasticsearch.org/GPG-KEY-elasticsearch | sudo apt-key add -
-     sudo apt-add-repository 'deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main'
+     wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+     sudo apt-add-repository 'deb https://artifacts.elastic.co/packages/6.x/apt stable main'
      sudo apt-get update
-     sudo apt-get install -y openjdk-7-jre
      sudo apt-get install -y elasticsearch
      sudo /etc/init.d/elasticsearch start
    SHELL
