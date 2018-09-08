@@ -4,10 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"log"
-	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,22 +17,38 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// EsIndex the main ES index
-var EsIndex = "mds"
+// esIndex the main ES index, default to mds
+var esIndex = "mds"
 
 const (
-	// UserType ES index for user data
-	UserType = "user"
-	// ResetType ES index for password reset requests
-	ResetType = "pwreset"
-	// VerifyType ES index for pending account verifications
-	VerifyType = "verify"
-	// JournalType ES index for journal entries
-	JournalType = "journal"
+	// userType ES index for user data
+	userType = "user"
+	// resetType ES index for password reset requests
+	resetType = "pwreset"
+	// verifyType ES index for pending account verifications
+	verifyType = "verify"
+	// journalType ES index for journal entries
+	journalType = "journal"
 )
 
+func userIndex() string {
+	return esIndex + "_" + userType
+}
+
+func resetIndex() string {
+	return esIndex + "_" + resetType
+}
+
+func verifyIndex() string {
+	return esIndex + "_" + verifyType
+}
+
+func journalIndex() string {
+	return esIndex + "_" + journalType
+}
+
 type User struct {
-	UserId        string    `json:"user_id"`
+	UserID        string    `json:"user_id"`
 	Email         string    `json:"email"`
 	PasswordHash  string    `json:"password_hash"`
 	CreateDate    time.Time `json:"create_date"`
@@ -73,7 +86,6 @@ type JournalQuery struct {
 }
 
 type Service interface {
-	//Init(options ServiceOptions) error
 	GetUserById(id string) (User, error)
 	GetUserByEmail(email string) (User, error)
 	GetUserByLogin(email string, password string) (User, error)
@@ -88,7 +100,7 @@ type Service interface {
 	UpdateJournalEntry(id string, userId string, entries []string) error
 	DeleteJournalEntry(id string, userId string) error
 	GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error)
-	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, int, error)
+	SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, int64, error)
 	SearchJournalDates(userId string, jq JournalQuery) ([]string, error)
 	GetStreak(userId string, date time.Time, limit int) (int, error)
 }
@@ -116,26 +128,16 @@ type ServiceOptions struct {
 
 func (s *MdsService) Init(options ServiceOptions) error {
 	conn, err := elastic.NewClient(
-		elastic.SetURL(options.ElasticUrl))
+		elastic.SetURL(options.ElasticUrl),
+	)
 
-	if options.MainIndex != "" {
-		EsIndex = options.MainIndex
+	if err != nil {
+		return err
 	}
 
-	u, err := url.Parse(options.ElasticUrl)
-
-	// if err == nil {
-	// 	host, port, e := net.SplitHostPort(u.Host)
-	// 	err = e //Why go, why?
-
-	// 	conn.SetHosts([]string{host})
-	// 	conn.SetPort(port)
-	// 	conn.Protocol = u.Scheme
-	// 	if u.User != nil {
-	// 		conn.Username = u.User.Username()
-	// 		conn.Password, _ = u.User.Password()
-	// 	}
-	// }
+	if options.MainIndex != "" {
+		esIndex = options.MainIndex
+	}
 
 	err = s.createIndexes(conn)
 
@@ -149,130 +151,49 @@ func (s *MdsService) Init(options ServiceOptions) error {
 	return err
 }
 
-func (service *MdsService) createIndexes(c *elastic.Client) error {
+func (s *MdsService) createIndex(c *elastic.Client, index string, json string) error {
 	ctx := context.Background()
-	indexExists, err := c.IndexExists(EsIndex).Do(ctx)
+	indexExists, err := c.IndexExists(index).Do(ctx)
 
 	if err != nil {
-		log.Println("Error retriving user index: " + err.Error())
+		log.Println("Error retriving " + index + " index: " + err.Error())
 		return err
 	}
 
 	if !indexExists {
-		log.Println("Creating main index")
-
-		indexJson := []byte(`{
-					"mapper": {
-							"dynamic": false
-					},
-					"settings": {
-			    "index": {
-			        "analysis": {
-			            "analyzer": {
-			                "keyword_lowercase": {
-			                    "tokenizer":"keyword",
-			                    "filter":"lowercase"
-			                }
-						}
-			        }
-			    }
-			},
-            "mappings": {
-                "user": {
-                    "properties": {
-                        "user_id": {
-                            "type": "string",
-                            "index": "no"
-                        },
-                        "email": {
-                            "type": "string",
-                            "index": "not_analyzed"
-                        },
-                        "password_hash": {
-                            "type": "binary"
-                        },
-                        "create_date": {"type": "date"},
-                        "last_login_date": {"type": "date"}
-                    }
-                },
-                "journal": {
-                    "properties": {
-                        "user_id": {
-                            "type": "string",
-                            "index": "not_analyzed"
-                        },
-                        "entries": {
-                            "type": "string",
-                            "analyzer": "english"
-
-                        },
-                        "create_date": {
-                            "type": "date"
-                        },
-                        "date": {
-                            "type": "date"
-                        }
-                    }
-                },
-                "verify": {
-                	"properties": {
-                		"email": {
-                			"type": "string",
-                			"index": "not_analyzed"
-                		},
-                		"token": {
-                			"type": "string",
-                			"index": "not_analyzed"
-                		},
-                		"password_hash": {
-                			"type": "binary"
-                		},
-                		"create_date": {
-                			"type": "date"
-                		}
-                	}
-                },
-                "pwreset": {
-                	"properties": {
-                		"user_id": {
-                			"type": "string",
-                			"index": "not_analyzed"
-                		},
-                		"token": {
-                			"type": "string",
-                			"index": "not_analyzed"
-                		},
-                		"create_date": {
-                			"type": "date"
-                		}
-                	}
-                }
-            }
-        }`)
-
-		var indexSettings IndexSettings
-		err := json.Unmarshal(indexJson, &indexSettings)
+		log.Println("Creating index " + index)
+		resp, err := c.CreateIndex(index).BodyString(json).Do(ctx)
 
 		if err != nil {
-			log.Println("Error deserializing json: " + err.Error())
+			log.Println("Error creating " + index + " index: " + err.Error())
 			return err
-		}
-
-		resp, err := c.CreateIndex(EsIndex).BodyJson(indexSettings).Do(ctx)
-
-		if err != nil {
-			log.Println("Error creating index: " + err.Error())
 		} else {
 			log.Println(resp.Acknowledged)
 		}
 	}
 
+	return nil
+}
+
+func (s *MdsService) createIndexes(c *elastic.Client) error {
+	log.Println("Preparing Indexes")
+	err := s.createIndex(c, userIndex(), IndexUserJSON)
 	if err != nil {
-		log.Println("Error retriving index: " + err.Error())
 		return err
 	}
 
-	return nil
+	err = s.createIndex(c, journalIndex(), IndexJournalJSON)
+	if err != nil {
+		return err
+	}
+
+	err = s.createIndex(c, resetIndex(), IndexPwResetJSON)
+	if err != nil {
+		return err
+	}
+
+	err = s.createIndex(c, verifyIndex(), IndexVerifyJSON)
+	return err
 }
 
 func getSingleResult(result *elastic.SearchResult, output interface{}) error {
@@ -292,12 +213,14 @@ func getSingleResult(result *elastic.SearchResult, output interface{}) error {
 }
 
 //User Functions
+
+// GetUserByEmail retrieves a user by their email address
 func (s MdsService) GetUserByEmail(email string) (User, error) {
 	var retval User
 	ctx := context.Background()
 
 	query := elastic.NewTermQuery("email", strings.ToLower(email))
-	result, err := s.es.Search(EsIndex).Type(UserType).Query(query).Do(ctx)
+	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -310,13 +233,13 @@ func (s MdsService) GetUserByEmail(email string) (User, error) {
 	return retval, nil
 }
 
+// GetUserByLogin retrieves a user account by their email and password hash
 func (s MdsService) GetUserByLogin(email string, password string) (User, error) {
 	var retval User
 	ctx := context.Background()
 
 	query := elastic.NewTermQuery("email", strings.ToLower(email))
-	result, err := s.es.Search(EsIndex).Type(UserType).Query(query).Do(ctx)
-	// result, err := s.es.Search(EsIndex, UserType, nil, search)
+	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -338,11 +261,12 @@ func (s MdsService) GetUserByLogin(email string, password string) (User, error) 
 	return retval, err
 }
 
+//GetUserById retrieves a user by their id
 func (s MdsService) GetUserById(id string) (User, error) {
 	var retval User
 
 	ctx := context.Background()
-	result, err := s.es.Get().Index(EsIndex).Type(UserType).Id(id).Do(ctx)
+	result, err := s.es.Get().Index(userIndex()).Type(userType).Id(id).Do(ctx)
 
 	if err != nil {
 		return retval, err
@@ -373,7 +297,7 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
 
-			_, err = s.es.Index().Index(EsIndex).Type(UserType).Id(id).BodyJson(user).Do(ctx)
+			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(user).Do(ctx)
 		}
 
 		return err
@@ -387,14 +311,14 @@ func (s MdsService) GetUserVerification(token string) (UserVerification, error) 
 	ctx := context.Background()
 
 	search := elastic.NewTermQuery("token", token)
-	result, err := s.es.Search(EsIndex).Type(VerifyType).Query(search).Do(ctx)
+	result, err := s.es.Search(verifyIndex()).Type(verifyType).Query(search).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
 	}
 
 	if err == elastigo.RecordNotFound {
-		fmt.Println("Error GetUserVerification: " + err.Error())
+		log.Println("Error GetUserVerification: " + err.Error())
 		return retval, VerificationNotFound
 	}
 
@@ -418,7 +342,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 				PasswordHash: base64.StdEncoding.EncodeToString(pass),
 				Token:        id}
 
-			_, err = s.es.Index().Index(EsIndex).Type(VerifyType).Id(id).BodyJson(verify).Do(ctx)
+			_, err = s.es.Index().Index(verifyIndex()).Type(verifyType).Id(id).BodyJson(verify).Do(ctx)
 		}
 
 		if err != nil {
@@ -482,19 +406,19 @@ func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	if err == UserNotFound {
 		id := uuid.New()
 
-		_, err = s.es.Index().Index(EsIndex).Type(UserType).Id(id).BodyJson(User{
-			UserId:       id,
+		_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(User{
+			UserID:       id,
 			Email:        verify.Email,
 			CreateDate:   time.Now(),
 			PasswordHash: verify.PasswordHash}).Do(ctx)
 
 		if err == nil {
-			_, err = s.es.Delete().Index(EsIndex).Type(VerifyType).Id(verify.Token).Do(ctx)
+			_, err = s.es.Delete().Index(verifyIndex()).Type(verifyType).Id(verify.Token).Do(ctx)
 		}
 
 		return id, err
 	} else {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return "", VerificationNotFound
 	}
 }
@@ -503,13 +427,8 @@ func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 	var retval PasswordReset
 	ctx := context.Background()
 
-	// query := elastigo.Query().
-	// 	All().
-	// 	Filter(elastigo.Filter().Term("token", token))
-
-	// search := elastigo.Search(EsIndex).Query(query)
 	search := elastic.NewTermQuery("token", token)
-	result, err := s.es.Search(EsIndex).Type(ResetType).Query(search).Do(ctx)
+	result, err := s.es.Search(resetIndex()).Type(resetType).Query(search).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -527,12 +446,12 @@ func (s MdsService) CreateAndSendResetPassword(email string) error {
 	user, err := s.GetUserByEmail(email)
 	if err == nil {
 		id := uuid.New()
-		reset := PasswordReset{UserId: user.UserId, Token: id, CreateDate: time.Now()}
+		reset := PasswordReset{UserId: user.UserID, Token: id, CreateDate: time.Now()}
 
-		_, err = s.es.Index().Index(EsIndex).Type(ResetType).Id(id).BodyJson(reset).Do(ctx)
+		_, err = s.es.Index().Index(resetIndex()).Type(resetType).Id(id).BodyJson(reset).Do(ctx)
 
 		if err == nil {
-			fmt.Println("Sending reset password to " + user.UserId)
+			log.Println("Sending reset password to " + user.UserID)
 
 			message := sendgrid.NewMail()
 			message.AddTo(email)
@@ -588,12 +507,12 @@ func (s MdsService) ResetPassword(token string, password string) error {
 	}
 
 	if err == nil {
-		fmt.Println("Resetting password for " + reset.UserId)
+		log.Println("Resetting password for " + reset.UserId)
 		err = s.UpdateUser(reset.UserId, "", password)
 	}
 
 	if err == nil {
-		_, err = s.es.Delete().Index(EsIndex).Type(ResetType).Id(token).Do(ctx)
+		_, err = s.es.Delete().Index(resetIndex()).Type(resetType).Id(token).Do(ctx)
 	}
 
 	return err
@@ -603,6 +522,7 @@ func (s MdsService) ResetPassword(token string, password string) error {
 
 func (s MdsService) CreateJournalEntry(userId string, entries []string, date time.Time) (JournalEntry, error) {
 	var entry JournalEntry
+	ctx := context.Background()
 
 	var err error = nil
 
@@ -639,13 +559,14 @@ func (s MdsService) CreateJournalEntry(userId string, entries []string, date tim
 		id := uuid.New()
 		entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
 
-		_, err = s.es.IndexWithParameters(EsIndex, JournalType, id, "", 0, "", "", "", 0, "", "", true, nil, entry)
+		_, err = s.es.Index().Index(journalIndex()).Type(journalType).Id(id).Refresh("true").BodyJson(entry).Do(ctx)
 	}
 
 	return entry, err
 }
 
 func (s MdsService) UpdateJournalEntry(id string, userId string, entries []string) error {
+	ctx := context.Background()
 	if userId == "" {
 		return UserUnauthorized
 	}
@@ -671,15 +592,19 @@ func (s MdsService) UpdateJournalEntry(id string, userId string, entries []strin
 
 	var entry JournalEntry
 	if err == nil {
-		err = s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
+		// err = json.Unmarshal(*result.Source, &retval)
+		result, err := s.es.Get().Index(journalIndex()).Type(journalType).Id(id).Do(ctx)
+		if err == nil && result.Found {
+			err = json.Unmarshal(*result.Source, &entry)
+		}
 	}
 
 	if err == nil && entry.UserId == userId {
 		entry.Entries = entries
-		_, err = s.es.IndexWithParameters(EsIndex, JournalType, id, "", 0, "", "", "", 0, "", "", true, nil, entry)
+		_, err = s.es.Index().Index(journalIndex()).Type(journalType).Id(id).Refresh("true").BodyJson(entry).Do(ctx)
 	}
 
-	if err == elastigo.RecordNotFound || err == nil && entry.UserId != userId {
+	if err == nil && entry.UserId != userId {
 		return EntryNotFound
 	}
 
@@ -687,23 +612,28 @@ func (s MdsService) UpdateJournalEntry(id string, userId string, entries []strin
 }
 
 func (s MdsService) DeleteJournalEntry(id string, userId string) error {
+	ctx := context.Background()
 	if userId == "" {
 		return UserUnauthorized
 	}
 
 	var entry JournalEntry
-	err := s.es.GetSource(EsIndex, JournalType, id, nil, &entry)
+	result, err := s.es.Get().Index(journalIndex()).Type(journalType).Id(id).Do(ctx)
+	if err == nil && result.Found {
+		err = json.Unmarshal(*result.Source, &entry)
+	}
 
 	if err != nil || userId != entry.UserId {
 		return EntryNotFound
 	}
 
-	_, err = s.es.Delete(EsIndex, JournalType, id, map[string]interface{}{"refresh": true})
+	_, err = s.es.Delete().Index(journalIndex()).Type(journalType).Id(id).Refresh("true").Do(ctx)
 	return err
 }
 
 func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error) {
 	var retval JournalEntry
+	ctx := context.Background()
 
 	if userId == "" {
 		return retval, UserUnauthorized
@@ -711,86 +641,71 @@ func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (Journa
 
 	createDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 
-	query := elastigo.Query().
-		All().
-		Filter(elastigo.Filter().
-			And(elastigo.Filter().Term("user_id", userId)).
-			And(elastigo.Filter().Term("date", createDate)))
+	query := elastic.NewBoolQuery().
+		Must(elastic.NewTermQuery("user_id", userId)).
+		Filter(elastic.NewTermQuery("date", createDate))
 
-	search := elastigo.Search(EsIndex).Query(query)
-	result, err := s.es.Search(EsIndex, JournalType, nil, search)
+	result, err := s.es.Search(journalIndex()).Type(journalType).Query(query).Do(ctx)
 
 	if err == nil {
-		if result.Hits.Total == 0 {
+		if result.Hits.TotalHits == 0 {
 			return retval, NoJournalWithDate
 		}
 
 		err = getSingleResult(result, &retval)
 	}
 
-	if err == elastigo.RecordNotFound {
-		err = NoJournalWithDate
+	if err != nil {
+		_, ok := err.(*elastic.Error)
+		if !ok {
+			err = NoJournalWithDate
+		}
+
 	}
 
 	return retval, err
 }
 
 //Search journal entries
-func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, int, error) {
+func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntry, int64, error) {
+	ctx := context.Background()
 	if userId == "" {
 		return nil, 0, UserUnauthorized
 	}
 
-	query := elastigo.Query()
-
+	query := elastic.NewBoolQuery().Must(elastic.NewTermQuery("user_id", userId))
 	if jq.Query != "" {
-		query = query.Fields("entries,date", jq.Query, "", "").SetLenient(true)
-	} else {
-		query = query.All()
+		query = query.Filter(elastic.NewQueryStringQuery(jq.Query).Field("entries").Field("date").Lenient(true))
 	}
 
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
-	var filter *elastigo.FilterOp = nil
-
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, end, nil, ""))
+		query = query.Filter(elastic.NewRangeQuery("date").Gte(start).Lte(end))
 	} else if !jq.Start.IsZero() {
-		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
+		query = query.Filter(elastic.NewRangeQuery("date").Gte(start))
 	} else if !jq.End.IsZero() {
-		filter = elastigo.Filter().And(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
+		query = query.Filter(elastic.NewRangeQuery("date").Lte(end))
 	}
 
-	//Filter by the user id, add to and query if there's a date range
-	if filter == nil {
-		filter = elastigo.Filter().Term("user_id", userId)
-	} else {
-		filter = filter.And(elastigo.Filter().Term("user_id", userId))
-	}
+	highlight := elastic.NewHighlight().Field("entries").PreTags("<strong>").PostTags("</strong>")
 
-	query = query.Filter(filter)
-
-	highlight := elastigo.NewHighlight().
-		AddField("entries", nil).
-		SetOptions(elastigo.NewHighlightOpts().Tags("<strong>", "</strong>"))
-
-	search := elastigo.Search(EsIndex).Query(query).
-		Highlight(highlight).
-		Sort(elastigo.Sort("date").Desc())
+	search := s.es.Search(journalIndex()).Type(journalType).Query(query).Highlight(highlight).Sort("date", false)
 
 	if jq.Limit > 0 {
-		search.Size(strconv.Itoa(jq.Limit))
+		search.Size(jq.Limit)
 	}
 
 	if jq.Offset > 0 {
-		search.From(strconv.Itoa(jq.Offset))
+		search.From(jq.Offset)
 	}
 
-	result, err := search.Result(s.es) //s.es.Search(EsIndex, JournalType, nil, search)
+	result, err := search.Do(ctx)
 
 	if err == nil {
-		retval := make([]JournalEntry, result.Hits.Len())
+		size := len(result.Hits.Hits)
+		retval := make([]JournalEntry, size)
 
 		//TODO: Maybe only take the fields we need
 		for index, hit := range result.Hits.Hits {
@@ -806,62 +721,48 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 				panic(err)
 			}
 
-			if hit.Highlight != nil && (*hit.Highlight)["entries"] != nil {
-				entry.Entries = (*hit.Highlight)["entries"]
+			if hit.Highlight != nil && hit.Highlight["entries"] != nil {
+				entry.Entries = hit.Highlight["entries"]
 			}
 
 			retval[index] = entry
 		}
 
-		return retval, result.Hits.Total, nil
+		return retval, result.TotalHits(), nil
 	}
 
 	return nil, 0, err
 }
 
 func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, error) {
+	ctx := context.Background()
 	end := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24)
 	start := end.Add(-time.Hour * 24 * time.Duration(limit-1))
 
-	filter := elastigo.Filter().And(
-		elastigo.Filter().Term("user_id", userId),
-		elastigo.Filter().Range("date", start, nil, end, nil, ""))
+	query := elastic.NewBoolQuery().Filter(
+		elastic.NewTermQuery("user_id", userId),
+		elastic.NewRangeQuery("date").Gte(start).Lte(end),
+	)
 
-	query := elastigo.Query().Filter(filter).All()
-
-	search := elastigo.Search(EsIndex).Type(JournalType).Query(query).Fields("date").Sort(elastigo.Sort("date").Desc())
-
-	result, err := search.Result(s.es)
+	result, err := s.es.Search(journalIndex()).Type(journalType).Query(query).Sort("date", false).Do(ctx)
 
 	var retval int = 0
 
 	if err == nil {
 		current := end
 
-		var fields map[string][]interface{}
-
 		for _, hit := range result.Hits.Hits {
-			if err == nil {
-				bytes, err := hit.Fields.MarshalJSON()
-
-				if err == nil {
-					err = json.Unmarshal(bytes, &fields)
-				}
-			}
+			var entry JournalEntry
+			err := json.Unmarshal(*hit.Source, &entry)
 
 			if err == nil {
 				//Calculate the streak by finding the last ten entry dates and figuring out if there
 				//are any gaps
-				rdate, err2 := time.Parse("2006-01-02T15:04:05Z", fields["date"][0].(string))
-				err = err2
-
-				if err == nil {
-					if current.Sub(rdate).Hours() == 0 {
-						retval++
-						current = rdate.Add(-time.Hour * 24)
-					} else {
-						break
-					}
+				if current.Sub(entry.Date).Hours() == 0 {
+					retval++
+					current = entry.Date.Add(-time.Hour * 24)
+				} else {
+					break
 				}
 			}
 		}
@@ -872,54 +773,45 @@ func (s MdsService) GetStreak(userId string, date time.Time, limit int) (int, er
 
 //Find dates with journal entries
 func (s MdsService) SearchJournalDates(userId string, jq JournalQuery) ([]string, error) {
-	query := elastigo.Query()
+	ctx := context.Background()
+	query := elastic.NewBoolQuery().Must(elastic.NewTermQuery("user_id", userId))
 
 	if jq.Query != "" {
-		query = query.Fields("entries,date", jq.Query, "", "").SetLenient(true)
-	} else {
-		query = query.All()
+		query = query.Must(elastic.NewMultiMatchQuery(jq.Query, "entries", "date").Lenient(true))
 	}
 
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
-	//Filter by user id, assume we can do an and because this query must have a date
-	filter := elastigo.Filter().And(elastigo.Filter().Term("user_id", userId))
-
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
-		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, end, nil, ""))
+		query.Filter(elastic.NewRangeQuery("date").Gte(start).Lte(end))
 	} else if !jq.Start.IsZero() {
-		filter = elastigo.Filter().And(elastigo.Filter().Range("date", start, nil, nil, nil, ""))
+		query.Filter(elastic.NewRangeQuery("date").Gte(start))
 	} else if !jq.End.IsZero() {
-		filter = elastigo.Filter().And(elastigo.Filter().Range("date", nil, nil, end, nil, ""))
+		query.Filter(elastic.NewRangeQuery("date").Lte(end))
 	}
 
-	query = query.Filter(filter)
-
-	search := elastigo.Search(EsIndex).Type(JournalType).Query(query).Fields("date")
-
-	result, err := search.Result(s.es)
+	result, err := s.es.Search(journalIndex()).Type(journalType).Query(query).Do(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	retval := make([]string, result.Hits.Total)
+	log.Println(result.TotalHits())
+	retval := make([]string, result.TotalHits())
 
 	for index, hit := range result.Hits.Hits {
-		bytes, err := hit.Fields.MarshalJSON()
 		if err != nil {
 			panic(err)
 		}
 
-		var fields map[string][]interface{}
-
-		err = json.Unmarshal(bytes, &fields)
+		var entry JournalEntry
+		err := json.Unmarshal(*hit.Source, &entry)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
-		retval[index] = fields["date"][0].(string)
+		retval[index] = entry.Date.Format(time.RFC3339)
 	}
 
 	return retval, nil
