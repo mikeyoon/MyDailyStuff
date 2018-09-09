@@ -4,7 +4,7 @@ go:
   - tip
 
 before_install:
-  - curl -O https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.6.deb && sudo dpkg -i --force-confnew elasticsearch-1.7.6.deb && sudo service elasticsearch restart
+  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.4.0.deb && sudo dpkg -i --force-confnew elasticsearch-6.4.0.deb && sudo service elasticsearch restart
 
 install:
   - export GOPATH=$GOPATH:$TRAVIS_BUILD_DIR/vendor/
