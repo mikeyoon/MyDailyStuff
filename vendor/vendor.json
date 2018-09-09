@@ -3,6 +3,52 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "bbXMesg5eqEjLs7Riad0kHzS/0Q=",
+			"path": "github.com/mailru/easyjson",
+			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
+			"revisionTime": "2018-08-23T13:54:43Z"
+		},
+		{
+			"checksumSHA1": "euMY7SmXXGeDit90eC8FPzDT1SU=",
+			"path": "github.com/mailru/easyjson/buffer",
+			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
+			"revisionTime": "2018-08-23T13:54:43Z"
+		},
+		{
+			"checksumSHA1": "gXc7hxqTywruTPu2glQy1CmWzuY=",
+			"path": "github.com/mailru/easyjson/jlexer",
+			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
+			"revisionTime": "2018-08-23T13:54:43Z"
+		},
+		{
+			"checksumSHA1": "8uahZmmPJqtj80oEIRELmEF8DSE=",
+			"path": "github.com/mailru/easyjson/jwriter",
+			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
+			"revisionTime": "2018-08-23T13:54:43Z"
+		},
+		{
+			"checksumSHA1": "VOdoPrcfRXDK5BdBG2NNJCYjcO8=",
+			"path": "github.com/olivere/elastic",
+			"revision": "e6cae211ee802eab70248a68fe2cb03b616744c9",
+			"revisionTime": "2018-08-31T17:57:14Z",
+			"version": "v6",
+			"versionExact": "v6.2.5"
+		},
+		{
+			"checksumSHA1": "BXdfHuoScfrqNwlT7G9N0Y7g9pY=",
+			"path": "github.com/olivere/elastic/config",
+			"revision": "e6cae211ee802eab70248a68fe2cb03b616744c9",
+			"revisionTime": "2018-08-31T17:57:14Z",
+			"version": "v6",
+			"versionExact": "v6.2.5"
+		},
+		{
+			"checksumSHA1": "u9MzFGzGHPLRSI+Uuihe2xCCbHk=",
+			"path": "github.com/olivere/elastic/uritemplates",
+			"revision": "eb69fbabfd6151d6c0f6d3d850d4f61edcff3763",
+			"revisionTime": "2016-10-08T09:19:33Z"
+		},
+		{
 			"checksumSHA1": "UwhLtKi/lHjArxgsqRe6iqSEu3I=",
 			"path": "github.com/onsi/ginkgo",
 			"revision": "2c2e9bb47b4e44067024f29339588cac8b34dd12",
@@ -165,6 +211,12 @@
 			"revisionTime": "2016-03-05T21:39:52Z"
 		},
 		{
+			"checksumSHA1": "d6BycwPpKXW09I/tXMqcItE8SA4=",
+			"path": "github.com/pkg/errors",
+			"revision": "816c9085562cd7ee03e7f8188a1cfd942858cded",
+			"revisionTime": "2018-03-11T21:45:15Z"
+		},
+		{
 			"checksumSHA1": "iDI3Ec9Co5dn9MAf6VRg5cGNRPI=",
 			"path": "github.com/stretchr/objx",
 			"revision": "cbeaeb16a013161a98496fad62933b1d21786672",
@@ -193,6 +245,12 @@
 			"path": "github.com/stretchr/testify/mock",
 			"revision": "bcd9e3389dd03b0b668d11f4d462a6af6c2dfd60",
 			"revisionTime": "2016-04-13T09:04:24Z"
+		},
+		{
+			"checksumSHA1": "jWlBRALwERf/Gv46hCYr3AdiIS0=",
+			"path": "gopkg.in/olivere/elastic.v2/uritemplates",
+			"revision": "2cd27b9ae892f6b4dd8dd6d73489797c99e9c6fa",
+			"revisionTime": "2018-05-17T14:35:08Z"
 		}
 	],
 	"rootPath": "github.com/mikeyoon/MyDailyStuff"

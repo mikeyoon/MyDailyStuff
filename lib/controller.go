@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/now"
 	"github.com/martini-contrib/csrf"
@@ -56,7 +57,7 @@ type Response struct {
 	Success bool        `json:"success"`
 	Error   string      `json:"error,omitempty"`
 	Result  interface{} `json:"result,omitempty"`
-	Total   int         `json:"total,omitempty"`
+	Total   int64       `json:"total,omitempty"`
 	Token   string      `json:"csrf,omitempty"`
 }
 
@@ -76,7 +77,7 @@ func ProtectedResponse(result interface{}, token string) Response {
 	return Response{Success: true, Result: result, Token: token}
 }
 
-func PagedSuccessResponse(result interface{}, total int) Response {
+func PagedSuccessResponse(result interface{}, total int64) Response {
 	return Response{Success: true, Result: result, Total: total}
 }
 
@@ -110,7 +111,7 @@ func (c *Controller) Login(req LoginRequest, session sessions.Session, r render.
 		MaxAge:   maxAge,
 	})
 
-	session.Set("userId", user.UserId)
+	session.Set("userId", user.UserID)
 	r.JSON(200, SuccessResponse(nil))
 }
 
@@ -133,7 +134,7 @@ func (c *Controller) Profile(session sessions.Session, r render.Render, x csrf.C
 
 	if err == nil {
 		r.JSON(200, SuccessResponse(map[string]interface{}{
-			"user_id":         user.UserId,
+			"user_id":         user.UserID,
 			"create_date":     user.CreateDate,
 			"last_login_date": user.LastLoginDate,
 			"email":           user.Email,

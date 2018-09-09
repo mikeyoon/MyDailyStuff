@@ -117,6 +117,7 @@ export class SearchStore {
       runInAction(() => {
         this.nextOffset = undefined;
         this.prevOffset = undefined;
+        this.searchResults = [];
       });
     } finally {
       runInAction(() => (this.searching = false));
