@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -130,7 +129,7 @@ type ServiceOptions struct {
 func (s *MdsService) Init(options ServiceOptions) error {
 	conn, err := elastic.NewClient(
 		elastic.SetURL(options.ElasticUrl),
-		elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)),
+		elastic.SetSniff(false),
 	)
 
 	if err != nil {
