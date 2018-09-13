@@ -28,6 +28,12 @@ const IndexUserJSON = `{
 					"password_hash":{
 							"type":"binary"
 					},
+					"verify_token":{
+						"type":"keyword"
+					},
+					"reset_token":{
+						"type":"keyword"
+					}
 					"create_date":{
 							"type":"date"
 					},

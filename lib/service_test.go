@@ -120,7 +120,7 @@ var _ = Describe("Service", func() {
 	BeforeEach(func() {
 		conn.Index().Index(userIndex()).Type(userType).Id(testUser1.UserID).Refresh("true").BodyJson(testUser1).Do(ctx)
 		conn.Index().Index(resetIndex()).Type(resetType).Id(reset1.Token).Refresh("true").BodyJson(reset1).Do(ctx)
-		conn.Index().Index(verifyIndex()).Type(verifyType).Id(verify1.Token).Refresh("true").BodyJson(verify1).Do(ctx)
+		conn.Index().Index(userIndex()).Type(userType).Id(verify1.Token).Refresh("true").BodyJson(verify1).Do(ctx)
 		conn.Index().Index(journalIndex()).Type(journalType).Id(journal1.Id).Refresh("true").BodyJson(journal1).Do(ctx)
 	})
 

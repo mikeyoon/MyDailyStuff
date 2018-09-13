@@ -23,24 +23,12 @@ var esIndex = "mds"
 const (
 	// userType ES index for user data
 	userType = "user"
-	// resetType ES index for password reset requests
-	resetType = "pwreset"
-	// verifyType ES index for pending account verifications
-	verifyType = "verify"
 	// journalType ES index for journal entries
 	journalType = "journal"
 )
 
 func userIndex() string {
 	return esIndex + "_" + userType
-}
-
-func resetIndex() string {
-	return esIndex + "_" + resetType
-}
-
-func verifyIndex() string {
-	return esIndex + "_" + verifyType
 }
 
 func journalIndex() string {
@@ -53,18 +41,20 @@ type User struct {
 	PasswordHash  string    `json:"password_hash"`
 	CreateDate    time.Time `json:"create_date"`
 	LastLoginDate time.Time `json:"last_login_date"`
+	VerifyToken   *string   `json:"verify_token"`
+	ResetToken    *string   `json:"reset_token"`
 }
 
 type UserVerification struct {
 	Email        string    `json:"email"`
-	Token        string    `json:"token"`
+	Token        string    `json:"verify_token"`
 	PasswordHash string    `json:"password_hash"`
 	CreateDate   time.Time `json:"create_date"`
 }
 
 type PasswordReset struct {
 	UserId     string    `json:"user_id"`
-	Token      string    `json:"token"`
+	Token      string    `json:"reset_token"`
 	CreateDate time.Time `json:"create_date"`
 }
 
@@ -188,13 +178,13 @@ func (s *MdsService) createIndexes(c *elastic.Client) error {
 		return err
 	}
 
-	err = s.createIndex(c, resetIndex(), IndexPwResetJSON)
-	if err != nil {
-		return err
-	}
+	// err = s.createIndex(c, resetIndex(), IndexPwResetJSON)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = s.createIndex(c, verifyIndex(), IndexVerifyJSON)
-	return err
+	// err = s.createIndex(c, verifyIndex(), IndexVerifyJSON)
+	// return err
 }
 
 func getSingleResult(result *elastic.SearchResult, output interface{}) error {
@@ -220,7 +210,10 @@ func (s MdsService) GetUserByEmail(email string) (User, error) {
 	var retval User
 	ctx := context.Background()
 
-	query := elastic.NewTermQuery("email", strings.ToLower(email))
+	query := elastic.NewBoolQuery().
+		Must(elastic.NewTermQuery("email", strings.ToLower(email))).
+		MustNot(elastic.NewExistsQuery("verify_token"))
+
 	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
 
 	if err == nil {
@@ -236,15 +229,7 @@ func (s MdsService) GetUserByEmail(email string) (User, error) {
 
 // GetUserByLogin retrieves a user account by their email and password hash
 func (s MdsService) GetUserByLogin(email string, password string) (User, error) {
-	var retval User
-	ctx := context.Background()
-
-	query := elastic.NewTermQuery("email", strings.ToLower(email))
-	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
-
-	if err == nil {
-		err = getSingleResult(result, &retval)
-	}
+	retval, err := s.GetUserByEmail(email)
 
 	var hash []byte
 	if err == nil {
@@ -267,18 +252,23 @@ func (s MdsService) GetUserById(id string) (User, error) {
 	var retval User
 
 	ctx := context.Background()
-	result, err := s.es.Get().Index(userIndex()).Type(userType).Id(id).Do(ctx)
+	query := elastic.NewBoolQuery().
+		MustNot(elastic.NewExistsQuery("verify_token")).
+		Must(elastic.NewIdsQuery(userType).Ids(id))
+
+	result, err := s.es.Search().Index(userIndex()).Type(userType).Query(query).Do(ctx)
 
 	if err != nil {
 		return retval, err
 	}
 
-	if result.Found {
-		err = json.Unmarshal(*result.Source, &retval)
-		return retval, err
+	err = getSingleResult(result, &retval)
+
+	if err != nil {
+		return retval, UserNotFound
 	}
 
-	return retval, UserNotFound
+	return retval, err
 }
 
 func (s MdsService) UpdateUser(id string, email string, password string) error {
@@ -297,6 +287,7 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
+			user.ResetToken = nil
 
 			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(user).Do(ctx)
 		}
@@ -311,8 +302,8 @@ func (s MdsService) GetUserVerification(token string) (UserVerification, error) 
 	var retval UserVerification
 	ctx := context.Background()
 
-	search := elastic.NewTermQuery("token", token)
-	result, err := s.es.Search(verifyIndex()).Type(verifyType).Query(search).Do(ctx)
+	search := elastic.NewTermQuery("verify_token", token)
+	result, err := s.es.Search(userIndex()).Type(userType).Query(search).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -333,6 +324,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 	if err == UserNotFound {
 		//Generate token
 		id := uuid.New()
+		token := uuid.New()
 
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 
@@ -341,9 +333,9 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 				Email:        email,
 				CreateDate:   time.Now(),
 				PasswordHash: base64.StdEncoding.EncodeToString(pass),
-				Token:        id}
+				Token:        token}
 
-			_, err = s.es.Index().Index(verifyIndex()).Type(verifyType).Id(id).BodyJson(verify).Do(ctx)
+			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(verify).Do(ctx)
 		}
 
 		if err != nil {
@@ -358,7 +350,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 
 To activate your account, please click on the following link below.
 
-https://www.mydailystuff.com/account/verify/` + id + `
+https://www.mydailystuff.com/account/verify/` + token + `
 
 Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.
 
@@ -375,7 +367,7 @@ MyDailyStuff.com`)
 
 <p>To activate your account, please click on the following link below.</p>
 
-<p>https://www.mydailystuff.com/account/verify/` + id + `</p>
+<p>https://www.mydailystuff.com/account/verify/` + token + `</p>
 
 <p>Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.</p>
 
@@ -398,38 +390,33 @@ MyDailyStuff.com`)
 func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	ctx := context.Background()
 	verify, err := s.GetUserVerification(verificationToken)
-	if err == nil {
-		_, getErr := s.GetUserByEmail(verify.Email)
 
-		err = getErr
-	}
-
-	if err == UserNotFound {
-		id := uuid.New()
-
-		_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(User{
-			UserID:       id,
-			Email:        verify.Email,
-			CreateDate:   time.Now(),
-			PasswordHash: verify.PasswordHash}).Do(ctx)
-
-		if err == nil {
-			_, err = s.es.Delete().Index(verifyIndex()).Type(verifyType).Id(verify.Token).Do(ctx)
-		}
-
-		return id, err
-	} else {
+	if err != nil {
 		log.Println(err.Error())
 		return "", VerificationNotFound
 	}
+
+	user, err := s.GetUserByEmail(verify.Email)
+	if err != nil {
+		return "", VerificationNotFound
+	}
+
+	user.VerifyToken = nil
+	_, err = s.es.Index().Index(userIndex()).Type(userType).BodyJson(user).Do(ctx)
+
+	if err != nil {
+		return "", err
+	}
+
+	return user.UserID, err
 }
 
 func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 	var retval PasswordReset
 	ctx := context.Background()
 
-	search := elastic.NewTermQuery("token", token)
-	result, err := s.es.Search(resetIndex()).Type(resetType).Query(search).Do(ctx)
+	search := elastic.NewTermQuery("reset_token", token)
+	result, err := s.es.Search(userIndex()).Type(userType).Query(search).Do(ctx)
 
 	if err == nil {
 		err = getSingleResult(result, &retval)
@@ -447,9 +434,9 @@ func (s MdsService) CreateAndSendResetPassword(email string) error {
 	user, err := s.GetUserByEmail(email)
 	if err == nil {
 		id := uuid.New()
-		reset := PasswordReset{UserId: user.UserID, Token: id, CreateDate: time.Now()}
+		// reset := PasswordReset{UserId: user.UserID, Token: id, CreateDate: time.Now()}
 
-		_, err = s.es.Index().Index(resetIndex()).Type(resetType).Id(id).BodyJson(reset).Do(ctx)
+		_, err = s.es.Update().Index(userIndex()).Type(userType).Id(user.UserID).Doc(map[string]interface{}{"reset_token": id}).Do(ctx)
 
 		if err == nil {
 			log.Println("Sending reset password to " + user.UserID)
@@ -500,7 +487,6 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 }
 
 func (s MdsService) ResetPassword(token string, password string) error {
-	ctx := context.Background()
 	reset, err := s.GetResetPassword(token)
 
 	if len(password) < 6 || len(password) > 50 {
@@ -510,10 +496,6 @@ func (s MdsService) ResetPassword(token string, password string) error {
 	if err == nil {
 		log.Println("Resetting password for " + reset.UserId)
 		err = s.UpdateUser(reset.UserId, "", password)
-	}
-
-	if err == nil {
-		_, err = s.es.Delete().Index(resetIndex()).Type(resetType).Id(token).Do(ctx)
 	}
 
 	return err
