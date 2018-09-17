@@ -36,7 +36,7 @@ var _ = Describe("Service", func() {
 
 	esIndex = "test"
 
-	_, _ = conn.DeleteIndex(userIndex(), journalIndex(), resetIndex(), verifyIndex()).Do(ctx)
+	_, _ = conn.DeleteIndex(userIndex(), journalIndex()).Do(ctx)
 
 	service.Init(ServiceOptions{
 		ElasticUrl: "http://localhost:9200",
@@ -119,13 +119,13 @@ var _ = Describe("Service", func() {
 
 	BeforeEach(func() {
 		conn.Index().Index(userIndex()).Type(userType).Id(testUser1.UserID).Refresh("true").BodyJson(testUser1).Do(ctx)
-		conn.Index().Index(resetIndex()).Type(resetType).Id(reset1.Token).Refresh("true").BodyJson(reset1).Do(ctx)
-		conn.Index().Index(userIndex()).Type(userType).Id(verify1.Token).Refresh("true").BodyJson(verify1).Do(ctx)
+		conn.Index().Index(userIndex()).Type(userType).Id(uuid.New()).Refresh("true").BodyJson(reset1).Do(ctx)
+		conn.Index().Index(userIndex()).Type(userType).Id(uuid.New()).Refresh("true").BodyJson(verify1).Do(ctx)
 		conn.Index().Index(journalIndex()).Type(journalType).Id(journal1.Id).Refresh("true").BodyJson(journal1).Do(ctx)
 	})
 
 	AfterEach(func() {
-		conn.DeleteByQuery(userIndex(), resetIndex(), verifyIndex(), journalIndex()).Query(elastic.NewMatchAllQuery()).Refresh("true").Do(ctx)
+		conn.DeleteByQuery(userIndex(), journalIndex()).Query(elastic.NewMatchAllQuery()).Refresh("true").Do(ctx)
 	})
 
 	Describe("Init with login", func() {
@@ -218,9 +218,8 @@ var _ = Describe("Service", func() {
 		Context("Where the id doesn't match", func() {
 			It("should not return the result", func() {
 				user, err := service.GetUserById(uuid.New())
-				elasticErr := err.(*elastic.Error)
 
-				Expect(elasticErr.Status).To(Equal(404))
+				Expect(err).To(Equal(UserNotFound))
 				Expect(user).To(Equal(User{}))
 			})
 		})
@@ -263,18 +262,20 @@ var _ = Describe("Service", func() {
 	Describe("Get user verification", func() {
 		Context("Where the verification exists", func() {
 			It("should find the verification", func() {
-				actual, err := service.GetUserVerification(verify1.Token)
+				userID, actual, err := service.GetUserVerification(verify1.Token)
 
 				Expect(err).To(BeNil())
+				Expect(userID).ToNot(Equal(""))
 				Expect(actual.Email).To(Equal(verify1.Email))
 			})
 		})
 
 		Context("Where the verification does not exist", func() {
 			It("should return not found error", func() {
-				actual, err := service.GetUserVerification(uuid.New())
+				userID, actual, err := service.GetUserVerification(uuid.New())
 
 				Expect(err).To(Equal(VerificationNotFound))
+				Expect(userID).To(Equal(""))
 				Expect(actual).To(Equal(UserVerification{}))
 			})
 		})
@@ -317,10 +318,10 @@ var _ = Describe("Service", func() {
 
 				result, err := conn.Get().Index(userIndex()).Type(userType).Id(id).Do(ctx)
 
-				Expect(err).To(BeNil(), "Updated user be found")
+				Expect(err).To(BeNil(), "Updated user found")
 				json.Unmarshal(*result.Source, &user)
 
-				resp, _ := conn.Exists().Index(verifyIndex()).Type(verifyType).Id(verify1.Token).Do(ctx)
+				resp, _ := conn.Exists().Index(userIndex()).Type(userType).Id(verify1.Token).Do(ctx)
 
 				Expect(resp).To(BeFalse())
 				Expect(err).To(BeNil())

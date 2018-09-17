@@ -184,7 +184,7 @@ func (s *MdsService) createIndexes(c *elastic.Client) error {
 	// }
 
 	// err = s.createIndex(c, verifyIndex(), IndexVerifyJSON)
-	// return err
+	return err
 }
 
 func getSingleResult(result *elastic.SearchResult, output interface{}) error {
@@ -198,9 +198,9 @@ func getSingleResult(result *elastic.SearchResult, output interface{}) error {
 		err = json.Unmarshal(bytes, output)
 
 		return err
-	} else {
-		return elastigo.RecordNotFound
 	}
+
+	return elastigo.RecordNotFound
 }
 
 //User Functions
@@ -298,7 +298,7 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 	return nil
 }
 
-func (s MdsService) GetUserVerification(token string) (UserVerification, error) {
+func (s MdsService) GetUserVerification(token string) (string, UserVerification, error) {
 	var retval UserVerification
 	ctx := context.Background()
 
@@ -311,10 +311,10 @@ func (s MdsService) GetUserVerification(token string) (UserVerification, error) 
 
 	if err == elastigo.RecordNotFound {
 		log.Println("Error GetUserVerification: " + err.Error())
-		return retval, VerificationNotFound
+		return "", retval, VerificationNotFound
 	}
 
-	return retval, err
+	return result.Hits.Hits[0].Id, retval, err
 }
 
 func (s MdsService) CreateUserVerification(email string, password string) error {
@@ -389,26 +389,27 @@ MyDailyStuff.com`)
 
 func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	ctx := context.Background()
-	verify, err := s.GetUserVerification(verificationToken)
+	userID, verify, err := s.GetUserVerification(verificationToken)
 
 	if err != nil {
 		log.Println(err.Error())
 		return "", VerificationNotFound
 	}
 
-	user, err := s.GetUserByEmail(verify.Email)
-	if err != nil {
-		return "", VerificationNotFound
+	user := User{
+		UserID:       userID,
+		Email:        verify.Email,
+		CreateDate:   time.Now(),
+		PasswordHash: verify.PasswordHash,
 	}
 
-	user.VerifyToken = nil
-	_, err = s.es.Index().Index(userIndex()).Type(userType).BodyJson(user).Do(ctx)
+	_, err = s.es.Index().Index(userIndex()).Type(userType).BodyJson(user).Id(userID).Do(ctx)
 
 	if err != nil {
 		return "", err
 	}
 
-	return user.UserID, err
+	return userID, err
 }
 
 func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {

@@ -33,7 +33,7 @@ const IndexUserJSON = `{
 					},
 					"reset_token":{
 						"type":"keyword"
-					}
+					},
 					"create_date":{
 							"type":"date"
 					},
