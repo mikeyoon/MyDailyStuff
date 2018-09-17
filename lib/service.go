@@ -80,7 +80,7 @@ type Service interface {
 	GetUserByEmail(email string) (User, error)
 	GetUserByLogin(email string, password string) (User, error)
 	UpdateUser(id string, email string, password string) error
-	GetUserVerification(token string) (UserVerification, error)
+	GetUserVerification(token string) (string, UserVerification, error)
 	CreateUserVerification(email string, password string) error
 	CreateUser(verificationToken string) (string, error)
 	GetResetPassword(token string) (PasswordReset, error)
