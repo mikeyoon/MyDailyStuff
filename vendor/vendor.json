@@ -217,8 +217,13 @@
 			"revisionTime": "2018-03-11T21:45:15Z"
 		},
 		{
+			"checksumSHA1": "nVK03xKfu5jvZomQ7XcjEVaGuCM=",
+			"path": "github.com/sendgrid/rest",
+			"revision": "875828e14d98f3d9178936029d41bd0b832e9c49",
+			"revisionTime": "2018-09-05T23:40:47Z"
+		},
+		{
 			"checksumSHA1": "PeyC/5Uvz30cHhSTV9Vdm1NJv9c=",
-			"origin": "github.com/mikeyoon/MyDailyStuff/vendor/github.com/sendgrid/sendgrid-go",
 			"path": "github.com/sendgrid/sendgrid-go",
 			"revision": "8cb43f4ca4f5a26bb75861eaf5ee58c3302eacb1",
 			"revisionTime": "2018-09-05T23:35:24Z"
