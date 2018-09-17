@@ -9,11 +9,12 @@ import (
 	"time"
 
 	"github.com/olivere/elastic"
+	"github.com/sendgrid/rest"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 	"code.google.com/p/go-uuid/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/sendgrid/sendgrid-go"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -23,9 +24,9 @@ type MockSendGridClient struct {
 }
 
 // Send will send mail using SG web API
-func (sg *MockSendGridClient) Send(m *SGMail) error {
+func (sg *MockSendGridClient) Send(m *mail.SGMailV3) (*rest.Response, error) {
 	args := sg.Called(m)
-	return args.Error(0)
+	return args.Get(0).(*rest.Response), args.Error(1)
 }
 
 var _ = Describe("Service", func() {
@@ -295,13 +296,13 @@ var _ = Describe("Service", func() {
 				client := new(MockSendGridClient)
 				service.MailClient = client
 
-				client.On("Send", mock.AnythingOfType("*sendgrid.SGMail")).Return(nil)
+				client.On("Send", mock.AnythingOfType("*mail.SGMailV3")).Return(&rest.Response{}, nil)
 				err := service.CreateUserVerification("newemail@new.com", "Some Password")
 				Expect(err).To(BeNil())
 
-				actual := client.Calls[0].Arguments[0].(*SGMail)
-				Expect(actual.To[0]).To(Equal("newemail@new.com"))
-				Expect(actual.From).To(Equal("no-reply@mydailystuff.com"))
+				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
+				Expect(actual.Personalizations[0].To[0].Address).To(Equal("newemail@new.com"))
+				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
 				Expect(actual.Subject).To(Equal("Activate your MyDailyStuff.com account"))
 
 				client.AssertExpectations(GinkgoT())
@@ -364,13 +365,13 @@ var _ = Describe("Service", func() {
 				client := new(MockSendGridClient)
 				service.MailClient = client
 
-				client.On("Send", mock.AnythingOfType("*sendgrid.SGMail")).Return(nil)
+				client.On("Send", mock.AnythingOfType("*mail.SGMailV3")).Return(&rest.Response{}, nil)
 				err := service.CreateAndSendResetPassword(testUser1.Email)
 				Expect(err).To(BeNil())
 
-				actual := client.Calls[0].Arguments[0].(*SGMail)
-				Expect(actual.To[0]).To(Equal(testUser1.Email))
-				Expect(actual.From).To(Equal("no-reply@mydailystuff.com"))
+				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
+				Expect(actual.Personalizations[0].To[0].Address).To(Equal(testUser1.Email))
+				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
 				Expect(actual.Subject).To(Equal("Reset your MyDailyStuff.com password"))
 
 				client.AssertExpectations(GinkgoT())

@@ -14,7 +14,9 @@ import (
 
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/kennygrant/sanitize"
+	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -97,7 +99,7 @@ type Service interface {
 }
 
 type MailService interface {
-	Send(m *sendgrid.SGMail) error
+	Send(m *mail.SGMailV3) (*rest.Response, error)
 }
 
 type MdsService struct {
@@ -136,7 +138,7 @@ func (s *MdsService) Init(options ServiceOptions) error {
 	if err == nil {
 		s.es = conn
 		if options.SendGridUsername != "" {
-			s.MailClient = sendgrid.NewSendGridClientWithApiKey(os.Getenv("SENDGRID_API_KEY"))
+			s.MailClient = sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 		}
 	}
 
@@ -343,23 +345,22 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 			panic(err)
 		}
 
-		message := sendgrid.NewMail()
-		message.AddTo(email)
-		message.SetSubject("Activate your MyDailyStuff.com account")
-		message.SetFrom("no-reply@mydailystuff.com")
-		message.SetText(`Welcome to MyDailyStuff!
+		message := mail.NewSingleEmail(
+			mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"),
+			"Activate your MyDailyStuff.com account",
+			mail.NewEmail(email, email),
+			`Welcome to MyDailyStuff!
 
 To activate your account, please click on the following link below.
 
-https://www.mydailystuff.com/account/verify/` + token + `
+https://www.mydailystuff.com/account/verify/`+token+`
 
 Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.
 
 Thank You,
 
-MyDailyStuff.com`)
-
-		message.SetHTML(`<html>
+MyDailyStuff.com`,
+			`<html>
 <head>
 	<title></title>
 </head>
@@ -368,7 +369,7 @@ MyDailyStuff.com`)
 
 <p>To activate your account, please click on the following link below.</p>
 
-<p>https://www.mydailystuff.com/account/verify/` + token + `</p>
+<p>https://www.mydailystuff.com/account/verify/`+token+`</p>
 
 <p>Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.</p>
 
@@ -379,7 +380,7 @@ MyDailyStuff.com`)
 </html>`)
 
 		if s.MailClient != nil {
-			err = s.MailClient.Send(message)
+			_, err = s.MailClient.Send(message)
 		}
 
 		return err
@@ -443,23 +444,22 @@ func (s MdsService) CreateAndSendResetPassword(email string) error {
 		if err == nil {
 			log.Println("Sending reset password to " + user.UserID)
 
-			message := sendgrid.NewMail()
-			message.AddTo(email)
-			message.SetSubject("Reset your MyDailyStuff.com password")
-			message.SetFrom("no-reply@mydailystuff.com")
-			message.SetText(`Reset your MyDailyStuff.com password
+			message := mail.NewSingleEmail(
+				mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"),
+				"Reset your MyDailyStuff.com password",
+				mail.NewEmail(email, email),
+				`Reset your MyDailyStuff.com password
 
 We sent you this email because you requested to reset your password. Click the link below to reset your password. It will be valid for 24 hours.
 
-https://www.mydailystuff.com/account/reset/` + id + `
+https://www.mydailystuff.com/account/reset/`+id+`
 
 If this is incorrect, please ignore this email.
 
 Thank You,
 
-MyDailyStuff.com`)
-
-			message.SetHTML(`<html>
+MyDailyStuff.com`,
+				`<html>
 <head>
 	<title></title>
 </head>
@@ -469,7 +469,7 @@ MyDailyStuff.com`)
 <p>We sent you this email because you requested to reset your password.
 Click the link below to reset your password. It will be valid for 24 hours.</p>
 
-<p>https://www.mydailystuff.com/account/reset/` + id + `</p>
+<p>https://www.mydailystuff.com/account/reset/`+id+`</p>
 
 <p>If this is incorrect, please ignore this email.</p>
 
@@ -480,7 +480,7 @@ Click the link below to reset your password. It will be valid for 24 hours.</p>
 </html>`)
 
 			if s.MailClient != nil {
-				err = s.MailClient.Send(message)
+				_, err = s.MailClient.Send(message)
 			}
 		}
 	}
