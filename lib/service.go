@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -135,7 +136,7 @@ func (s *MdsService) Init(options ServiceOptions) error {
 	if err == nil {
 		s.es = conn
 		if options.SendGridUsername != "" {
-			s.MailClient = sendgrid.NewSendGridClient(options.SendGridUsername, options.SendGridPassword)
+			s.MailClient = sendgrid.NewSendGridClientWithApiKey(os.Getenv("SENDGRID_API_KEY"))
 		}
 	}
 

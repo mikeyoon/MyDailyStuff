@@ -39,9 +39,9 @@ func (s MockService) UpdateUser(id string, email string, password string) error 
 	return args.Error(0)
 }
 
-func (s MockService) GetUserVerification(token string) (UserVerification, error) {
+func (s MockService) GetUserVerification(token string) (string, UserVerification, error) {
 	args := s.Called(token)
-	return args.Get(0).(UserVerification), args.Error(1)
+	return "", args.Get(0).(UserVerification), args.Error(1)
 }
 
 func (s MockService) CreateUserVerification(email string, password string) error {
