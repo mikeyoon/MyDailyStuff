@@ -208,7 +208,7 @@ var _ = Describe("Controller", func() {
 	var csrf MockCsrf
 
 	mockUser1 := User{
-		UserID:        uuid.New(),
+		ID:            uuid.New(),
 		Email:         "asdf@asdf.com",
 		PasswordHash:  "hash",
 		CreateDate:    time.Now(),
@@ -216,11 +216,10 @@ var _ = Describe("Controller", func() {
 	}
 
 	mockEntry1 := JournalEntry{
-		UserId:     mockUser1.UserID,
+		ID:         mockUser1.ID,
 		Entries:    []string{"entry1", "entry2"},
 		Date:       time.Now(),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
 	}
 
 	BeforeEach(func() {
@@ -255,7 +254,7 @@ var _ = Describe("Controller", func() {
 					Secure:   false,
 					MaxAge:   0,
 				}).Return()
-				session.On("Set", "userId", mockUser1.UserID).Return()
+				session.On("Set", "userId", mockUser1.ID).Return()
 
 				controller.SetOptions(service, false)
 
@@ -278,7 +277,7 @@ var _ = Describe("Controller", func() {
 					Secure:   true,
 					MaxAge:   2592000,
 				}).Return()
-				session.On("Set", "userId", mockUser1.UserID).Return()
+				session.On("Set", "userId", mockUser1.ID).Return()
 
 				controller.SetOptions(service, true)
 
@@ -313,10 +312,10 @@ var _ = Describe("Controller", func() {
 		Context("User is valid", func() {
 			It("should return the user information", func() {
 				header := http.Header{}
-				session.On("Get", "userId").Return(mockUser1.UserID)
-				service.On("GetUserById", mockUser1.UserID).Return(mockUser1, nil)
+				session.On("Get", "userId").Return(mockUser1.ID)
+				service.On("GetUserById", mockUser1.ID).Return(mockUser1, nil)
 				render.On("JSON", 200, SuccessResponse(map[string]interface{}{
-					"user_id":         mockUser1.UserID,
+					"user_id":         mockUser1.ID,
 					"create_date":     mockUser1.CreateDate,
 					"last_login_date": mockUser1.LastLoginDate,
 					"email":           mockUser1.Email,
@@ -340,8 +339,8 @@ var _ = Describe("Controller", func() {
 			It("should return 404 response", func() {
 				header := http.Header{}
 
-				session.On("Get", "userId").Return(mockUser1.UserID)
-				service.On("GetUserById", mockUser1.UserID).Return(User{}, UserNotFound)
+				session.On("Get", "userId").Return(mockUser1.ID)
+				service.On("GetUserById", mockUser1.ID).Return(User{}, UserNotFound)
 				render.On("Header").Return(header)
 				render.On("JSON", 404, ErrorResponse(UserNotFound.Error())).Return()
 				csrf.On("GetToken").Return("123")
@@ -538,9 +537,9 @@ var _ = Describe("Controller", func() {
 	Describe("Get Entry By Date", func() {
 		Context("Where entry is found", func() {
 			It("should return entry", func() {
-				service.On("GetJournalEntryByDate", mockUser1.UserID, now.MustParse("2005-5-1")).Return(JournalEntry{}, nil)
+				service.On("GetJournalEntryByDate", mockUser1.ID, now.MustParse("2005-5-1")).Return(JournalEntry{}, nil)
 				render.On("JSON", 200, SuccessResponse(JournalEntry{})).Return()
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				controller.SetOptions(service, false)
 
 				controller.GetEntryByDate(render, martini.Params{"date": "2005-5-1"}, session)
@@ -553,9 +552,9 @@ var _ = Describe("Controller", func() {
 
 		Context("Where service returns failure", func() {
 			It("should return failure", func() {
-				service.On("GetJournalEntryByDate", mockUser1.UserID, now.MustParse("2005-5-1")).Return(JournalEntry{}, EntryNotFound)
+				service.On("GetJournalEntryByDate", mockUser1.ID, now.MustParse("2005-5-1")).Return(JournalEntry{}, EntryNotFound)
 				render.On("JSON", 200, ErrorResponse(EntryNotFound.Error())).Return()
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				controller.SetOptions(service, false)
 
 				controller.GetEntryByDate(render, martini.Params{"date": "2005-5-1"}, session)
@@ -570,12 +569,12 @@ var _ = Describe("Controller", func() {
 	Describe("Delete Entry", func() {
 		Context("Where entry successfully deleted", func() {
 			It("should return success response", func() {
-				service.On("DeleteJournalEntry", mockEntry1.Id, mockUser1.UserID).Return(nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("DeleteJournalEntry", mockEntry1.ID, mockUser1.ID).Return(nil)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse(nil)).Return()
 
 				controller.SetOptions(service, false)
-				controller.DeleteEntry(martini.Params{"id": mockEntry1.Id}, session, render)
+				controller.DeleteEntry(martini.Params{"id": mockEntry1.ID}, session, render)
 
 				render.AssertExpectations(GinkgoT())
 				service.AssertExpectations(GinkgoT())
@@ -585,12 +584,12 @@ var _ = Describe("Controller", func() {
 
 		Context("Where entry failed to delete", func() {
 			It("should return failure response", func() {
-				service.On("DeleteJournalEntry", mockEntry1.Id, mockUser1.UserID).Return(EntryNotFound)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("DeleteJournalEntry", mockEntry1.ID, mockUser1.ID).Return(EntryNotFound)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, ErrorResponse(EntryNotFound.Error())).Return()
 
 				controller.SetOptions(service, false)
-				controller.DeleteEntry(martini.Params{"id": mockEntry1.Id}, session, render)
+				controller.DeleteEntry(martini.Params{"id": mockEntry1.ID}, session, render)
 
 				render.AssertExpectations(GinkgoT())
 				service.AssertExpectations(GinkgoT())
@@ -602,8 +601,8 @@ var _ = Describe("Controller", func() {
 	Describe("Create Entry", func() {
 		Context("Where entry successfully created", func() {
 			It("should return success response", func() {
-				service.On("CreateJournalEntry", mockUser1.UserID, mockEntry1.Entries, now.MustParse("2001-5-1")).Return(mockEntry1, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("CreateJournalEntry", mockUser1.ID, mockEntry1.Entries, now.MustParse("2001-5-1")).Return(mockEntry1, nil)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse(mockEntry1)).Return()
 
 				controller.SetOptions(service, false)
@@ -617,9 +616,9 @@ var _ = Describe("Controller", func() {
 
 		Context("Where entry failed to create", func() {
 			It("should return failure response", func() {
-				service.On("CreateJournalEntry", mockUser1.UserID, mockEntry1.Entries, now.MustParse("2001-5-1")).
+				service.On("CreateJournalEntry", mockUser1.ID, mockEntry1.Entries, now.MustParse("2001-5-1")).
 					Return(JournalEntry{}, EntryAlreadyExists)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, ErrorResponse(EntryAlreadyExists.Error())).Return()
 
 				controller.SetOptions(service, false)
@@ -635,8 +634,8 @@ var _ = Describe("Controller", func() {
 	Describe("Update Entry", func() {
 		Context("Where entry successfully created", func() {
 			It("should return success response", func() {
-				service.On("UpdateJournalEntry", "id", mockUser1.UserID, mockEntry1.Entries).Return(nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("UpdateJournalEntry", "id", mockUser1.ID, mockEntry1.Entries).Return(nil)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse(nil)).Return()
 
 				controller.SetOptions(service, false)
@@ -646,9 +645,9 @@ var _ = Describe("Controller", func() {
 
 		Context("Where entry failed to create", func() {
 			It("should return failure response", func() {
-				service.On("UpdateJournalEntry", "id", mockUser1.UserID, mockEntry1.Entries).
+				service.On("UpdateJournalEntry", "id", mockUser1.ID, mockEntry1.Entries).
 					Return(EntryNotFound)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, ErrorResponse(EntryNotFound.Error())).Return()
 
 				controller.SetOptions(service, false)
@@ -664,11 +663,11 @@ var _ = Describe("Controller", func() {
 	Describe("Search Journal", func() {
 		Context("With successful result with start date specified", func() {
 			It("should return entries", func() {
-				service.On("SearchJournal", mockUser1.UserID, JournalQuery{
+				service.On("SearchJournal", mockUser1.ID, JournalQuery{
 					Query: "query",
 					Start: now.MustParse("2005-1-1"),
 				}).Return([]JournalEntry{mockEntry1}, 1, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, PagedSuccessResponse([]JournalEntry{mockEntry1}, 1)).Return()
 
 				controller.SetOptions(service, false)
@@ -685,11 +684,11 @@ var _ = Describe("Controller", func() {
 
 		Context("With successful result with end date specified", func() {
 			It("should return entries", func() {
-				service.On("SearchJournal", mockUser1.UserID, JournalQuery{
+				service.On("SearchJournal", mockUser1.ID, JournalQuery{
 					Query: "query",
 					End:   now.MustParse("2005-2-1"),
 				}).Return([]JournalEntry{mockEntry1}, 1, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, PagedSuccessResponse([]JournalEntry{mockEntry1}, 1)).Return()
 
 				controller.SetOptions(service, false)
@@ -706,10 +705,10 @@ var _ = Describe("Controller", func() {
 
 		Context("With successful result with no date specified", func() {
 			It("should return entries", func() {
-				service.On("SearchJournal", mockUser1.UserID, JournalQuery{
+				service.On("SearchJournal", mockUser1.ID, JournalQuery{
 					Query: "query",
 				}).Return([]JournalEntry{mockEntry1}, 1, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, PagedSuccessResponse([]JournalEntry{mockEntry1}, 1)).Return()
 
 				controller.SetOptions(service, false)
@@ -725,8 +724,8 @@ var _ = Describe("Controller", func() {
 
 		Context("When search returns error", func() {
 			It("should return error response", func() {
-				service.On("SearchJournal", mockUser1.UserID, JournalQuery{}).Return([]JournalEntry{}, 0, UserUnauthorized)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("SearchJournal", mockUser1.ID, JournalQuery{}).Return([]JournalEntry{}, 0, UserUnauthorized)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 500, ErrorResponse(UserUnauthorized.Error())).Return()
 
 				controller.SetOptions(service, false)
@@ -742,10 +741,10 @@ var _ = Describe("Controller", func() {
 	Describe("Search Journal Dates", func() {
 		Context("With successful result with start date specified", func() {
 			It("should return dates", func() {
-				service.On("SearchJournalDates", mockUser1.UserID, JournalQuery{
+				service.On("SearchJournalDates", mockUser1.ID, JournalQuery{
 					Start: now.MustParse("2005-1-1"),
 				}).Return([]string{"2010-1-1"}, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse([]string{"2010-1-1"})).Return()
 
 				controller.SetOptions(service, false)
@@ -759,10 +758,10 @@ var _ = Describe("Controller", func() {
 
 		Context("With successful result with end date specified", func() {
 			It("should return dates", func() {
-				service.On("SearchJournalDates", mockUser1.UserID, JournalQuery{
+				service.On("SearchJournalDates", mockUser1.ID, JournalQuery{
 					End: now.MustParse("2005-2-1"),
 				}).Return([]string{"2004-1-1"}, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse([]string{"2004-1-1"})).Return()
 
 				controller.SetOptions(service, false)
@@ -776,8 +775,8 @@ var _ = Describe("Controller", func() {
 
 		Context("With successful result with no date specified", func() {
 			It("should return dates", func() {
-				service.On("SearchJournalDates", mockUser1.UserID, JournalQuery{}).Return([]string{"2004-1-1", "2010-1-1"}, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("SearchJournalDates", mockUser1.ID, JournalQuery{}).Return([]string{"2004-1-1", "2010-1-1"}, nil)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse([]string{"2004-1-1", "2010-1-1"})).Return()
 
 				controller.SetOptions(service, false)
@@ -791,8 +790,8 @@ var _ = Describe("Controller", func() {
 
 		Context("When search returns error", func() {
 			It("should return error response", func() {
-				service.On("SearchJournalDates", mockUser1.UserID, JournalQuery{}).Return([]string{}, UserUnauthorized)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("SearchJournalDates", mockUser1.ID, JournalQuery{}).Return([]string{}, UserUnauthorized)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 500, ErrorResponse(UserUnauthorized.Error())).Return()
 
 				controller.SetOptions(service, false)
@@ -809,8 +808,8 @@ var _ = Describe("Controller", func() {
 		Context("With successful result", func() {
 			It("should return success response", func() {
 				date := time.Now().Format("2006-01-02")
-				service.On("GetStreak", mockUser1.UserID, now.MustParse(date), 10).Return(5, nil)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("GetStreak", mockUser1.ID, now.MustParse(date), 10).Return(5, nil)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse(5)).Return()
 
 				controller.SetOptions(service, false)
@@ -826,8 +825,8 @@ var _ = Describe("Controller", func() {
 			It("should return success response", func() {
 				date := time.Now().Format("2006-01-02")
 
-				service.On("GetStreak", mockUser1.UserID, now.MustParse(date), 10).Return(0, UserUnauthorized)
-				session.On("Get", "userId").Return(mockUser1.UserID)
+				service.On("GetStreak", mockUser1.ID, now.MustParse(date), 10).Return(0, UserUnauthorized)
+				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 500, ErrorResponse(UserUnauthorized.Error())).Return()
 
 				controller.SetOptions(service, false)

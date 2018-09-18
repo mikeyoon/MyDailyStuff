@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	elastigo "github.com/mikeyoon/elastigo/lib"
 	"github.com/olivere/elastic"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -38,37 +37,54 @@ func journalIndex() string {
 	return esIndex + "_" + journalType
 }
 
+type IdDocument interface {
+	GetID() string
+	SetID(id string)
+}
+
 type User struct {
-	UserID        string    `json:"user_id"`
+	ID            string    `json:"-"`
 	Email         string    `json:"email"`
 	PasswordHash  string    `json:"password_hash"`
 	CreateDate    time.Time `json:"create_date"`
 	LastLoginDate time.Time `json:"last_login_date"`
-	VerifyToken   *string   `json:"verify_token"`
-	ResetToken    *string   `json:"reset_token"`
+	VerifyToken   string    `json:"verify_token,omitempty"`
+	ResetToken    string    `json:"reset_token,omitempty"`
 }
 
+func (u *User) GetID() string   { return u.ID }
+func (u *User) SetID(id string) { u.ID = id }
+
 type UserVerification struct {
+	ID           string    `json:"-"`
 	Email        string    `json:"email"`
 	Token        string    `json:"verify_token"`
 	PasswordHash string    `json:"password_hash"`
 	CreateDate   time.Time `json:"create_date"`
-	UserID       string    `json:"user_id"`
 }
 
+func (u *UserVerification) GetID() string   { return u.ID }
+func (u *UserVerification) SetID(id string) { u.ID = id }
+
 type PasswordReset struct {
-	UserId     string    `json:"user_id"`
+	ID         string    `json:"-"`
 	Token      string    `json:"reset_token"`
 	CreateDate time.Time `json:"create_date"`
 }
+
+func (u *PasswordReset) GetID() string   { return u.ID }
+func (u *PasswordReset) SetID(id string) { u.ID = id }
 
 type JournalEntry struct {
 	UserId     string    `json:"user_id"`
 	Entries    []string  `json:"entries"`
 	Date       time.Time `json:"date"`
 	CreateDate time.Time `json:"create_date"`
-	Id         string    `json:"id"`
+	ID         string    `json:"-"`
 }
+
+func (u *JournalEntry) GetID() string   { return u.ID }
+func (u *JournalEntry) SetID(id string) { u.ID = id }
 
 type JournalQuery struct {
 	Start  time.Time
@@ -182,12 +198,6 @@ func (s *MdsService) createIndexes(c *elastic.Client) error {
 		return err
 	}
 
-	// err = s.createIndex(c, resetIndex(), IndexPwResetJSON)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = s.createIndex(c, verifyIndex(), IndexVerifyJSON)
 	return err
 }
 
@@ -200,18 +210,51 @@ func getSingleResult(result *elastic.SearchResult, output interface{}) (string, 
 		}
 
 		err = json.Unmarshal(bytes, output)
-
 		return result.Hits.Hits[0].Id, err
 	}
 
-	return "", elastigo.RecordNotFound
+	return "", RecordNotFound
+}
+
+func initID(doc IdDocument, id string, err error) {
+	if err == nil {
+		doc.SetID(id)
+	}
+}
+
+func getUserFromResult(result *elastic.SearchResult) (User, error) {
+	var user User
+	id, err := getSingleResult(result, &user)
+	initID(&user, id, err)
+	return user, err
+}
+
+func getVerificationFromResult(result *elastic.SearchResult) (UserVerification, error) {
+	var verification UserVerification
+	id, err := getSingleResult(result, &verification)
+	initID(&verification, id, err)
+	return verification, err
+}
+
+func getResetFromResult(result *elastic.SearchResult) (PasswordReset, error) {
+	var reset PasswordReset
+	id, err := getSingleResult(result, &reset)
+	initID(&reset, id, err)
+	return reset, err
+}
+
+func getEntryFromResult(result *elastic.SearchResult) (JournalEntry, error) {
+	var entry JournalEntry
+	id, err := getSingleResult(result, &entry)
+	initID(&entry, id, err)
+	return entry, err
 }
 
 //User Functions
 
 // GetUserByEmail retrieves a user by their email address
 func (s MdsService) GetUserByEmail(email string, verified bool) (User, error) {
-	var retval User
+	var retVal User
 	ctx := context.Background()
 
 	query := elastic.NewBoolQuery().
@@ -224,34 +267,40 @@ func (s MdsService) GetUserByEmail(email string, verified bool) (User, error) {
 	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
 
 	if err == nil {
-		_, err = getSingleResult(result, &retval)
+		retVal, err = getUserFromResult(result)
 	}
 
-	if err == elastigo.RecordNotFound {
-		return retval, UserNotFound
+	if err == RecordNotFound {
+		return retVal, UserNotFound
 	}
 
-	return retval, nil
+	return retVal, nil
 }
 
 // GetUserByLogin retrieves a user account by their email and password hash
 func (s MdsService) GetUserByLogin(email string, password string) (User, error) {
-	retval, err := s.GetUserByEmail(email, true)
+	ctx := context.Background()
+	user, err := s.GetUserByEmail(email, true)
 
 	var hash []byte
 	if err == nil {
-		hash, err = base64.StdEncoding.DecodeString(retval.PasswordHash)
+		hash, err = base64.StdEncoding.DecodeString(user.PasswordHash)
 	}
 
 	if err == nil {
 		err = bcrypt.CompareHashAndPassword(hash, []byte(password))
 	}
 
-	if err == elastigo.RecordNotFound || err == bcrypt.ErrMismatchedHashAndPassword {
+	if err == RecordNotFound || err == bcrypt.ErrMismatchedHashAndPassword {
 		return User{}, UserNotFound
 	}
 
-	return retval, err
+	if user.ResetToken != "" {
+		user.ResetToken = ""
+		s.es.Update().Index(userIndex()).Type(userType).Refresh("true").Doc(user).Do(ctx)
+	}
+
+	return user, err
 }
 
 //GetUserById retrieves a user by their id
@@ -269,7 +318,7 @@ func (s MdsService) GetUserById(id string) (User, error) {
 		return retval, err
 	}
 
-	_, err = getSingleResult(result, &retval)
+	retval, err = getUserFromResult(result)
 
 	if err != nil {
 		return retval, UserNotFound
@@ -294,9 +343,9 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
-			user.ResetToken = nil
+			user.ResetToken = ""
 
-			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(user).Refresh("true").Do(ctx)
+			_, err = s.es.Update().Index(userIndex()).Type(userType).Id(id).Doc(user).Refresh("true").Do(ctx)
 		}
 
 		return err
@@ -306,22 +355,22 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 }
 
 func (s MdsService) GetUserVerification(token string) (string, UserVerification, error) {
-	var retval UserVerification
+	var retVal UserVerification
 	ctx := context.Background()
 
 	search := elastic.NewTermQuery("verify_token", token)
 	result, err := s.es.Search(userIndex()).Type(userType).Query(search).Do(ctx)
 
 	if err == nil {
-		_, err = getSingleResult(result, &retval)
+		retVal, err = getVerificationFromResult(result)
 	}
 
-	if err == elastigo.RecordNotFound {
+	if err == RecordNotFound {
 		log.Println("Error GetUserVerification: " + err.Error())
-		return "", retval, VerificationNotFound
+		return "", retVal, VerificationNotFound
 	}
 
-	return result.Hits.Hits[0].Id, retval, err
+	return result.Hits.Hits[0].Id, retVal, err
 }
 
 func (s MdsService) CreateUserVerification(email string, password string) error {
@@ -341,9 +390,9 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 				CreateDate:   time.Now(),
 				PasswordHash: base64.StdEncoding.EncodeToString(pass),
 				Token:        token,
-				UserID:       id}
+				ID:           id}
 
-			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(verify).Do(ctx)
+			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(id).BodyJson(verify).Refresh("true").Do(ctx)
 		}
 
 		if err != nil {
@@ -364,7 +413,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 
 		return err
 	} else {
-		if user.VerifyToken == nil {
+		if user.VerifyToken == "" {
 			return EmailInUse
 		}
 
@@ -372,7 +421,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
-			_, err = s.es.Update().Index(userIndex()).Type(userType).Id(user.UserID).Doc(user).Refresh("true").Do(ctx)
+			_, err = s.es.Update().Index(userIndex()).Type(userType).Id(user.ID).Doc(user).Refresh("true").Do(ctx)
 
 			message := mail.NewV3Mail()
 			message.SetFrom(mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"))
@@ -401,13 +450,14 @@ func (s MdsService) CreateUser(verificationToken string) (string, error) {
 	}
 
 	user := User{
-		UserID:       userID,
+		ID:           userID,
 		Email:        verify.Email,
 		CreateDate:   time.Now(),
 		PasswordHash: verify.PasswordHash,
+		VerifyToken:  "",
 	}
 
-	_, err = s.es.Index().Index(userIndex()).Type(userType).BodyJson(user).Id(userID).Do(ctx)
+	_, err = s.es.Update().Index(userIndex()).Type(userType).Doc(user).Id(verify.ID).Do(ctx)
 
 	if err != nil {
 		return "", err
@@ -417,21 +467,21 @@ func (s MdsService) CreateUser(verificationToken string) (string, error) {
 }
 
 func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
-	var retval PasswordReset
+	var retVal PasswordReset
 	ctx := context.Background()
 
 	search := elastic.NewTermQuery("reset_token", token)
 	result, err := s.es.Search(userIndex()).Type(userType).Query(search).Do(ctx)
 
 	if err == nil {
-		_, err = getSingleResult(result, &retval)
+		retVal, err = getResetFromResult(result)
 	}
 
-	if err == elastigo.RecordNotFound {
-		return retval, ResetNotFound
+	if err == RecordNotFound {
+		return retVal, ResetNotFound
 	}
 
-	return retval, err
+	return retVal, err
 }
 
 func (s MdsService) CreateAndSendResetPassword(email string) error {
@@ -440,10 +490,10 @@ func (s MdsService) CreateAndSendResetPassword(email string) error {
 	if err == nil {
 		id := uuid.New()
 
-		_, err = s.es.Update().Index(userIndex()).Type(userType).Id(user.UserID).Doc(map[string]interface{}{"reset_token": id}).Do(ctx)
+		_, err = s.es.Update().Index(userIndex()).Type(userType).Id(user.ID).Doc(map[string]interface{}{"reset_token": id}).Do(ctx)
 
 		if err == nil {
-			log.Println("Sending reset password to " + user.UserID)
+			log.Println("Sending reset password to " + user.ID)
 
 			message := mail.NewV3Mail()
 			message.SetFrom(mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"))
@@ -470,8 +520,8 @@ func (s MdsService) ResetPassword(token string, password string) error {
 	}
 
 	if err == nil {
-		log.Println("Resetting password for " + reset.UserId)
-		err = s.UpdateUser(reset.UserId, "", password)
+		log.Println("Resetting password for " + reset.ID)
+		err = s.UpdateUser(reset.ID, "", password)
 	}
 
 	return err
@@ -516,7 +566,7 @@ func (s MdsService) CreateJournalEntry(userId string, entries []string, date tim
 		entryDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 
 		id := uuid.New()
-		entry = JournalEntry{Id: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
+		entry = JournalEntry{ID: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
 
 		_, err = s.es.Index().Index(journalIndex()).Type(journalType).Id(id).Refresh("true").BodyJson(entry).Do(ctx)
 	}
@@ -591,11 +641,11 @@ func (s MdsService) DeleteJournalEntry(id string, userId string) error {
 }
 
 func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (JournalEntry, error) {
-	var retval JournalEntry
+	var retVal JournalEntry
 	ctx := context.Background()
 
 	if userId == "" {
-		return retval, UserUnauthorized
+		return retVal, UserUnauthorized
 	}
 
 	createDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
@@ -608,10 +658,10 @@ func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (Journa
 
 	if err == nil {
 		if result.Hits.TotalHits == 0 {
-			return retval, NoJournalWithDate
+			return retVal, NoJournalWithDate
 		}
 
-		_, err = getSingleResult(result, &retval)
+		retVal, err = getEntryFromResult(result)
 	}
 
 	if err != nil {
@@ -622,7 +672,7 @@ func (s MdsService) GetJournalEntryByDate(userId string, date time.Time) (Journa
 
 	}
 
-	return retval, err
+	return retVal, err
 }
 
 //Search journal entries
@@ -679,6 +729,7 @@ func (s MdsService) SearchJournal(userId string, jq JournalQuery) ([]JournalEntr
 			if err != nil {
 				panic(err)
 			}
+			entry.ID = hit.Id
 
 			if hit.Highlight != nil && hit.Highlight["entries"] != nil {
 				entry.Entries = hit.Highlight["entries"]
