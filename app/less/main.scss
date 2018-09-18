@@ -9,6 +9,10 @@ body {
   min-height: 100%;
 }
 
+#content-root {
+  margin-bottom: 90px;
+}
+
 .btn-link {
   &:hover {
     text-decoration: none;
