@@ -2,30 +2,7 @@
 	"comment": "",
 	"ignore": "test",
 	"package": [
-		{
-			"checksumSHA1": "bbXMesg5eqEjLs7Riad0kHzS/0Q=",
-			"path": "github.com/mailru/easyjson",
-			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
 			"revisionTime": "2018-08-23T13:54:43Z"
-		},
-		{
-			"checksumSHA1": "euMY7SmXXGeDit90eC8FPzDT1SU=",
-			"path": "github.com/mailru/easyjson/buffer",
-			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
-			"revisionTime": "2018-08-23T13:54:43Z"
-		},
-		{
-			"checksumSHA1": "gXc7hxqTywruTPu2glQy1CmWzuY=",
-			"path": "github.com/mailru/easyjson/jlexer",
-			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
-			"revisionTime": "2018-08-23T13:54:43Z"
-		},
-		{
-			"checksumSHA1": "8uahZmmPJqtj80oEIRELmEF8DSE=",
-			"path": "github.com/mailru/easyjson/jwriter",
-			"revision": "60711f1a8329503b04e1c88535f419d0bb440bff",
-			"revisionTime": "2018-08-23T13:54:43Z"
-		},
 		{
 			"checksumSHA1": "VOdoPrcfRXDK5BdBG2NNJCYjcO8=",
 			"path": "github.com/olivere/elastic",
@@ -241,34 +218,16 @@
 			"revisionTime": "2014-05-26T12:09:21-06:00"
 		},
 		{
-			"checksumSHA1": "5Yq+bWhHXCaqGDuGp8RBj47OhME=",
-			"path": "github.com/stretchr/testify",
-			"revision": "bcd9e3389dd03b0b668d11f4d462a6af6c2dfd60",
-			"revisionTime": "2016-04-13T09:04:24Z"
-		},
-		{
 			"checksumSHA1": "s+uXxYIDuUnz0zzCgZrEB9qtdxw=",
 			"path": "github.com/stretchr/testify/assert",
 			"revision": "232e8563676cd15c3a36ba5e675ad4312ac4cb11",
 			"revisionTime": "2015-05-27T15:45:55+01:00"
 		},
 		{
-			"checksumSHA1": "fg3TzS9/QK3wZbzei3Z6O8XPLHg=",
-			"path": "github.com/stretchr/testify/http",
-			"revision": "bcd9e3389dd03b0b668d11f4d462a6af6c2dfd60",
-			"revisionTime": "2016-04-13T09:04:24Z"
-		},
-		{
 			"checksumSHA1": "o++wGY+3XGjUk2og94avmtVmTUQ=",
 			"path": "github.com/stretchr/testify/mock",
 			"revision": "bcd9e3389dd03b0b668d11f4d462a6af6c2dfd60",
 			"revisionTime": "2016-04-13T09:04:24Z"
-		},
-		{
-			"checksumSHA1": "jWlBRALwERf/Gv46hCYr3AdiIS0=",
-			"path": "gopkg.in/olivere/elastic.v2/uritemplates",
-			"revision": "2cd27b9ae892f6b4dd8dd6d73489797c99e9c6fa",
-			"revisionTime": "2018-05-17T14:35:08Z"
 		}
 	],
 	"rootPath": "github.com/mikeyoon/MyDailyStuff"

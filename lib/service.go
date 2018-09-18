@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	elastigo "github.com/mikeyoon/elastigo/lib"
 	"github.com/olivere/elastic"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -214,7 +213,7 @@ func getSingleResult(result *elastic.SearchResult, output interface{}) (string, 
 		return result.Hits.Hits[0].Id, err
 	}
 
-	return "", elastigo.RecordNotFound
+	return "", RecordNotFound
 }
 
 func initID(doc IdDocument, id string, err error) {
@@ -271,7 +270,7 @@ func (s MdsService) GetUserByEmail(email string, verified bool) (User, error) {
 		retVal, err = getUserFromResult(result)
 	}
 
-	if err == elastigo.RecordNotFound {
+	if err == RecordNotFound {
 		return retVal, UserNotFound
 	}
 
@@ -292,7 +291,7 @@ func (s MdsService) GetUserByLogin(email string, password string) (User, error) 
 		err = bcrypt.CompareHashAndPassword(hash, []byte(password))
 	}
 
-	if err == elastigo.RecordNotFound || err == bcrypt.ErrMismatchedHashAndPassword {
+	if err == RecordNotFound || err == bcrypt.ErrMismatchedHashAndPassword {
 		return User{}, UserNotFound
 	}
 
@@ -366,7 +365,7 @@ func (s MdsService) GetUserVerification(token string) (string, UserVerification,
 		retVal, err = getVerificationFromResult(result)
 	}
 
-	if err == elastigo.RecordNotFound {
+	if err == RecordNotFound {
 		log.Println("Error GetUserVerification: " + err.Error())
 		return "", retVal, VerificationNotFound
 	}
@@ -478,7 +477,7 @@ func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 		retVal, err = getResetFromResult(result)
 	}
 
-	if err == elastigo.RecordNotFound {
+	if err == RecordNotFound {
 		return retVal, ResetNotFound
 	}
 

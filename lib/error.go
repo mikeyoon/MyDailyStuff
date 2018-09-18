@@ -4,6 +4,7 @@ import (
 	"errors"
 )
 
+var RecordNotFound = errors.New("record not found")
 var UserUnauthorized = errors.New("User not logged in")
 var UserNotFound = errors.New("User not found")
 var UserAlreadyExists = errors.New("User already exists")
