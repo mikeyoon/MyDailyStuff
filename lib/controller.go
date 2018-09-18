@@ -111,7 +111,7 @@ func (c *Controller) Login(req LoginRequest, session sessions.Session, r render.
 		MaxAge:   maxAge,
 	})
 
-	session.Set("userId", user.UserID)
+	session.Set("userId", user.ID)
 	r.JSON(200, SuccessResponse(nil))
 }
 
@@ -134,7 +134,7 @@ func (c *Controller) Profile(session sessions.Session, r render.Render, x csrf.C
 
 	if err == nil {
 		r.JSON(200, SuccessResponse(map[string]interface{}{
-			"user_id":         user.UserID,
+			"user_id":         user.ID,
 			"create_date":     user.CreateDate,
 			"last_login_date": user.LastLoginDate,
 			"email":           user.Email,
