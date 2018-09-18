@@ -152,7 +152,7 @@ var _ = Describe("Service", func() {
 	Describe("Get user by email", func() {
 		Context("Where the user exists", func() {
 			It("should have found the user", func() {
-				user, err := service.GetUserByEmail(testUser1.Email)
+				user, err := service.GetUserByEmail(testUser1.Email, true)
 
 				Expect(err).To(BeNil())
 				Expect(user.Email).To(Equal(testUser1.Email))
@@ -161,7 +161,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user exists, but with upper case", func() {
 			It("should have found the user", func() {
-				user, err := service.GetUserByEmail(strings.ToUpper(testUser1.Email))
+				user, err := service.GetUserByEmail(strings.ToUpper(testUser1.Email), true)
 
 				Expect(err).To(BeNil())
 				Expect(user.Email).To(Equal(testUser1.Email))
@@ -170,7 +170,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user does not exist", func() {
 			It("should not return result", func() {
-				user, err := service.GetUserByEmail("nothing@nothing.com")
+				user, err := service.GetUserByEmail("nothing@nothing.com", true)
 				Expect(err).To(Equal(UserNotFound))
 				Expect(user).To(Equal(User{}))
 			})
@@ -283,6 +283,26 @@ var _ = Describe("Service", func() {
 	})
 
 	Describe("Create user verification", func() {
+		Context("Where the verification already exists", func() {
+			It("should send a new email without creating a new user", func() {
+				client := new(MockSendGridClient)
+				service.MailClient = client
+
+				client.On("Send", mock.AnythingOfType("*mail.SGMailV3")).Return(&rest.Response{}, nil)
+
+				err := service.CreateUserVerification(verify1.Email, "NewPassword")
+				Expect(err).To(BeNil())
+
+				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
+				Expect(actual.Personalizations[0].To[0].Address).To(Equal(verify1.Email))
+				Expect(actual.TemplateID).To(Equal("d-e782572e444d460e8d24b3f07005bcdf"))
+				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
+
+				results, err := conn.Search(userIndex()).Type(userType).Query(elastic.NewTermQuery("email", verify1.Email)).Do(context.Background())
+				Expect(results.TotalHits()).To(Equal(int64(1)))
+			})
+		})
+
 		Context("Where the email address already in use", func() {
 			It("should return UserAlreadyExists error", func() {
 				err := service.CreateUserVerification(testUser1.Email, "Some password")
@@ -302,8 +322,8 @@ var _ = Describe("Service", func() {
 
 				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
 				Expect(actual.Personalizations[0].To[0].Address).To(Equal("newemail@new.com"))
+				Expect(actual.TemplateID).To(Equal("d-e782572e444d460e8d24b3f07005bcdf"))
 				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
-				Expect(actual.Subject).To(Equal("Activate your MyDailyStuff.com account"))
 
 				client.AssertExpectations(GinkgoT())
 			})
@@ -371,8 +391,9 @@ var _ = Describe("Service", func() {
 
 				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
 				Expect(actual.Personalizations[0].To[0].Address).To(Equal(testUser1.Email))
+				Expect(actual.TemplateID).To(Equal("d-1019375cd8da4ae08345bc600e03e241"))
+
 				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
-				Expect(actual.Subject).To(Equal("Reset your MyDailyStuff.com password"))
 
 				client.AssertExpectations(GinkgoT())
 			})

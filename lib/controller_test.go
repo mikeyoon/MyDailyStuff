@@ -24,8 +24,8 @@ func (s MockService) GetUserById(id string) (User, error) {
 	return args.Get(0).(User), args.Error(1)
 }
 
-func (s MockService) GetUserByEmail(email string) (User, error) {
-	args := s.Called(email)
+func (s MockService) GetUserByEmail(email string, verified bool) (User, error) {
+	args := s.Called(email, verified)
 	return args.Get(0).(User), args.Error(1)
 }
 

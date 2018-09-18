@@ -80,7 +80,7 @@ type JournalQuery struct {
 
 type Service interface {
 	GetUserById(id string) (User, error)
-	GetUserByEmail(email string) (User, error)
+	GetUserByEmail(email string, verified bool) (User, error)
 	GetUserByLogin(email string, password string) (User, error)
 	UpdateUser(id string, email string, password string) error
 	GetUserVerification(token string) (string, UserVerification, error)
@@ -209,13 +209,16 @@ func getSingleResult(result *elastic.SearchResult, output interface{}) error {
 //User Functions
 
 // GetUserByEmail retrieves a user by their email address
-func (s MdsService) GetUserByEmail(email string) (User, error) {
+func (s MdsService) GetUserByEmail(email string, verified bool) (User, error) {
 	var retval User
 	ctx := context.Background()
 
 	query := elastic.NewBoolQuery().
-		Must(elastic.NewTermQuery("email", strings.ToLower(email))).
-		MustNot(elastic.NewExistsQuery("verify_token"))
+		Must(elastic.NewTermQuery("email", strings.ToLower(email)))
+
+	if verified {
+		query.MustNot(elastic.NewExistsQuery("verify_token"))
+	}
 
 	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
 
@@ -232,7 +235,7 @@ func (s MdsService) GetUserByEmail(email string) (User, error) {
 
 // GetUserByLogin retrieves a user account by their email and password hash
 func (s MdsService) GetUserByLogin(email string, password string) (User, error) {
-	retval, err := s.GetUserByEmail(email)
+	retval, err := s.GetUserByEmail(email, true)
 
 	var hash []byte
 	if err == nil {
@@ -321,7 +324,7 @@ func (s MdsService) GetUserVerification(token string) (string, UserVerification,
 }
 
 func (s MdsService) CreateUserVerification(email string, password string) error {
-	_, err := s.GetUserByEmail(email)
+	user, err := s.GetUserByEmail(email, false)
 	ctx := context.Background()
 
 	if err == UserNotFound {
@@ -345,39 +348,13 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 			panic(err)
 		}
 
-		message := mail.NewSingleEmail(
-			mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"),
-			"Activate your MyDailyStuff.com account",
-			mail.NewEmail(email, email),
-			`Welcome to MyDailyStuff!
-
-To activate your account, please click on the following link below.
-
-https://www.mydailystuff.com/account/verify/`+token+`
-
-Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.
-
-Thank You,
-
-MyDailyStuff.com`,
-			`<html>
-<head>
-	<title></title>
-</head>
-<body>
-<p>Welcome to MyDailyStuff!</p>
-
-<p>To activate your account, please click on the following link below.</p>
-
-<p>https://www.mydailystuff.com/account/verify/`+token+`</p>
-
-<p>Please activate your account within 3 days of receiving this email. Replies to this account are not monitored. If you have any issues, please contact us via our support form on our website.</p>
-
-<p>Thanks You,</p>
-
-<p>MyDailyStuff.com</p>
-</body>
-</html>`)
+		message := mail.NewV3Mail()
+		message.SetFrom(mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"))
+		message.SetTemplateID("d-e782572e444d460e8d24b3f07005bcdf")
+		personalizations := mail.NewPersonalization()
+		personalizations.AddTos(mail.NewEmail(email, email))
+		personalizations.DynamicTemplateData["token"] = token
+		message.AddPersonalizations(personalizations)
 
 		if s.MailClient != nil {
 			_, err = s.MailClient.Send(message)
@@ -385,7 +362,30 @@ MyDailyStuff.com`,
 
 		return err
 	} else {
-		return EmailInUse
+		if user.VerifyToken == nil {
+			return EmailInUse
+		}
+
+		// Resend the user verification and update password
+		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+		if err == nil {
+			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
+			_, err = s.es.Index().Index(userIndex()).Type(userType).Id(user.UserID).BodyJson(user).Do(ctx)
+
+			message := mail.NewV3Mail()
+			message.SetFrom(mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"))
+			message.SetTemplateID("d-e782572e444d460e8d24b3f07005bcdf")
+			personalizations := mail.NewPersonalization()
+			personalizations.AddTos(mail.NewEmail(email, email))
+			personalizations.DynamicTemplateData["token"] = user.VerifyToken
+			message.AddPersonalizations(personalizations)
+
+			if s.MailClient != nil {
+				_, err = s.MailClient.Send(message)
+			}
+		}
+
+		return err
 	}
 }
 
@@ -434,50 +434,22 @@ func (s MdsService) GetResetPassword(token string) (PasswordReset, error) {
 
 func (s MdsService) CreateAndSendResetPassword(email string) error {
 	ctx := context.Background()
-	user, err := s.GetUserByEmail(email)
+	user, err := s.GetUserByEmail(email, true)
 	if err == nil {
 		id := uuid.New()
-		// reset := PasswordReset{UserId: user.UserID, Token: id, CreateDate: time.Now()}
 
 		_, err = s.es.Update().Index(userIndex()).Type(userType).Id(user.UserID).Doc(map[string]interface{}{"reset_token": id}).Do(ctx)
 
 		if err == nil {
 			log.Println("Sending reset password to " + user.UserID)
 
-			message := mail.NewSingleEmail(
-				mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"),
-				"Reset your MyDailyStuff.com password",
-				mail.NewEmail(email, email),
-				`Reset your MyDailyStuff.com password
-
-We sent you this email because you requested to reset your password. Click the link below to reset your password. It will be valid for 24 hours.
-
-https://www.mydailystuff.com/account/reset/`+id+`
-
-If this is incorrect, please ignore this email.
-
-Thank You,
-
-MyDailyStuff.com`,
-				`<html>
-<head>
-	<title></title>
-</head>
-<body>
-<p>Reset your MyDailyStuff.com password</p>
-
-<p>We sent you this email because you requested to reset your password.
-Click the link below to reset your password. It will be valid for 24 hours.</p>
-
-<p>https://www.mydailystuff.com/account/reset/`+id+`</p>
-
-<p>If this is incorrect, please ignore this email.</p>
-
-<p>Thank You,</p>
-
-<p>MyDailyStuff.com</p>
-</body>
-</html>`)
+			message := mail.NewV3Mail()
+			message.SetFrom(mail.NewEmail("MyDailyStuff", "no-reply@mydailystuff.com"))
+			message.SetTemplateID("d-1019375cd8da4ae08345bc600e03e241")
+			personalizations := mail.NewPersonalization()
+			personalizations.AddTos(mail.NewEmail(email, email))
+			personalizations.DynamicTemplateData["id"] = id
+			message.AddPersonalizations(personalizations)
 
 			if s.MailClient != nil {
 				_, err = s.MailClient.Send(message)
