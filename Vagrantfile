@@ -78,12 +78,10 @@ Vagrant.configure(2) do |config|
     sudo apt-get update
     sudo apt-get install -y openjdk-8-jdk
     sudo apt-get install -y elasticsearch
-    sudo cat <<EOT >> /etc/elasticsearch/elasticsearch.yml
-    network.host:
-    - _local_
-    - _site_
-
-    network.publish_host: _local_
-    EOT
+    sudo echo "network.host:" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
+    sudo echo "- _local_" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
+    sudo echo "- _site_" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
+    sudo echo "" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
+    sudo echo "network.publish_host: _local_" | sudo tee -a /etc/elasticsearch/elasticsearch.yml
   SHELL
 end

@@ -9,11 +9,12 @@ import (
 	"time"
 
 	"github.com/olivere/elastic"
+	"github.com/sendgrid/rest"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 	"code.google.com/p/go-uuid/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/sendgrid/sendgrid-go"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -23,9 +24,9 @@ type MockSendGridClient struct {
 }
 
 // Send will send mail using SG web API
-func (sg *MockSendGridClient) Send(m *SGMail) error {
+func (sg *MockSendGridClient) Send(m *mail.SGMailV3) (*rest.Response, error) {
 	args := sg.Called(m)
-	return args.Error(0)
+	return args.Get(0).(*rest.Response), args.Error(1)
 }
 
 var _ = Describe("Service", func() {
@@ -36,7 +37,7 @@ var _ = Describe("Service", func() {
 
 	esIndex = "test"
 
-	_, _ = conn.DeleteIndex(userIndex(), journalIndex(), resetIndex(), verifyIndex()).Do(ctx)
+	_, _ = conn.DeleteIndex(userIndex(), journalIndex()).Do(ctx)
 
 	service.Init(ServiceOptions{
 		ElasticUrl: "http://localhost:9200",
@@ -49,6 +50,7 @@ var _ = Describe("Service", func() {
 		Token:        uuid.New(),
 		PasswordHash: base64.StdEncoding.EncodeToString(pass2),
 		CreateDate:   time.Now(),
+		UserID:       uuid.New(),
 	}
 
 	//Test Users Data
@@ -119,13 +121,13 @@ var _ = Describe("Service", func() {
 
 	BeforeEach(func() {
 		conn.Index().Index(userIndex()).Type(userType).Id(testUser1.UserID).Refresh("true").BodyJson(testUser1).Do(ctx)
-		conn.Index().Index(resetIndex()).Type(resetType).Id(reset1.Token).Refresh("true").BodyJson(reset1).Do(ctx)
-		conn.Index().Index(verifyIndex()).Type(verifyType).Id(verify1.Token).Refresh("true").BodyJson(verify1).Do(ctx)
+		conn.Index().Index(userIndex()).Type(userType).Id(uuid.New()).Refresh("true").BodyJson(reset1).Do(ctx)
+		conn.Index().Index(userIndex()).Type(userType).Id(uuid.New()).Refresh("true").BodyJson(verify1).Do(ctx)
 		conn.Index().Index(journalIndex()).Type(journalType).Id(journal1.Id).Refresh("true").BodyJson(journal1).Do(ctx)
 	})
 
 	AfterEach(func() {
-		conn.DeleteByQuery(userIndex(), resetIndex(), verifyIndex(), journalIndex()).Query(elastic.NewMatchAllQuery()).Refresh("true").Do(ctx)
+		conn.DeleteByQuery(userIndex(), journalIndex()).Query(elastic.NewMatchAllQuery()).Refresh("true").Do(ctx)
 	})
 
 	Describe("Init with login", func() {
@@ -151,7 +153,7 @@ var _ = Describe("Service", func() {
 	Describe("Get user by email", func() {
 		Context("Where the user exists", func() {
 			It("should have found the user", func() {
-				user, err := service.GetUserByEmail(testUser1.Email)
+				user, err := service.GetUserByEmail(testUser1.Email, true)
 
 				Expect(err).To(BeNil())
 				Expect(user.Email).To(Equal(testUser1.Email))
@@ -160,7 +162,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user exists, but with upper case", func() {
 			It("should have found the user", func() {
-				user, err := service.GetUserByEmail(strings.ToUpper(testUser1.Email))
+				user, err := service.GetUserByEmail(strings.ToUpper(testUser1.Email), true)
 
 				Expect(err).To(BeNil())
 				Expect(user.Email).To(Equal(testUser1.Email))
@@ -169,7 +171,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user does not exist", func() {
 			It("should not return result", func() {
-				user, err := service.GetUserByEmail("nothing@nothing.com")
+				user, err := service.GetUserByEmail("nothing@nothing.com", true)
 				Expect(err).To(Equal(UserNotFound))
 				Expect(user).To(Equal(User{}))
 			})
@@ -218,9 +220,8 @@ var _ = Describe("Service", func() {
 		Context("Where the id doesn't match", func() {
 			It("should not return the result", func() {
 				user, err := service.GetUserById(uuid.New())
-				elasticErr := err.(*elastic.Error)
 
-				Expect(elasticErr.Status).To(Equal(404))
+				Expect(err).To(Equal(UserNotFound))
 				Expect(user).To(Equal(User{}))
 			})
 		})
@@ -263,24 +264,46 @@ var _ = Describe("Service", func() {
 	Describe("Get user verification", func() {
 		Context("Where the verification exists", func() {
 			It("should find the verification", func() {
-				actual, err := service.GetUserVerification(verify1.Token)
+				userID, actual, err := service.GetUserVerification(verify1.Token)
 
 				Expect(err).To(BeNil())
+				Expect(userID).ToNot(Equal(""))
 				Expect(actual.Email).To(Equal(verify1.Email))
 			})
 		})
 
 		Context("Where the verification does not exist", func() {
 			It("should return not found error", func() {
-				actual, err := service.GetUserVerification(uuid.New())
+				userID, actual, err := service.GetUserVerification(uuid.New())
 
 				Expect(err).To(Equal(VerificationNotFound))
+				Expect(userID).To(Equal(""))
 				Expect(actual).To(Equal(UserVerification{}))
 			})
 		})
 	})
 
 	Describe("Create user verification", func() {
+		Context("Where the verification already exists", func() {
+			It("should send a new email without creating a new user", func() {
+				client := new(MockSendGridClient)
+				service.MailClient = client
+
+				client.On("Send", mock.AnythingOfType("*mail.SGMailV3")).Return(&rest.Response{}, nil)
+
+				err := service.CreateUserVerification(verify1.Email, "NewPassword")
+				Expect(err).To(BeNil())
+
+				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
+				Expect(actual.Personalizations[0].To[0].Address).To(Equal(verify1.Email))
+				Expect(actual.TemplateID).To(Equal("d-e782572e444d460e8d24b3f07005bcdf"))
+				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
+
+				results, err := conn.Search(userIndex()).Type(userType).Query(elastic.NewTermQuery("email", verify1.Email)).Do(context.Background())
+				Expect(results.TotalHits()).To(Equal(int64(1)))
+			})
+		})
+
 		Context("Where the email address already in use", func() {
 			It("should return UserAlreadyExists error", func() {
 				err := service.CreateUserVerification(testUser1.Email, "Some password")
@@ -294,14 +317,14 @@ var _ = Describe("Service", func() {
 				client := new(MockSendGridClient)
 				service.MailClient = client
 
-				client.On("Send", mock.AnythingOfType("*sendgrid.SGMail")).Return(nil)
+				client.On("Send", mock.AnythingOfType("*mail.SGMailV3")).Return(&rest.Response{}, nil)
 				err := service.CreateUserVerification("newemail@new.com", "Some Password")
 				Expect(err).To(BeNil())
 
-				actual := client.Calls[0].Arguments[0].(*SGMail)
-				Expect(actual.To[0]).To(Equal("newemail@new.com"))
-				Expect(actual.From).To(Equal("no-reply@mydailystuff.com"))
-				Expect(actual.Subject).To(Equal("Activate your MyDailyStuff.com account"))
+				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
+				Expect(actual.Personalizations[0].To[0].Address).To(Equal("newemail@new.com"))
+				Expect(actual.TemplateID).To(Equal("d-e782572e444d460e8d24b3f07005bcdf"))
+				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
 
 				client.AssertExpectations(GinkgoT())
 			})
@@ -317,10 +340,10 @@ var _ = Describe("Service", func() {
 
 				result, err := conn.Get().Index(userIndex()).Type(userType).Id(id).Do(ctx)
 
-				Expect(err).To(BeNil(), "Updated user be found")
+				Expect(err).To(BeNil(), "Updated user found")
 				json.Unmarshal(*result.Source, &user)
 
-				resp, _ := conn.Exists().Index(verifyIndex()).Type(verifyType).Id(verify1.Token).Do(ctx)
+				resp, _ := conn.Exists().Index(userIndex()).Type(userType).Id(verify1.Token).Do(ctx)
 
 				Expect(resp).To(BeFalse())
 				Expect(err).To(BeNil())
@@ -363,14 +386,15 @@ var _ = Describe("Service", func() {
 				client := new(MockSendGridClient)
 				service.MailClient = client
 
-				client.On("Send", mock.AnythingOfType("*sendgrid.SGMail")).Return(nil)
+				client.On("Send", mock.AnythingOfType("*mail.SGMailV3")).Return(&rest.Response{}, nil)
 				err := service.CreateAndSendResetPassword(testUser1.Email)
 				Expect(err).To(BeNil())
 
-				actual := client.Calls[0].Arguments[0].(*SGMail)
-				Expect(actual.To[0]).To(Equal(testUser1.Email))
-				Expect(actual.From).To(Equal("no-reply@mydailystuff.com"))
-				Expect(actual.Subject).To(Equal("Reset your MyDailyStuff.com password"))
+				actual := client.Calls[0].Arguments[0].(*mail.SGMailV3)
+				Expect(actual.Personalizations[0].To[0].Address).To(Equal(testUser1.Email))
+				Expect(actual.TemplateID).To(Equal("d-1019375cd8da4ae08345bc600e03e241"))
+
+				Expect(actual.From.Address).To(Equal("no-reply@mydailystuff.com"))
 
 				client.AssertExpectations(GinkgoT())
 			})
