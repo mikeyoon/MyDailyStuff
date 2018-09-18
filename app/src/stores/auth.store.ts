@@ -159,6 +159,7 @@ export class AuthStore {
       const response = await RestClient.post("/account/login", info);
       if (response.entity.success) {
         runInAction(() => (this.isLoggedIn = true));
+        await this.getAccount();
         // GetAccount
         page("/journal");
       } else {

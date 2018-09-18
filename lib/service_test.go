@@ -50,13 +50,13 @@ var _ = Describe("Service", func() {
 		Token:        uuid.New(),
 		PasswordHash: base64.StdEncoding.EncodeToString(pass2),
 		CreateDate:   time.Now(),
-		UserID:       uuid.New(),
+		ID:           uuid.New(),
 	}
 
 	//Test Users Data
 	pass1, _ := bcrypt.GenerateFromPassword([]byte("something"), 10)
 	testUser1 := User{
-		UserID:        uuid.New(),
+		ID:            uuid.New(),
 		Email:         "test@test.com",
 		PasswordHash:  base64.StdEncoding.EncodeToString(pass1),
 		CreateDate:    time.Now(),
@@ -65,65 +65,73 @@ var _ = Describe("Service", func() {
 
 	//Test Journal Data
 	journal1 := JournalEntry{
-		UserId:     testUser1.UserID,
+		UserId:     testUser1.ID,
 		Entries:    []string{"test entry 1", "test entry 2"},
 		Date:       time.Date(2002, 5, 20, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
+		ID:         uuid.New(),
 	}
 
 	journal2 := JournalEntry{
-		UserId:     testUser1.UserID,
+		UserId:     testUser1.ID,
 		Entries:    []string{"another entry 1", "another entry 2"},
 		Date:       time.Date(2002, 5, 25, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
+		ID:         uuid.New(),
 	}
 
 	journal3 := JournalEntry{
-		UserId:     testUser1.UserID,
+		UserId:     testUser1.ID,
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(2002, 6, 20, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
+		ID:         uuid.New(),
 	}
 
 	streak1 := JournalEntry{
-		UserId:     testUser1.UserID,
+		UserId:     testUser1.ID,
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 1),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
+		ID:         uuid.New(),
 	}
 
 	streak2 := JournalEntry{
-		UserId:     testUser1.UserID,
+		UserId:     testUser1.ID,
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 2),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
+		ID:         uuid.New(),
 	}
 
 	streak4 := JournalEntry{
-		UserId:     testUser1.UserID,
+		UserId:     testUser1.ID,
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 4),
 		CreateDate: time.Now(),
-		Id:         uuid.New(),
+		ID:         uuid.New(),
 	}
 
 	//Test Password Reset Data
 	reset1 := PasswordReset{
-		UserId:     testUser1.UserID,
+		ID:         uuid.New(),
 		Token:      uuid.New(),
 		CreateDate: time.Now(),
 	}
 
+	makeFakeVerify := func() {
+		conn.Index().Index(userIndex()).Type(userType).Id(verify1.ID).Refresh("true").BodyJson(verify1).Do(ctx)
+	}
+
+	makeFakeReset := func() {
+		resetUser := testUser1
+		resetUser.ResetToken = reset1.Token
+		conn.Update().Index(userIndex()).Type(userType).Id(testUser1.ID).Doc(resetUser).Refresh("true").Do(ctx)
+	}
+
 	BeforeEach(func() {
-		conn.Index().Index(userIndex()).Type(userType).Id(testUser1.UserID).Refresh("true").BodyJson(testUser1).Do(ctx)
-		conn.Index().Index(userIndex()).Type(userType).Id(uuid.New()).Refresh("true").BodyJson(reset1).Do(ctx)
-		conn.Index().Index(userIndex()).Type(userType).Id(uuid.New()).Refresh("true").BodyJson(verify1).Do(ctx)
-		conn.Index().Index(journalIndex()).Type(journalType).Id(journal1.Id).Refresh("true").BodyJson(journal1).Do(ctx)
+		conn.Index().Index(userIndex()).Type(userType).Id(testUser1.ID).Refresh("true").BodyJson(testUser1).Do(ctx)
+		conn.Index().Index(journalIndex()).Type(journalType).Id(journal1.ID).Refresh("true").BodyJson(journal1).Do(ctx)
 	})
 
 	AfterEach(func() {
@@ -210,7 +218,7 @@ var _ = Describe("Service", func() {
 	Describe("Get user by id", func() {
 		Context("Where the user with the id exists", func() {
 			It("should find the user", func() {
-				user, err := service.GetUserById(testUser1.UserID)
+				user, err := service.GetUserById(testUser1.ID)
 
 				Expect(err).To(BeNil())
 				Expect(user.Email).To(Equal(testUser1.Email))
@@ -230,9 +238,9 @@ var _ = Describe("Service", func() {
 	Describe("Update user email and password", func() {
 		Context("Where the user exists", func() {
 			It("should modify the user email and password", func() {
-				service.UpdateUser(testUser1.UserID, "something@else.com", "newpass")
+				service.UpdateUser(testUser1.ID, "something@else.com", "newpass")
 				var actual User
-				result, err := conn.Get().Index(userIndex()).Type(userType).Id(testUser1.UserID).Do(ctx)
+				result, err := conn.Get().Index(userIndex()).Type(userType).Id(testUser1.ID).Do(ctx)
 
 				Expect(err).To(BeNil(), "Updated user be found")
 				json.Unmarshal(*result.Source, &actual)
@@ -255,13 +263,17 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user exists but password too short", func() {
 			It("should do nothing", func() {
-				err := service.UpdateUser(testUser1.UserID, "", "")
+				err := service.UpdateUser(testUser1.ID, "", "")
 				Expect(err).To(BeNil())
 			})
 		})
 	})
 
 	Describe("Get user verification", func() {
+		BeforeEach(func() {
+			makeFakeVerify()
+		})
+
 		Context("Where the verification exists", func() {
 			It("should find the verification", func() {
 				userID, actual, err := service.GetUserVerification(verify1.Token)
@@ -334,6 +346,8 @@ var _ = Describe("Service", func() {
 	Describe("Create user", func() {
 		Context("Where the token exists", func() {
 			It("should create the user and delete token", func() {
+				makeFakeVerify()
+
 				id, err := service.CreateUser(verify1.Token)
 
 				var user User
@@ -347,7 +361,7 @@ var _ = Describe("Service", func() {
 
 				Expect(resp).To(BeFalse())
 				Expect(err).To(BeNil())
-				Expect(user.UserID).To(Equal(id))
+				Expect(result.Id).To(Equal(id))
 				Expect(user.Email).To(Equal(verify1.Email))
 			})
 		})
@@ -362,12 +376,16 @@ var _ = Describe("Service", func() {
 	})
 
 	Describe("Get reset password", func() {
+		BeforeEach(func() {
+			makeFakeReset()
+		})
+
 		Context("Where the reset token exists", func() {
 			It("should find the reset entry", func() {
 				reset, err := service.GetResetPassword(reset1.Token)
 
 				Expect(err).To(BeNil())
-				Expect(reset.UserId).To(Equal(reset1.UserId))
+				Expect(reset.ID).To(Equal(testUser1.ID))
 			})
 		})
 
@@ -409,6 +427,10 @@ var _ = Describe("Service", func() {
 	})
 
 	Describe("Reset user password", func() {
+		BeforeEach(func() {
+			makeFakeReset()
+		})
+
 		Context("Where the reset token exists", func() {
 			It("should reset the password", func() {
 				err := service.ResetPassword(reset1.Token, "stuffandthings")
@@ -416,7 +438,7 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil(), "Reset token not found")
 
 				var actual User
-				result, err := conn.Get().Index(userIndex()).Type(userType).Id(reset1.UserId).Do(ctx)
+				result, err := conn.Get().Index(userIndex()).Type(userType).Id(testUser1.ID).Do(ctx)
 
 				Expect(err).To(BeNil(), "Updated user be found")
 				json.Unmarshal(*result.Source, &actual)
@@ -456,7 +478,7 @@ var _ = Describe("Service", func() {
 		Context("Where there is no date conflict", func() {
 			It("should create the entry", func() {
 				current := time.Now()
-				entry, err := service.CreateJournalEntry(testUser1.UserID, []string{"something", "to look at"}, current)
+				entry, err := service.CreateJournalEntry(testUser1.ID, []string{"something", "to look at"}, current)
 				date := time.Date(current.Year(), current.Month(), current.Day(), 0, 0, 0, 0, time.UTC)
 
 				Expect(entry.Date).To(Equal(date))
@@ -469,7 +491,7 @@ var _ = Describe("Service", func() {
 		Context("Where entry length is too long", func() {
 			It("should return error", func() {
 				current := time.Now()
-				entry, err := service.CreateJournalEntry(testUser1.UserID, []string{string(make([]byte, 501))}, current)
+				entry, err := service.CreateJournalEntry(testUser1.ID, []string{string(make([]byte, 501))}, current)
 
 				Expect(err).To(Equal(JournalEntryInvalid))
 				Expect(entry).To(Equal(JournalEntry{}))
@@ -479,7 +501,7 @@ var _ = Describe("Service", func() {
 		Context("Where there are more than 7 entries", func() {
 			It("should return error", func() {
 				current := time.Now()
-				entry, err := service.CreateJournalEntry(testUser1.UserID, make([]string, 8), current)
+				entry, err := service.CreateJournalEntry(testUser1.ID, make([]string, 8), current)
 
 				Expect(err).To(Equal(TooManyEntries))
 				Expect(entry).To(Equal(JournalEntry{}))
@@ -488,7 +510,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where there is a date conflict", func() {
 			It("should return entry exists error", func() {
-				_, err := service.CreateJournalEntry(testUser1.UserID, []string{"hello", "world"}, journal1.Date)
+				_, err := service.CreateJournalEntry(testUser1.ID, []string{"hello", "world"}, journal1.Date)
 				Expect(err).To(Equal(EntryAlreadyExists))
 			})
 		})
@@ -497,11 +519,11 @@ var _ = Describe("Service", func() {
 	Describe("Update journal entry", func() {
 		Context("Where the entry exists", func() {
 			It("should update journal entry", func() {
-				err := service.UpdateJournalEntry(journal1.Id, journal1.UserId, []string{"test", "entry"})
+				err := service.UpdateJournalEntry(journal1.ID, journal1.UserId, []string{"test", "entry"})
 				Expect(err).To(BeNil())
 
 				var actual JournalEntry
-				result, err := conn.Get().Index(journalIndex()).Type(journalType).Id(journal1.Id).Do(ctx)
+				result, err := conn.Get().Index(journalIndex()).Type(journalType).Id(journal1.ID).Do(ctx)
 				json.Unmarshal(*result.Source, &actual)
 
 				Expect(actual.Entries[0]).To(Equal("test"))
@@ -534,9 +556,9 @@ var _ = Describe("Service", func() {
 	Describe("Delete journal entry", func() {
 		Context("Where the entry exists", func() {
 			It("should delete the entry", func() {
-				err := service.DeleteJournalEntry(journal1.Id, testUser1.UserID)
+				err := service.DeleteJournalEntry(journal1.ID, testUser1.ID)
 
-				resp, _ := conn.Exists().Index(journalIndex()).Type(journalType).Id(journal1.Id).Do(ctx)
+				resp, _ := conn.Exists().Index(journalIndex()).Type(journalType).Id(journal1.ID).Do(ctx)
 
 				Expect(err).To(BeNil())
 				Expect(resp).To(BeFalse())
@@ -545,7 +567,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the entry does not exist", func() {
 			It("should return entry does not exist error", func() {
-				err := service.DeleteJournalEntry(uuid.New(), testUser1.UserID)
+				err := service.DeleteJournalEntry(uuid.New(), testUser1.ID)
 				Expect(err).To(Equal(EntryNotFound))
 			})
 		})
@@ -557,7 +579,7 @@ var _ = Describe("Service", func() {
 				entry, err := service.GetJournalEntryByDate(journal1.UserId, journal1.Date)
 
 				Expect(err).To(BeNil())
-				Expect(entry.Id).To(Equal(journal1.Id))
+				Expect(entry.ID).To(Equal(journal1.ID))
 				Expect(entry.UserId).To(Equal(journal1.UserId))
 				Expect(entry.Entries[0]).To(Equal(journal1.Entries[0]))
 				Expect(entry.Entries[1]).To(Equal(journal1.Entries[1]))
@@ -566,7 +588,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the entry does not exist on date", func() {
 			It("should return entry not found error", func() {
-				_, err := service.GetJournalEntryByDate(testUser1.UserID, time.Now())
+				_, err := service.GetJournalEntryByDate(testUser1.ID, time.Now())
 				Expect(err).To(Equal(NoJournalWithDate))
 			})
 		})
@@ -581,20 +603,20 @@ var _ = Describe("Service", func() {
 
 	Describe("Search journal entries", func() {
 		BeforeEach(func() {
-			conn.Index().Index(journalIndex()).Type(journalType).Id(journal3.Id).Refresh("true").BodyJson(journal3).Do(ctx)
-			conn.Index().Index(journalIndex()).Type(journalType).Id(journal2.Id).Refresh("true").BodyJson(journal2).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(journal3.ID).Refresh("true").BodyJson(journal3).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(journal2.ID).Refresh("true").BodyJson(journal2).Do(ctx)
 		})
 
 		Context("When searching with an exact word match query", func() {
 			It("should find matching entries", func() {
-				entries, total, err := service.SearchJournal(testUser1.UserID, JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.ID, JournalQuery{
 					Query: "test",
 				})
 
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
 				Expect(total).To(Equal(int64(1)))
-				Expect(entries[0].Id).To(Equal(journal1.Id))
+				Expect(entries[0].ID).To(Equal(journal1.ID))
 				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal1.Entries[0], "test", "<strong>test</strong>", -1)))
 				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal1.Entries[1], "test", "<strong>test</strong>", -1)))
 			})
@@ -602,7 +624,7 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a start date and query", func() {
 			It("should find matching entries", func() {
-				entries, total, err := service.SearchJournal(testUser1.UserID, JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.ID, JournalQuery{
 					Query: "entry",
 					Start: time.Date(2002, 6, 10, 0, 0, 0, 0, time.UTC),
 				})
@@ -610,7 +632,7 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
 				Expect(total).To(Equal(int64(1)))
-				Expect(entries[0].Id).To(Equal(journal3.Id))
+				Expect(entries[0].ID).To(Equal(journal3.ID))
 				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal3.Entries[0], "entry", "<strong>entry</strong>", -1)))
 				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal3.Entries[1], "entry", "<strong>entry</strong>", -1)))
 			})
@@ -618,7 +640,7 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a end date and query", func() {
 			It("should find matching entries in order", func() {
-				entries, total, err := service.SearchJournal(testUser1.UserID, JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.ID, JournalQuery{
 					Query: "entry",
 					End:   time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
 				})
@@ -626,7 +648,7 @@ var _ = Describe("Service", func() {
 				Expect(err).To(BeNil())
 				Expect(len(entries)).To(Equal(1))
 				Expect(total).To(Equal(int64(1)))
-				Expect(entries[0].Id).To(Equal(journal1.Id))
+				Expect(entries[0].ID).To(Equal(journal1.ID))
 				Expect(entries[0].Entries[0]).To(Equal(strings.Replace(journal1.Entries[0], "entry", "<strong>entry</strong>", -1)))
 				Expect(entries[0].Entries[1]).To(Equal(strings.Replace(journal1.Entries[1], "entry", "<strong>entry</strong>", -1)))
 			})
@@ -634,7 +656,7 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a start and date and query", func() {
 			It("should find matching entries", func() {
-				entries, total, err := service.SearchJournal(testUser1.UserID, JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.ID, JournalQuery{
 					Query: "ent*",
 					Start: time.Date(2002, 4, 21, 0, 0, 0, 0, time.UTC),
 					End:   time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
@@ -650,7 +672,7 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with paging", func() {
 			It("should find matching entries", func() {
-				entries, total, err := service.SearchJournal(testUser1.UserID, JournalQuery{
+				entries, total, err := service.SearchJournal(testUser1.ID, JournalQuery{
 					Query:  "ent*",
 					Limit:  2,
 					Offset: 1,
@@ -665,13 +687,13 @@ var _ = Describe("Service", func() {
 
 	Describe("Search journal dates", func() {
 		BeforeEach(func() {
-			conn.Index().Index(journalIndex()).Type(journalType).Id(journal3.Id).Refresh("true").BodyJson(journal3).Do(ctx)
-			conn.Index().Index(journalIndex()).Type(journalType).Id(journal2.Id).Refresh("true").BodyJson(journal2).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(journal3.ID).Refresh("true").BodyJson(journal3).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(journal2.ID).Refresh("true").BodyJson(journal2).Do(ctx)
 		})
 
 		Context("When searching with a start date", func() {
 			It("should return matching dates", func() {
-				dates, err := service.SearchJournalDates(testUser1.UserID, JournalQuery{
+				dates, err := service.SearchJournalDates(testUser1.ID, JournalQuery{
 					Start: time.Date(2002, 4, 21, 0, 0, 0, 0, time.UTC),
 					End:   time.Date(2002, 6, 21, 0, 0, 0, 0, time.UTC),
 				})
@@ -686,7 +708,7 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a end date", func() {
 			It("should return matching dates", func() {
-				dates, err := service.SearchJournalDates(testUser1.UserID, JournalQuery{
+				dates, err := service.SearchJournalDates(testUser1.ID, JournalQuery{
 					End: time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
 				})
 
@@ -698,7 +720,7 @@ var _ = Describe("Service", func() {
 
 		Context("When searching with a start and date", func() {
 			It("should return matching dates", func() {
-				dates, err := service.SearchJournalDates(testUser1.UserID, JournalQuery{
+				dates, err := service.SearchJournalDates(testUser1.ID, JournalQuery{
 					Start: time.Date(2002, 5, 21, 0, 0, 0, 0, time.UTC),
 				})
 
@@ -712,14 +734,14 @@ var _ = Describe("Service", func() {
 
 	Describe("Get Streak", func() {
 		BeforeEach(func() {
-			conn.Index().Index(journalIndex()).Type(journalType).Id(streak1.Id).Refresh("true").BodyJson(streak1).Do(ctx)
-			conn.Index().Index(journalIndex()).Type(journalType).Id(streak2.Id).Refresh("true").BodyJson(streak2).Do(ctx)
-			conn.Index().Index(journalIndex()).Type(journalType).Id(streak4.Id).Refresh("true").BodyJson(streak4).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(streak1.ID).Refresh("true").BodyJson(streak1).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(streak2.ID).Refresh("true").BodyJson(streak2).Do(ctx)
+			conn.Index().Index(journalIndex()).Type(journalType).Id(streak4.ID).Refresh("true").BodyJson(streak4).Do(ctx)
 		})
 
 		Context("When getting a 1 day streak", func() {
 			It("should return 1 count", func() {
-				count, err := service.GetStreak(testUser1.UserID, time.Now(), 1)
+				count, err := service.GetStreak(testUser1.ID, time.Now(), 1)
 
 				Expect(err).To(BeNil())
 				Expect(count).To(Equal(1))
@@ -728,7 +750,7 @@ var _ = Describe("Service", func() {
 
 		Context("When getting a 5 day streak", func() {
 			It("should return 2 count", func() {
-				count, err := service.GetStreak(testUser1.UserID, time.Now(), 5)
+				count, err := service.GetStreak(testUser1.ID, time.Now(), 5)
 
 				Expect(err).To(BeNil())
 				Expect(count).To(Equal(2))
