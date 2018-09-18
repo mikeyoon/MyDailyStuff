@@ -31,15 +31,27 @@ export class RouteStore {
     page("/login", () => this.setLoginRoute());
     page("/register", () => this.setRegisterRoute());
     page("/about", () => this.setAboutRoute());
+    
+    page("/forgot-password", () => this.setForgotRoute());
+    page("/account/verify/:token", ctx => this.setVerifyRoute(ctx));
+    page("/account/reset/:token", ctx => this.setResetRoute(ctx));
+
+    page("*", (ctx, next) => this.requireAuth(ctx, next));
     page("/journal", ctx => this.setJournalRoute(ctx));
     page("/journal/:date", ctx => this.setJournalRoute(ctx));
     page("/search/:query", ctx => this.setSearchRoute(ctx));
     page("/search/:query/:offset", ctx => this.setSearchRoute(ctx));
-    page("/forgot-password", () => this.setForgotRoute());
-    page("/account/verify/:token", ctx => this.setVerifyRoute(ctx));
-    page("/account/reset/:token", ctx => this.setResetRoute(ctx));
     page("/profile", () => this.setProfileRoute());
+
     this.authorize();
+  }
+
+  requireAuth(ctx: PageJS.Context, next: Function) {
+    if (!this.authStore.isLoggedIn) {
+      page.show("/login");
+    } else {
+      next();
+    }
   }
 
   authorize() {
