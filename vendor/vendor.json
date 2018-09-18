@@ -2,7 +2,6 @@
 	"comment": "",
 	"ignore": "test",
 	"package": [
-			"revisionTime": "2018-08-23T13:54:43Z"
 		{
 			"checksumSHA1": "VOdoPrcfRXDK5BdBG2NNJCYjcO8=",
 			"path": "github.com/olivere/elastic",
