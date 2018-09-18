@@ -1,4 +1,12 @@
-import { action, computed, observable, runInAction, autorun, reaction, when } from "mobx";
+import {
+  action,
+  computed,
+  observable,
+  runInAction,
+  autorun,
+  reaction,
+  when
+} from "mobx";
 import moment from "moment";
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
@@ -16,7 +24,9 @@ export class SearchStore {
   @observable
   dates: any[];
   @computed
-  get query() { return this.router.route === Routes.Search ? this.router.params.query : ''; }
+  get query() {
+    return this.router.route === Routes.Search ? this.router.params.query : "";
+  }
   @observable
   lastQuery = "";
   @observable
@@ -27,8 +37,8 @@ export class SearchStore {
   nextOffset: number | undefined;
   @observable
   prevOffset: number | undefined;
-  @computed
-  get offset() { return this.router.route === Routes.Search ? parseInt(this.router.params.offset) : 0; }
+  @observable
+  offset: number | undefined;
   @observable
   month: number | undefined;
   @observable
@@ -42,12 +52,15 @@ export class SearchStore {
   constructor(private router: RouteStore) {
     this.searchResults = [];
     this.dates = [];
-    
-    reaction(() => router.params, params => {
-      if (router.route === Routes.Search && params.query) {
-        this.search();
+
+    reaction(
+      () => router.params,
+      params => {
+        if (router.route === Routes.Search && params.query) {
+          this.search(parseInt(params.offset));
+        }
       }
-    });
+    );
   }
 
   @action
@@ -83,13 +96,13 @@ export class SearchStore {
   }
 
   @action
-  async search() {
+  async search(offset: number) {
     this.searching = true;
 
     try {
       const response = await RestClient.post("/search/", {
         query: this.query,
-        offset: this.offset,
+        offset: offset,
         limit: LIMIT
       });
       if (response.entity.success) {
@@ -101,16 +114,15 @@ export class SearchStore {
               date: r.date
             })
           );
-          const offset = this.offset || 0;
+          offset = offset || 0;
 
           this.total = response.entity.total || 0;
           this.searching = false;
           this.nextOffset =
-            offset + LIMIT < (this.total || 0)
-              ? offset + LIMIT
-              : undefined;
-          this.prevOffset =
-          offset > 0 ? offset - LIMIT : undefined;
+            offset + LIMIT < (this.total || 0) ? offset + LIMIT : undefined;
+          this.prevOffset = offset > 0 ? offset - LIMIT : undefined;
+
+          this.offset = offset;
         });
       }
     } catch (err) {
