@@ -50,6 +50,7 @@ var _ = Describe("Service", func() {
 		Token:        uuid.New(),
 		PasswordHash: base64.StdEncoding.EncodeToString(pass2),
 		CreateDate:   time.Now(),
+		UserID:       uuid.New(),
 	}
 
 	//Test Users Data
