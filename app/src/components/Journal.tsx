@@ -130,13 +130,13 @@ export class JournalComponent extends React.Component<BaseProps> {
 
   handlePrev(ev: React.MouseEvent) {
     ev.preventDefault();
-    const date = moment(this.props.store.journalStore.date);
+    const date = moment(this.props.store.journalStore.localDate);
     this.props.store.routeStore.setDate(date.subtract(1, "day").toDate());
   }
 
   handleNext(ev: React.MouseEvent) {
     ev.preventDefault();
-    const date = moment(this.props.store.journalStore.date);
+    const date = moment(this.props.store.journalStore.localDate);
     this.props.store.routeStore.setDate(date.add(1, "day").toDate());
   }
 
@@ -208,14 +208,14 @@ export class JournalComponent extends React.Component<BaseProps> {
   }
 
   isHighlight(day: Date) {
-    day.setUTCHours(0);
-    return this.props.store.searchStore.isoEntryDates.indexOf(day.toDateString()) >= 0;
+    const date = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate())).toISOString();
+    return this.props.store.searchStore.isoEntryDates.indexOf(date) >= 0;
   }
 
   render() {
-    var today = moment(this.props.store.journalStore.date);
-    var next = moment(this.props.store.journalStore.date).add(1, "day");
-    var prev = moment(this.props.store.journalStore.date).add(-1, "day");
+    var today = moment(this.props.store.journalStore.localDate);
+    var next = moment(this.props.store.journalStore.localDate).add(1, "day");
+    var prev = moment(this.props.store.journalStore.localDate).add(-1, "day");
 
     return (
       <div className="row">
@@ -255,11 +255,11 @@ export class JournalComponent extends React.Component<BaseProps> {
                       data-placement={placement}
                     >
                       <DayPicker
-                        month={this.props.store.journalStore.date}
+                        month={this.props.store.journalStore.localDate}
                         toMonth={new Date()}
                         modifiers={{ highlighted: day => this.isHighlight(day) }}
                         disabledDays={{ after: new Date() }}
-                        selectedDays={this.props.store.journalStore.date}
+                        selectedDays={this.props.store.journalStore.localDate}
                         onDayClick={e => this.handleDateChange(e)}
                       />
                       {/* <div

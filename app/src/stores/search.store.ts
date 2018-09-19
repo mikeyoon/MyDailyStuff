@@ -43,7 +43,8 @@ export class SearchStore {
 
   @computed
   get monthYear() {
-    return `${this.journal.date.getMonth() + 1}/1/${this.journal.date.getFullYear()}`;
+    return `${this.journal.localDate.getMonth() +
+      1}/1/${this.journal.localDate.getFullYear()}`;
   }
 
   constructor(private router: RouteStore, private journal: JournalStore) {
@@ -68,12 +69,18 @@ export class SearchStore {
       {
         fireImmediately: true
       }
-    )
+    );
 
     reaction(
       () => this.journal.current,
       entry => {
-        const date = this.journal.date.toDateString();
+        const date = new Date(
+          Date.UTC(
+            this.journal.localDate.getFullYear(),
+            this.journal.localDate.getMonth(),
+            this.journal.localDate.getDate()
+          )
+        ).toISOString();
 
         if (entry != null && entry.entries.length > 0) {
           if (this.isoEntryDates.indexOf(date) < 0) {
@@ -86,7 +93,7 @@ export class SearchStore {
           }
         }
       }
-    )
+    );
   }
 
   @action
@@ -104,7 +111,9 @@ export class SearchStore {
     );
     runInAction(() => {
       if (response.entity.success) {
-        this.isoEntryDates = response.entity.result.map((d: string) => new Date(d).toDateString());
+        this.isoEntryDates = response.entity.result.map((d: string) =>
+          new Date(d).toISOString()
+        );
       } else {
         this.searchError = response.entity.error;
       }

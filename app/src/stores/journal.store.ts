@@ -28,7 +28,7 @@ export class JournalStore {
     return this.current != null;
   }
   @observable
-  date: Date;
+  localDate: Date;
   @observable
   showCalendar = false;
 
@@ -36,13 +36,13 @@ export class JournalStore {
     private analyticsStore: AnalyticsStore,
     private router: RouteStore
   ) {
-    this.date = new Date();
+    this.localDate = new Date();
     reaction(
       () => this.router.params,
       params => {
         if (this.router.route === Routes.Journal) {
-          this.date = params.date != null ? moment(params.date, 'YYYY-M-D').toDate() : new Date();
-          this.get(this.date);
+          this.localDate = params.date != null ? moment(params.date, 'YYYY-M-D').toDate() : new Date();
+          this.get(this.localDate);
         }
       }
     );
@@ -58,7 +58,7 @@ export class JournalStore {
     try {
       const response = await RestClient.post("/journal", {
         entries: [entry],
-        date: moment(this.date).format("YYYY-M-D")
+        date: moment(this.localDate).format("YYYY-M-D")
       });
       runInAction(() => {
         this.adding = false;
