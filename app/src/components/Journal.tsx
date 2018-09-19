@@ -209,7 +209,7 @@ export class JournalComponent extends React.Component<BaseProps> {
 
   isHighlight(day: Date) {
     day.setUTCHours(0);
-    return this.props.store.searchStore.isoEntryDates.indexOf(day.toISOString()) >= 0;
+    return this.props.store.searchStore.isoEntryDates.indexOf(day.toDateString()) >= 0;
   }
 
   render() {

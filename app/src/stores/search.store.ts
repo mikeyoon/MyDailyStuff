@@ -64,6 +64,27 @@ export class SearchStore {
       () => this.monthYear,
       () => {
         this.searchByMonth();
+      },
+      {
+        fireImmediately: true
+      }
+    )
+
+    reaction(
+      () => this.journal.current,
+      entry => {
+        const date = this.journal.date.toDateString();
+
+        if (entry != null && entry.entries.length > 0) {
+          if (this.isoEntryDates.indexOf(date) < 0) {
+            this.isoEntryDates.push(date);
+          }
+        } else {
+          const index = this.isoEntryDates.indexOf(date);
+          if (index > 0) {
+            this.isoEntryDates.splice(index, 1);
+          }
+        }
       }
     )
   }
@@ -83,7 +104,7 @@ export class SearchStore {
     );
     runInAction(() => {
       if (response.entity.success) {
-        this.isoEntryDates = response.entity.result.map((d: string) => new Date(d).toISOString());
+        this.isoEntryDates = response.entity.result.map((d: string) => new Date(d).toDateString());
       } else {
         this.searchError = response.entity.error;
       }

@@ -283,7 +283,8 @@ func (c *Controller) SearchJournalDates(req SearchJournalRequest, session sessio
 	if req.End != "" {
 		query.End = now.MustParse(req.End)
 	} else {
-		query.End = query.Start.AddDate(0, 1, 0)
+		query.End = query.Start.AddDate(0, 3, 0)
+		query.Start = query.Start.AddDate(0, -3, 0)
 	}
 
 	results, err := c.service.SearchJournalDates(session.Get("userId").(string), query)
