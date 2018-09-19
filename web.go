@@ -139,7 +139,7 @@ func main() {
 	m.Post("/api/search", LoginRequired, binding.Json(lib.SearchJournalRequest{}), c.SearchJournal)
 
 	//Find dates that have entries in month
-	m.Get("/api/search/date", LoginRequired, binding.Json(lib.SearchJournalRequest{}), c.SearchJournalDates)
+	m.Get("/api/search/date", LoginRequired, binding.Form(lib.SearchJournalRequest{}), c.SearchJournalDates)
 
 	m.Run()
 }

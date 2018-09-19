@@ -13,6 +13,7 @@ import * as Responses from "../models/responses";
 import { RestClient } from "./client";
 import { SearchResult } from "../types";
 import { RouteStore, Routes } from "./route.store";
+import { JournalStore } from "./journal.store";
 
 const LIMIT = 10;
 
@@ -22,7 +23,7 @@ export class SearchStore {
   @observable
   searchResults: ReadonlyArray<SearchResult>;
   @observable
-  dates: any[];
+  isoEntryDates: string[];
   @computed
   get query() {
     return this.router.route === Routes.Search ? this.router.params.query : "";
@@ -39,19 +40,15 @@ export class SearchStore {
   prevOffset: number | undefined;
   @observable
   offset: number;
-  @observable
-  month: number | undefined;
-  @observable
-  year: number | undefined;
 
   @computed
   get monthYear() {
-    return this.month + "-" + this.year;
+    return `${this.journal.date.getMonth() + 1}/1/${this.journal.date.getFullYear()}`;
   }
 
-  constructor(private router: RouteStore) {
+  constructor(private router: RouteStore, private journal: JournalStore) {
     this.searchResults = [];
-    this.dates = [];
+    this.isoEntryDates = [];
     this.offset = 0;
 
     reaction(
@@ -62,6 +59,13 @@ export class SearchStore {
         }
       }
     );
+
+    reaction(
+      () => this.monthYear,
+      () => {
+        this.searchByMonth();
+      }
+    )
   }
 
   @action
@@ -73,25 +77,17 @@ export class SearchStore {
   }
 
   @action
-  async searchByMonth(date: Date) {
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    if (this.month !== month || this.year !== year) {
-      const start = year + "-" + month;
-      const end = moment(year + "-" + month + "-1", "YYYY-M-D").add(1, "months").format("YYYY-M-D")
-
-      const response = await RestClient.get(`/search/date?start=${start}&end=${end}`);
-      runInAction(() => {
-        if (response.entity.success) {
-          this.dates = response.entity.result;
-          this.month = month;
-          this.year = year;
-        } else {
-          this.searchError = response.entity.error;
-        }
-      });
-    }
+  async searchByMonth() {
+    const response = await RestClient.get(
+      `/search/date?start=${this.monthYear}`
+    );
+    runInAction(() => {
+      if (response.entity.success) {
+        this.isoEntryDates = response.entity.result.map((d: string) => new Date(d).toISOString());
+      } else {
+        this.searchError = response.entity.error;
+      }
+    });
   }
 
   @action

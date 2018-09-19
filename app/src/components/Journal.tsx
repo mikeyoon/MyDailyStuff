@@ -207,6 +207,11 @@ export class JournalComponent extends React.Component<BaseProps> {
     }
   }
 
+  isHighlight(day: Date) {
+    day.setUTCHours(0);
+    return this.props.store.searchStore.isoEntryDates.indexOf(day.toISOString()) >= 0;
+  }
+
   render() {
     var today = moment(this.props.store.journalStore.date);
     var next = moment(this.props.store.journalStore.date).add(1, "day");
@@ -250,7 +255,9 @@ export class JournalComponent extends React.Component<BaseProps> {
                       data-placement={placement}
                     >
                       <DayPicker
+                        month={this.props.store.journalStore.date}
                         toMonth={new Date()}
+                        modifiers={{ highlighted: day => this.isHighlight(day) }}
                         disabledDays={{ after: new Date() }}
                         selectedDays={this.props.store.journalStore.date}
                         onDayClick={e => this.handleDateChange(e)}
