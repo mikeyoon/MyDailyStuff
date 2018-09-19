@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -794,8 +793,6 @@ func (s MdsService) SearchJournalDates(userId string, jq JournalQuery) ([]string
 	start := time.Date(jq.Start.Year(), jq.Start.Month(), jq.Start.Day(), 0, 0, 0, 0, time.UTC)
 	end := time.Date(jq.End.Year(), jq.End.Month(), jq.End.Day(), 0, 0, 0, 0, time.UTC)
 
-	fmt.Println(start, end)
-
 	if !jq.Start.IsZero() && !jq.End.IsZero() {
 		query.Filter(elastic.NewRangeQuery("date").Gte(start).Lte(end))
 	} else if !jq.Start.IsZero() {
@@ -804,7 +801,7 @@ func (s MdsService) SearchJournalDates(userId string, jq JournalQuery) ([]string
 		query.Filter(elastic.NewRangeQuery("date").Lte(end))
 	}
 
-	result, err := s.es.Search(journalIndex()).Type(journalType).Query(query).Do(ctx)
+	result, err := s.es.Search(journalIndex()).Type(journalType).Query(query).Size(185).Do(ctx)
 
 	if err != nil {
 		return nil, err
