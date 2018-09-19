@@ -38,7 +38,7 @@ export class SearchStore {
   @observable
   prevOffset: number | undefined;
   @observable
-  offset: number | undefined;
+  offset: number;
   @observable
   month: number | undefined;
   @observable
@@ -52,6 +52,7 @@ export class SearchStore {
   constructor(private router: RouteStore) {
     this.searchResults = [];
     this.dates = [];
+    this.offset = 0;
 
     reaction(
       () => router.params,
@@ -77,12 +78,10 @@ export class SearchStore {
     const year = date.getFullYear();
 
     if (this.month !== month || this.year !== year) {
-      const response = await RestClient.post("/search/date", {
-        start: year + "-" + month + "-1",
-        end: moment(year + "-" + month + "-1", "YYYY-M-D")
-          .add(1, "months")
-          .format("YYYY-M-D")
-      });
+      const start = year + "-" + month;
+      const end = moment(year + "-" + month + "-1", "YYYY-M-D").add(1, "months").format("YYYY-M-D")
+
+      const response = await RestClient.get(`/search/date?start=${start}&end=${end}`);
       runInAction(() => {
         if (response.entity.success) {
           this.dates = response.entity.result;
