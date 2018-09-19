@@ -282,7 +282,7 @@ func (c *Controller) SearchJournalDates(req SearchJournalRequest, session sessio
 
 	if req.End != "" {
 		query.End = now.MustParse(req.End)
-	} else {
+	} else if req.Start != "" { // bit hacky, probably should have a flag in the request to do a default range
 		query.End = query.Start.AddDate(0, 3, 0)
 		query.Start = query.Start.AddDate(0, -3, 0)
 	}

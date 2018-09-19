@@ -740,9 +740,10 @@ var _ = Describe("Controller", func() {
 
 	Describe("Search Journal Dates", func() {
 		Context("With successful result with start date specified", func() {
-			It("should return dates", func() {
+			It("should return dates in 6 month range", func() {
 				service.On("SearchJournalDates", mockUser1.ID, JournalQuery{
-					Start: now.MustParse("2005-1-1"),
+					Start: now.MustParse("2004-10-1"),
+					End: now.MustParse("2005-4-1"),
 				}).Return([]string{"2010-1-1"}, nil)
 				session.On("Get", "userId").Return(mockUser1.ID)
 				render.On("JSON", 200, SuccessResponse([]string{"2010-1-1"})).Return()
