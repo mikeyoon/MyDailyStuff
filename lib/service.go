@@ -43,7 +43,7 @@ type IdDocument interface {
 }
 
 type User struct {
-	ID            string    `json:"-"`
+	ID            string    `json:"id,omitempty"`
 	Email         string    `json:"email"`
 	PasswordHash  string    `json:"password_hash"`
 	CreateDate    time.Time `json:"create_date"`
@@ -80,7 +80,7 @@ type JournalEntry struct {
 	Entries    []string  `json:"entries"`
 	Date       time.Time `json:"date"`
 	CreateDate time.Time `json:"create_date"`
-	ID         string    `json:"-"`
+	ID         string    `json:"id,omitempty"`
 }
 
 func (u *JournalEntry) GetID() string   { return u.ID }

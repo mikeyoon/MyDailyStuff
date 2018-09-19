@@ -34,7 +34,7 @@ export class AuthStore {
   @observable
   email: string | undefined;
   @observable
-  user_id: number | undefined;
+  user_id: string | undefined;
 
   @observable
   registering = false;
@@ -87,7 +87,7 @@ export class AuthStore {
         if (response.entity.success) {
           this.isLoggedIn = true;
           this.email = response.entity.result.email;
-          this.user_id = response.entity.result.user_id;
+          this.user_id = response.entity.result.id;
         } else {
           this.isLoggedIn = false;
         }
