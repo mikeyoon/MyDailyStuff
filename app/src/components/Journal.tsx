@@ -13,6 +13,7 @@ import { StreakComponent } from "./Streak";
 import { BaseProps } from "../types";
 
 import "react-day-picker/lib/style.css";
+import { readAsUtcDate } from "../date.util";
 
 @observer
 export class JournalComponent extends React.Component<BaseProps> {
@@ -208,7 +209,7 @@ export class JournalComponent extends React.Component<BaseProps> {
   }
 
   isHighlight(day: Date) {
-    const date = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate())).toISOString();
+    const date = readAsUtcDate(day).toISOString();
     return this.props.store.searchStore.isoEntryDates.indexOf(date) >= 0;
   }
 

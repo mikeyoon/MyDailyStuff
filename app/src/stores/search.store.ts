@@ -1,19 +1,10 @@
-import {
-  action,
-  computed,
-  observable,
-  runInAction,
-  autorun,
-  reaction,
-  when
-} from "mobx";
-import moment from "moment";
-import * as Requests from "../models/requests";
+import { action, computed, observable, runInAction, reaction } from "mobx";
 import * as Responses from "../models/responses";
 import { RestClient } from "./client";
 import { SearchResult } from "../types";
 import { RouteStore, Routes } from "./route.store";
 import { JournalStore } from "./journal.store";
+import { readAsUtcMonth, readAsUtcDate } from "../date.util";
 
 const LIMIT = 10;
 
@@ -43,8 +34,7 @@ export class SearchStore {
 
   @computed
   get monthYear() {
-    return `${this.journal.localDate.getMonth() +
-      1}/1/${this.journal.localDate.getFullYear()}`;
+    return `${this.journal.localDate.getFullYear()}-${this.journal.localDate.getMonth() + 1}-1`;
   }
 
   constructor(private router: RouteStore, private journal: JournalStore) {
@@ -74,13 +64,7 @@ export class SearchStore {
     reaction(
       () => this.journal.current,
       entry => {
-        const date = new Date(
-          Date.UTC(
-            this.journal.localDate.getFullYear(),
-            this.journal.localDate.getMonth(),
-            this.journal.localDate.getDate()
-          )
-        ).toISOString();
+        const date = readAsUtcDate(this.journal.localDate).toISOString();
 
         if (entry != null && entry.entries.length > 0) {
           if (this.isoEntryDates.indexOf(date) < 0) {
