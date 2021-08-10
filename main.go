@@ -3,7 +3,7 @@ package main
 
 import (
 	"flag"
-	"log"
+	// "log"
 	"net/http"
 	"os"
 
@@ -39,37 +39,37 @@ func LoginRequired(c martini.Context, r render.Render, session sessions.Session)
 }
 
 func main() {
-	esurl = os.Getenv("ESURL")
-	if esurl == "" {
-		esurl = *DEFAULT_ES_URL
-	}
+	// esurl = os.Getenv("ESURL")
+	// if esurl == "" {
+	// 	esurl = *DEFAULT_ES_URL
+	// }
 
-	sgUsername = os.Getenv("SENDGRID_USERNAME")
-	if sgUsername == "" {
-		sgUsername = *DEFAULT_SG_USERNAME
-	}
+	// sgUsername = os.Getenv("SENDGRID_USERNAME")
+	// if sgUsername == "" {
+	// 	sgUsername = *DEFAULT_SG_USERNAME
+	// }
 
-	sgPassword = os.Getenv("SENDGRID_PASSWORD")
-	if sgPassword == "" {
-		sgPassword = *DEFAULT_SG_PASSWORD
-	}
+	// sgPassword = os.Getenv("SENDGRID_PASSWORD")
+	// if sgPassword == "" {
+	// 	sgPassword = *DEFAULT_SG_PASSWORD
+	// }
 
-	secret = os.Getenv("SESSION_SECRET")
-	if secret == "" {
-		secret = *DEFAULT_SESSION_SECRET
-	}
+	// secret = os.Getenv("SESSION_SECRET")
+	// if secret == "" {
+	// 	secret = *DEFAULT_SESSION_SECRET
+	// }
 
-	mds := lib.MdsService{}
-	err := mds.Init(lib.ServiceOptions{
-		ElasticUrl:       esurl,
-		SendGridUsername: sgUsername,
-		SendGridPassword: sgPassword})
+	// mds := lib.MdsService{}
+	// err := mds.Init(lib.ServiceOptions{
+	// 	ElasticUrl:       esurl,
+	// 	SendGridUsername: sgUsername,
+	// 	SendGridPassword: sgPassword})
 
-	service = mds
+	// service = mds
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	store := sessions.NewCookieStore([]byte(secret))
 
@@ -93,7 +93,7 @@ func main() {
 	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "dist/app.html", Exclude: "/api"}))
 
 	c := lib.Controller{}
-	c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)
+	// c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)
 
 	//Login
 	m.Post("/api/account/login", binding.Json(lib.LoginRequest{}), c.Login)
