@@ -11,9 +11,12 @@
     "url": "https://github.com/mikeyoon/MyDailyStuff/issues"
   },
   "homepage": "https://github.com/mikeyoon/MyDailyStuff#readme",
-  "cache_directories": ["app/node_modules"],
+  "cache_directories": [
+    "app/node_modules"
+  ],
   "engines": {
     "yarn": "1.9.4",
     "node": "8.11.4"
-  }
+  },
+  "packageManager": "yarn@1.22.1"
 }

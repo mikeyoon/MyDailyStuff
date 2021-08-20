@@ -1,0 +1,147 @@
+{
+  "version": 2,
+  "projects": {
+    "api": {
+      "projectType": "application",
+      "root": "apps/api",
+      "sourceRoot": "apps/api",
+      "targets": {
+        "build": {
+          "executor": "@nx-go/nx-go:build",
+          "options": {
+            "outputPath": "dist/apps/api",
+            "main": "apps/api/main.go"
+          }
+        },
+        "serve": {
+          "executor": "@nx-go/nx-go:serve",
+          "options": {
+            "main": "apps/api/main.go"
+          }
+        },
+        "test": {
+          "executor": "@nx-go/nx-go:test"
+        },
+        "lint": {
+          "executor": "@nx-go/nx-go:lint"
+        }
+      }
+    },
+    "browser": {
+      "projectType": "application",
+      "root": "apps/browser",
+      "sourceRoot": "apps/browser/src",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/web:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/browser",
+            "index": "apps/browser/src/index.html",
+            "main": "apps/browser/src/main.ts",
+            "polyfills": "apps/browser/src/polyfills.ts",
+            "tsConfig": "apps/browser/tsconfig.app.json",
+            "assets": [
+              "apps/browser/src/favicon.ico",
+              "apps/browser/src/assets"
+            ],
+            "styles": ["apps/browser/src/styles.scss"],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/browser/src/environments/environment.ts",
+                  "with": "apps/browser/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/web:dev-server",
+          "options": {
+            "buildTarget": "browser:build"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "browser:build:production"
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/browser/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/browser"],
+          "options": {
+            "jestConfig": "apps/browser/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "browser-e2e": {
+      "root": "apps/browser-e2e",
+      "sourceRoot": "apps/browser-e2e/src",
+      "projectType": "application",
+      "targets": {
+        "e2e": {
+          "executor": "@nrwl/cypress:cypress",
+          "options": {
+            "cypressConfig": "apps/browser-e2e/cypress.json",
+            "tsConfig": "apps/browser-e2e/tsconfig.e2e.json",
+            "devServerTarget": "browser:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "browser:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/browser-e2e/**/*.{js,ts}"]
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "defaultCollection": "@nrwl/web"
+  },
+  "defaultProject": "browser",
+  "generators": {
+    "@nrwl/web:application": {
+      "style": "scss",
+      "linter": "eslint",
+      "unitTestRunner": "jest",
+      "e2eTestRunner": "cypress"
+    },
+    "@nrwl/web:library": {
+      "style": "scss",
+      "linter": "eslint",
+      "unitTestRunner": "jest"
+    }
+  }
+}
