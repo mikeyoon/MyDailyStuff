@@ -12,7 +12,7 @@ import (
 	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
@@ -47,16 +47,16 @@ var _ = Describe("Service", func() {
 	pass2, _ := bcrypt.GenerateFromPassword([]byte("whatever"), 10)
 	verify1 := UserVerification{
 		Email:        "test2@test.com",
-		Token:        uuid.New(),
+		Token:        uuid.NewString(),
 		PasswordHash: base64.StdEncoding.EncodeToString(pass2),
 		CreateDate:   time.Now(),
-		ID:           uuid.New(),
+		ID:           uuid.NewString(),
 	}
 
 	//Test Users Data
 	pass1, _ := bcrypt.GenerateFromPassword([]byte("something"), 10)
 	testUser1 := User{
-		ID:            uuid.New(),
+		ID:            uuid.NewString(),
 		Email:         "test@test.com",
 		PasswordHash:  base64.StdEncoding.EncodeToString(pass1),
 		CreateDate:    time.Now(),
@@ -69,7 +69,7 @@ var _ = Describe("Service", func() {
 		Entries:    []string{"test entry 1", "test entry 2"},
 		Date:       time.Date(2002, 5, 20, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 	}
 
 	journal2 := JournalEntry{
@@ -77,7 +77,7 @@ var _ = Describe("Service", func() {
 		Entries:    []string{"another entry 1", "another entry 2"},
 		Date:       time.Date(2002, 5, 25, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 	}
 
 	journal3 := JournalEntry{
@@ -85,7 +85,7 @@ var _ = Describe("Service", func() {
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(2002, 6, 20, 0, 0, 0, 0, time.UTC),
 		CreateDate: time.Now(),
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 	}
 
 	streak1 := JournalEntry{
@@ -93,7 +93,7 @@ var _ = Describe("Service", func() {
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 1),
 		CreateDate: time.Now(),
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 	}
 
 	streak2 := JournalEntry{
@@ -101,7 +101,7 @@ var _ = Describe("Service", func() {
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 2),
 		CreateDate: time.Now(),
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 	}
 
 	streak4 := JournalEntry{
@@ -109,13 +109,13 @@ var _ = Describe("Service", func() {
 		Entries:    []string{"some entry 1", "some entry 2"},
 		Date:       time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), 0, 0, 0, 0, time.UTC).Add(-time.Hour * 24 * 4),
 		CreateDate: time.Now(),
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 	}
 
 	//Test Password Reset Data
 	reset1 := PasswordReset{
-		ID:         uuid.New(),
-		Token:      uuid.New(),
+		ID:         uuid.NewString(),
+		Token:      uuid.NewString(),
 		CreateDate: time.Now(),
 	}
 
@@ -227,7 +227,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the id doesn't match", func() {
 			It("should not return the result", func() {
-				user, err := service.GetUserById(uuid.New())
+				user, err := service.GetUserById(uuid.NewString())
 
 				Expect(err).To(Equal(UserNotFound))
 				Expect(user).To(Equal(User{}))
@@ -256,7 +256,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user does not exist", func() {
 			It("should return UserNotFound error", func() {
-				err := service.UpdateUser(uuid.New(), "", "newpass")
+				err := service.UpdateUser(uuid.NewString(), "", "newpass")
 				Expect(err).To(Equal(UserNotFound))
 			})
 		})
@@ -286,7 +286,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the verification does not exist", func() {
 			It("should return not found error", func() {
-				userID, actual, err := service.GetUserVerification(uuid.New())
+				userID, actual, err := service.GetUserVerification(uuid.NewString())
 
 				Expect(err).To(Equal(VerificationNotFound))
 				Expect(userID).To(Equal(""))
@@ -368,7 +368,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the token does not exist", func() {
 			It("should return token not found error", func() {
-				_, err := service.CreateUser(uuid.New())
+				_, err := service.CreateUser(uuid.NewString())
 
 				Expect(err).To(Equal(VerificationNotFound))
 			})
@@ -391,7 +391,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the reset token isn't found", func() {
 			It("should return reset not found error", func() {
-				_, err := service.GetResetPassword(uuid.New())
+				_, err := service.GetResetPassword(uuid.NewString())
 
 				Expect(err).To(Equal(ResetNotFound))
 			})
@@ -468,7 +468,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the reset token isn't found", func() {
 			It("should return reset password not found error", func() {
-				err := service.ResetPassword(uuid.New(), "password")
+				err := service.ResetPassword(uuid.NewString(), "password")
 				Expect(err).To(Equal(ResetNotFound))
 			})
 		})
@@ -533,21 +533,21 @@ var _ = Describe("Service", func() {
 
 		Context("Where the entry does not exist", func() {
 			It("should return entry does not exist error", func() {
-				err := service.UpdateJournalEntry(uuid.New(), journal1.UserId, []string{"test", "entry"})
+				err := service.UpdateJournalEntry(uuid.NewString(), journal1.UserId, []string{"test", "entry"})
 				Expect(err).To(Equal(EntryNotFound))
 			})
 		})
 
 		Context("Where the entry is empty", func() {
 			It("should return entry is empty error", func() {
-				err := service.UpdateJournalEntry(uuid.New(), journal1.UserId, []string{" ", "entry"})
+				err := service.UpdateJournalEntry(uuid.NewString(), journal1.UserId, []string{" ", "entry"})
 				Expect(err).To(Equal(JournalEntryEmpty))
 			})
 		})
 
 		Context("Where the entry contains only html", func() {
 			It("should return entry is empty error", func() {
-				err := service.UpdateJournalEntry(uuid.New(), journal1.UserId, []string{"<div></div>", "entry"})
+				err := service.UpdateJournalEntry(uuid.NewString(), journal1.UserId, []string{"<div></div>", "entry"})
 				Expect(err).To(Equal(JournalEntryEmpty))
 			})
 		})
@@ -567,7 +567,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the entry does not exist", func() {
 			It("should return entry does not exist error", func() {
-				err := service.DeleteJournalEntry(uuid.New(), testUser1.ID)
+				err := service.DeleteJournalEntry(uuid.NewString(), testUser1.ID)
 				Expect(err).To(Equal(EntryNotFound))
 			})
 		})
@@ -595,7 +595,7 @@ var _ = Describe("Service", func() {
 
 		Context("Where the user id doesn't exist", func() {
 			It("should return entry not found error", func() {
-				_, err := service.GetJournalEntryByDate(uuid.New(), journal1.Date)
+				_, err := service.GetJournalEntryByDate(uuid.NewString(), journal1.Date)
 				Expect(err).To(Equal(NoJournalWithDate))
 			})
 		})

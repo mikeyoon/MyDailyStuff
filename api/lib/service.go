@@ -9,10 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/olivere/elastic"
-
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/google/uuid"
 	"github.com/kennygrant/sanitize"
+	"github.com/olivere/elastic"
 	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -379,8 +378,8 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 
 	if err == UserNotFound {
 		//Generate token
-		id := uuid.New()
-		token := uuid.New()
+		id := uuid.NewString()
+		token := uuid.NewString()
 
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 
@@ -565,7 +564,7 @@ func (s MdsService) CreateJournalEntry(userId string, entries []string, date tim
 	if err == nil {
 		entryDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 
-		id := uuid.New()
+		id := uuid.NewString()
 		entry = JournalEntry{ID: id, UserId: userId, Date: entryDate, CreateDate: time.Now().UTC(), Entries: entries}
 
 		_, err = s.es.Index().Index(journalIndex()).Type(journalType).Id(id).Refresh("true").BodyJson(entry).Do(ctx)
