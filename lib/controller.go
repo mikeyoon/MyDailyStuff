@@ -2,12 +2,12 @@ package lib
 
 import (
 	"fmt"
+	"net/http"
 
-	"github.com/go-martini/martini"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/now"
-	"github.com/martini-contrib/csrf"
-	"github.com/martini-contrib/render"
-	"github.com/martini-contrib/sessions"
+	csrf "github.com/utrack/gin-csrf"
 )
 
 type LoginRequest struct {
@@ -91,11 +91,17 @@ func (c *Controller) SetOptions(service Service, useSecureCookie bool) {
 	c.secureCookie = useSecureCookie
 }
 
-func (c *Controller) Login(req LoginRequest, session sessions.Session, r render.Render) {
-	user, err := c.service.GetUserByLogin(req.Email, req.Password)
+func (r *Controller) Login(c *gin.Context) {
+	session := sessions.Default(c)
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	user, err := r.service.GetUserByLogin(req.Email, req.Password)
 
 	if err != nil {
-		r.JSON(200, ErrorResponse("User not found"))
+		c.JSON(200, ErrorResponse("User not found"))
 		return
 	}
 
@@ -107,149 +113,191 @@ func (c *Controller) Login(req LoginRequest, session sessions.Session, r render.
 	session.Options(sessions.Options{
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   c.secureCookie,
+		Secure:   r.secureCookie,
 		MaxAge:   maxAge,
 	})
 
 	session.Set("userId", user.ID)
-	r.JSON(200, SuccessResponse(nil))
+	c.JSON(200, SuccessResponse(nil))
 }
 
-func (c *Controller) Logout(session sessions.Session, r render.Render) {
+func (r *Controller) Logout(c *gin.Context) {
+	session := sessions.Default(c)
 	session.Delete("userId")
 	session.Options(sessions.Options{
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   c.secureCookie,
+		Secure:   r.secureCookie,
 		Path:     "/",
 	})
 
-	r.JSON(200, SuccessResponse(nil))
+	c.JSON(200, SuccessResponse(nil))
 }
 
-func (c *Controller) Profile(session sessions.Session, r render.Render, x csrf.CSRF) {
-	user, err := c.service.GetUserById(session.Get("userId").(string))
+func (r *Controller) Profile(c *gin.Context) {
+	session := sessions.Default(c)
+	user, err := r.service.GetUserById(session.Get("userId").(string))
 
-	r.Header().Set("X-Csrf-Token", x.GetToken())
+	c.Header("X-Csrf-Token", csrf.GetToken(c))
 
 	if err == nil {
-		r.JSON(200, SuccessResponse(map[string]interface{}{
+		c.JSON(200, SuccessResponse(map[string]interface{}{
 			"user_id":         user.ID,
 			"create_date":     user.CreateDate,
 			"last_login_date": user.LastLoginDate,
 			"email":           user.Email,
 		}))
 	} else {
-		r.JSON(404, ErrorResponse(err.Error()))
+		c.JSON(404, ErrorResponse(err.Error()))
 	}
 }
 
-func (c *Controller) Register(reg RegisterRequest, r render.Render) {
-	err := c.service.CreateUserVerification(reg.Email, reg.Password)
+func (r *Controller) Register(c *gin.Context) {
+	var req RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := r.service.CreateUserVerification(req.Email, req.Password)
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	}
 }
 
-func (c *Controller) UpdateProfile(req ModifyAccountRequest, session sessions.Session, r render.Render, x csrf.CSRF) {
-	err := c.service.UpdateUser(session.Get("userId").(string), "", req.Password)
-	r.Header().Set("X-Csrf-Token", x.GetToken())
+func (r *Controller) UpdateProfile(c *gin.Context) {
+	session := sessions.Default(c)
+	var req ModifyAccountRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := r.service.UpdateUser(session.Get("userId").(string), "", req.Password)
+	c.Header("X-Csrf-Token", csrf.GetToken(c))
 
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	}
 }
 
-func (c *Controller) CreateForgotPasswordRequest(args martini.Params, session sessions.Session, r render.Render) {
-	err := c.service.CreateAndSendResetPassword(args["email"])
+func (r *Controller) CreateForgotPasswordRequest(c *gin.Context) {
+	err := r.service.CreateAndSendResetPassword(c.Param("email"))
 
 	if err != nil {
-		fmt.Println(err.Error() + " " + args["email"])
+		fmt.Println(err.Error() + " " + c.Query("email"))
 	}
 
-	r.JSON(200, SuccessResponse(nil))
+	c.JSON(200, SuccessResponse(nil))
 }
 
-func (c *Controller) GetResetPasswordRequest(args martini.Params, session sessions.Session, r render.Render) {
-	_, err := c.service.GetResetPassword(args["token"])
+func (r *Controller) GetResetPasswordRequest(c *gin.Context) {
+	_, err := r.service.GetResetPassword(c.Param("token"))
 
 	//TODO: Check if token has expired
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	}
 }
 
-func (c *Controller) ResetPassword(req ResetPasswordRequest,
-	session sessions.Session, r render.Render) {
+func (r *Controller) ResetPassword(c *gin.Context) {
+	var req ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	err := c.service.ResetPassword(req.Token, req.Password)
+	err := r.service.ResetPassword(req.Token, req.Password)
 
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	}
 }
 
-func (c *Controller) VerifyAccount(args martini.Params, session sessions.Session, r render.Render) {
-	id, err := c.service.CreateUser(args["token"])
+func (r *Controller) VerifyAccount(c *gin.Context) {
+	session := sessions.Default(c)
+	id, err := r.service.CreateUser(c.Param("token"))
 
 	if err == nil {
 		session.Set("userId", id)
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	} else {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	}
 }
 
-func (c *Controller) GetEntryByDate(r render.Render, args martini.Params, session sessions.Session) {
-	entry, err := c.service.GetJournalEntryByDate(session.Get("userId").(string), now.MustParse(args["date"]))
+func (r *Controller) GetEntryByDate(c *gin.Context) {
+	session := sessions.Default(c)
+	entry, err := r.service.GetJournalEntryByDate(session.Get("userId").(string), now.MustParse(c.Param("date")))
 
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(entry))
+		c.JSON(200, SuccessResponse(entry))
 	}
 }
 
-func (c *Controller) DeleteEntry(args martini.Params, session sessions.Session, r render.Render) {
-	err := c.service.DeleteJournalEntry(args["id"], session.Get("userId").(string))
+func (r *Controller) DeleteEntry(c *gin.Context) {
+	session := sessions.Default(c)
+	err := r.service.DeleteJournalEntry(c.Param("id"), session.Get("userId").(string))
 
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	}
 }
 
-func (c *Controller) CreateEntry(entry CreateEntryRequest, session sessions.Session, r render.Render) {
-	result, err := c.service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
+func (r *Controller) CreateEntry(c *gin.Context) {
+	session := sessions.Default(c)
+	var entry CreateEntryRequest
+	if err := c.ShouldBindJSON(&entry); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := r.service.CreateJournalEntry(session.Get("userId").(string), entry.Entries, now.MustParse(entry.Date))
 
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
 		//Need to return the result because there's a delay before the entry gets indexed into elastic search
-		r.JSON(200, SuccessResponse(result))
+		c.JSON(200, SuccessResponse(result))
 	}
 }
 
-func (c *Controller) UpdateEntry(entry ModifyEntryRequest, session sessions.Session, args martini.Params, r render.Render) {
-	err := c.service.UpdateJournalEntry(args["id"], session.Get("userId").(string), entry.Entries)
+func (r *Controller) UpdateEntry(c *gin.Context) {
+	session := sessions.Default(c)
+	var entry ModifyEntryRequest
+	if err := c.ShouldBindJSON(&entry); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := r.service.UpdateJournalEntry(c.Param("id"), session.Get("userId").(string), entry.Entries)
 
 	if err != nil {
-		r.JSON(200, ErrorResponse(err.Error()))
+		c.JSON(200, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(nil))
+		c.JSON(200, SuccessResponse(nil))
 	}
 }
 
-func (c *Controller) SearchJournal(req SearchJournalRequest, session sessions.Session, r render.Render) {
+func (r *Controller) SearchJournal(c *gin.Context) {
+	session := sessions.Default(c)
+	var req SearchJournalRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	var query JournalQuery
 	query.Query = req.Query
 	query.Limit = req.Limit
@@ -263,16 +311,23 @@ func (c *Controller) SearchJournal(req SearchJournalRequest, session sessions.Se
 		query.End = now.MustParse(req.End)
 	}
 
-	results, total, err := c.service.SearchJournal(session.Get("userId").(string), query)
+	results, total, err := r.service.SearchJournal(session.Get("userId").(string), query)
 
 	if err != nil {
-		r.JSON(500, ErrorResponse(err.Error()))
+		c.JSON(500, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, PagedSuccessResponse(results, total))
+		c.JSON(200, PagedSuccessResponse(results, total))
 	}
 }
 
-func (c *Controller) SearchJournalDates(req SearchJournalRequest, session sessions.Session, r render.Render) {
+func (r *Controller) SearchJournalDates(c *gin.Context) {
+	session := sessions.Default(c)
+	var req SearchJournalRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	var query JournalQuery
 	query.Query = req.Query
 
@@ -287,20 +342,22 @@ func (c *Controller) SearchJournalDates(req SearchJournalRequest, session sessio
 		query.Start = query.Start.AddDate(0, -3, 0)
 	}
 
-	results, err := c.service.SearchJournalDates(session.Get("userId").(string), query)
+	results, err := r.service.SearchJournalDates(session.Get("userId").(string), query)
 	if err != nil {
-		r.JSON(500, ErrorResponse(err.Error()))
+		c.JSON(500, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(results))
+		c.JSON(200, SuccessResponse(results))
 	}
 }
 
-func (c *Controller) GetStreak(args martini.Params, session sessions.Session, r render.Render) {
-	streak, err := c.service.GetStreak(session.Get("userId").(string), now.MustParse(args["date"]), 10)
+func (r *Controller) GetStreak(c *gin.Context) {
+	session := sessions.Default(c)
+
+	streak, err := r.service.GetStreak(session.Get("userId").(string), now.MustParse(c.Param("date")), 10)
 
 	if err != nil {
-		r.JSON(500, ErrorResponse(err.Error()))
+		c.JSON(500, ErrorResponse(err.Error()))
 	} else {
-		r.JSON(200, SuccessResponse(streak))
+		c.JSON(200, SuccessResponse(streak))
 	}
 }

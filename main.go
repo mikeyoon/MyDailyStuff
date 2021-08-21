@@ -3,17 +3,17 @@ package main
 
 import (
 	"flag"
-	// "log"
+	"log"
 	"net/http"
 	"os"
 
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/binding"
-	"github.com/martini-contrib/csrf"
-	"github.com/martini-contrib/gorelic"
-	"github.com/martini-contrib/render"
-	"github.com/martini-contrib/sessions"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
 	"github.com/mikeyoon/MyDailyStuff/lib"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	csrf "github.com/utrack/gin-csrf"
 )
 
 var (
@@ -26,120 +26,119 @@ var (
 	sgUsername string
 	sgPassword string
 	secret     string
-
-	service lib.Service
 )
 
-func LoginRequired(c martini.Context, r render.Render, session sessions.Session) {
+func LoginRequired(c *gin.Context) {
+	session := sessions.Default(c)
 	if session.Get("userId") == nil {
-		r.JSON(401, lib.ErrorResponse("User not logged in"))
+		c.AbortWithStatusJSON(401, lib.ErrorResponse("User not logged in"))
 	} else {
 		c.Next()
 	}
 }
 
 func main() {
-	// esurl = os.Getenv("ESURL")
-	// if esurl == "" {
-	// 	esurl = *DEFAULT_ES_URL
-	// }
-
-	// sgUsername = os.Getenv("SENDGRID_USERNAME")
-	// if sgUsername == "" {
-	// 	sgUsername = *DEFAULT_SG_USERNAME
-	// }
-
-	// sgPassword = os.Getenv("SENDGRID_PASSWORD")
-	// if sgPassword == "" {
-	// 	sgPassword = *DEFAULT_SG_PASSWORD
-	// }
-
-	// secret = os.Getenv("SESSION_SECRET")
-	// if secret == "" {
-	// 	secret = *DEFAULT_SESSION_SECRET
-	// }
-
-	// mds := lib.MdsService{}
-	// err := mds.Init(lib.ServiceOptions{
-	// 	ElasticUrl:       esurl,
-	// 	SendGridUsername: sgUsername,
-	// 	SendGridPassword: sgPassword})
-
-	// service = mds
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	store := sessions.NewCookieStore([]byte(secret))
-
-	m := martini.Classic()
-	m.Use(render.Renderer())
-
-	if os.Getenv("NEW_RELIC_LICENSE_KEY") != "" {
-		gorelic.InitNewrelicAgent(os.Getenv("NEW_RELIC_LICENSE_KEY"), "MyDailyStuff", false)
-		m.Use(gorelic.Handler)
+	esurl = os.Getenv("ESURL")
+	if esurl == "" {
+		esurl = *DEFAULT_ES_URL
 	}
 
-	m.Use(sessions.Sessions("my_session", store))
-	m.Use(csrf.Generate(&csrf.Options{
-		Secret:     secret,
-		SessionKey: "userId",
-		Header:     "X-Csrf-Token",
-		ErrorFunc: func(w http.ResponseWriter) {
-			http.Error(w, "CSRF token validation failed", http.StatusBadRequest)
+	sgUsername = os.Getenv("SENDGRID_USERNAME")
+	if sgUsername == "" {
+		sgUsername = *DEFAULT_SG_USERNAME
+	}
+
+	sgPassword = os.Getenv("SENDGRID_PASSWORD")
+	if sgPassword == "" {
+		sgPassword = *DEFAULT_SG_PASSWORD
+	}
+
+	secret = os.Getenv("SESSION_SECRET")
+	if secret == "" {
+		secret = *DEFAULT_SESSION_SECRET
+	}
+
+	mds := lib.MdsService{}
+	err := mds.Init(lib.ServiceOptions{
+		ElasticUrl:       esurl,
+		SendGridUsername: sgUsername,
+		SendGridPassword: sgPassword})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	store := cookie.NewStore([]byte(secret))
+
+	router := gin.Default()
+
+	if os.Getenv("NEW_RELIC_LICENSE_KEY") != "" {
+		app, err := newrelic.NewApplication(
+			newrelic.ConfigAppName("MyDailyStuff"),
+			newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
+			newrelic.ConfigDebugLogger(os.Stdout),
+		)
+		if nil != err {
+			log.Fatal(err)
+			os.Exit(1)
+		}
+		router.Use(nrgin.Middleware(app))
+	}
+
+	router.Use(sessions.Sessions("my_session", store))
+	router.Use(csrf.Middleware(csrf.Options{
+		Secret: secret,
+		ErrorFunc: func(c *gin.Context) {
+			c.String(400, "CSRF token mismatch")
+			c.Abort()
 		},
 	}))
-	m.Use(martini.Static("public", martini.StaticOptions{Fallback: "dist/app.html", Exclude: "/api"}))
+
+	//m.Use(martini.Static("public", martini.StaticOptions{Fallback: "dist/app.html", Exclude: ""}))
 
 	c := lib.Controller{}
-	// c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)
+	c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)
+
+	public := router.Group("/api")
 
 	//Login
-	m.Post("/api/account/login", binding.Json(lib.LoginRequest{}), c.Login)
+	public.POST("/account/login", c.Login)
+	public.POST("/account/logout", LoginRequired, c.Logout)
+	public.POST("/account/register", c.Register)                         //Submit registration
+	public.POST("/account/forgot/:email", c.CreateForgotPasswordRequest) //Send reset password link
+	public.GET("/account/reset/:token", c.GetResetPasswordRequest)       //Check if reset link is valid
+	public.POST("/account/reset/", c.ResetPassword)
+	public.GET("/account/verify/:token", c.VerifyAccount)
 
-	//Logout
-	m.Post("/api/account/logout", LoginRequired, c.Logout)
+	private := router.Group("/api")
+	private.Use(LoginRequired)
+	private.GET("/account", c.Profile)       //Get user account information
+	private.PUT("/account", c.UpdateProfile) //Modify user account
 
-	//Get user account information
-	m.Get("/api/account", LoginRequired, c.Profile)
+	private.GET("/account/streak/:date", c.GetStreak)
 
-	//Submit registration
-	m.Post("/api/account/register", binding.Json(lib.RegisterRequest{}), c.Register)
+	private.GET("/journal/:date", c.GetEntryByDate) //Get a journal entry
+	private.DELETE("/journal/:id", c.DeleteEntry)
+	private.POST("/journal", c.CreateEntry)
+	private.PUT("/journal/:id", c.UpdateEntry)
 
-	//Modify user account
-	m.Put("/api/account", LoginRequired, csrf.Validate, binding.Json(lib.ModifyAccountRequest{}), c.UpdateProfile)
+	private.GET("/search/date", c.SearchJournalDates) //Find dates that have entries in month
+	private.POST("/search", c.SearchJournal)
 
-	//Send reset password link
-	m.Post("/api/account/forgot/:email", c.CreateForgotPasswordRequest)
+	router.StaticFile("/login", "./app/app-dev.html")
+	router.StaticFile("/journal", "./app/app-dev.html")
 
-	//Check if reset link is valid
-	m.Get("/api/account/reset/:token", c.GetResetPasswordRequest)
+	router.StaticFile("/", "./public/index.html")
+	router.StaticFile("/favicon.ico", "./public/favicon.ico")
+	router.Static("/css", "./public/css")
+	router.Static("/fonts", "./public/fonts")
+	router.Static("/img", "./public/img")
+	router.Static("/js", "./public/js")
+	router.Static("/dist", "./app/dist")
 
-	m.Get("/api/account/streak/:date", LoginRequired, c.GetStreak)
+	router.NoRoute(func(c *gin.Context) {
+		c.AbortWithStatus(http.StatusNotFound)
+	})
 
-	//Reset password
-	m.Post("/api/account/reset/", binding.Json(lib.ResetPasswordRequest{}), c.ResetPassword)
-
-	//Verify an account
-	m.Get("/api/account/verify/:token", c.VerifyAccount)
-
-	//Get a journal entry
-	m.Get("/api/journal/:date", LoginRequired, c.GetEntryByDate)
-
-	m.Delete("/api/journal/:id", LoginRequired, c.DeleteEntry)
-
-	//Create a journal entry
-	m.Post("/api/journal", LoginRequired, binding.Json(lib.CreateEntryRequest{}), c.CreateEntry)
-
-	//Update a journal entry
-	m.Put("/api/journal/:id", LoginRequired, binding.Json(lib.ModifyEntryRequest{}), c.UpdateEntry)
-
-	//Search journal entries
-	m.Post("/api/search", LoginRequired, binding.Json(lib.SearchJournalRequest{}), c.SearchJournal)
-
-	//Find dates that have entries in month
-	m.Get("/api/search/date", LoginRequired, binding.Form(lib.SearchJournalRequest{}), c.SearchJournalDates)
-
-	m.Run()
+	router.Run()
 }

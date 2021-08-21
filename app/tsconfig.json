@@ -6,7 +6,7 @@
     "strict": true,
     "sourceMap": true,
     "target": "ES2020",
-    "outDir": "../public/dist"
+    "outDir": "./dist"
   },
   "files": [
     "src/index.ts"
