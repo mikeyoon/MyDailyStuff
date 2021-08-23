@@ -3,7 +3,6 @@ module github.com/mikeyoon/MyDailyStuff
 go 1.13
 
 require (
-	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/gin-contrib/sessions v0.0.3
@@ -17,14 +16,9 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/martini-contrib/binding v0.0.0-20160701174519-05d3e151b6cf
-	github.com/martini-contrib/csrf v0.0.0-20160409050259-8b618889bcf8
-	github.com/martini-contrib/gorelic v0.0.0-20140530144715-f8b0843aa3ab
 	github.com/martini-contrib/render v0.0.0-20150707142108-ec18f8345a11
 	github.com/martini-contrib/sessions v0.0.0-20140630231722-fa13114fbcf0
 	github.com/mattn/go-isatty v0.0.13 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/newrelic/go-agent/v3 v3.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrgin v1.1.1
 	github.com/olivere/elastic v6.2.37+incompatible
@@ -37,9 +31,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/utrack/gin-csrf v0.0.0-20190424104817-40fb8d2c8fca
-	github.com/yvasiyarov/go-metrics v0.0.0-20150112132944-c25f46c4b940 // indirect
-	github.com/yvasiyarov/gorelic v0.0.7 // indirect
-	github.com/yvasiyarov/newrelic_platform_go v0.0.0-20160601141957-9c099fbc30e9 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/sys v0.0.0-20210820121016-41cdb8703e55 // indirect
 	golang.org/x/text v0.3.7 // indirect

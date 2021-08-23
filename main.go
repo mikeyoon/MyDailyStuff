@@ -30,6 +30,7 @@ var (
 
 func LoginRequired(c *gin.Context) {
 	session := sessions.Default(c)
+	c.Header("X-Csrf-Token", csrf.GetToken(c))
 	if session.Get("userId") == nil {
 		c.AbortWithStatusJSON(401, lib.ErrorResponse("User not logged in"))
 	} else {
@@ -101,6 +102,8 @@ func main() {
 
 	public := router.Group("/api")
 
+	defaultPage := "./app/app-dev.html"
+
 	//Login
 	public.POST("/account/login", c.Login)
 	public.POST("/account/logout", LoginRequired, c.Logout)
@@ -109,6 +112,10 @@ func main() {
 	public.GET("/account/reset/:token", c.GetResetPasswordRequest)       //Check if reset link is valid
 	public.POST("/account/reset/", c.ResetPassword)
 	public.GET("/account/verify/:token", c.VerifyAccount)
+	public.OPTIONS("/csrf", func(c *gin.Context) {
+		c.Header("X-Csrf-Token", csrf.GetToken(c))
+		c.Status(200)
+	})
 
 	private := router.Group("/api")
 	private.Use(LoginRequired)
@@ -125,8 +132,10 @@ func main() {
 	private.GET("/search/date", c.SearchJournalDates) //Find dates that have entries in month
 	private.POST("/search", c.SearchJournal)
 
-	router.StaticFile("/login", "./app/app-dev.html")
-	router.StaticFile("/journal", "./app/app-dev.html")
+	router.StaticFile("/login", defaultPage)
+	router.StaticFile("/journal", defaultPage)
+	router.StaticFile("/register", defaultPage)
+	router.StaticFile("/about", defaultPage)
 
 	router.StaticFile("/", "./public/index.html")
 	router.StaticFile("/favicon.ico", "./public/favicon.ico")

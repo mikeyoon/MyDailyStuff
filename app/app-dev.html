@@ -1,19 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100">
 <head lang="en">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="api-url" content="http://localhost:3000/api">
     <title>My Daily Stuff - The Daily Summary of Things You Do</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link href="/dist/bootstrap.min.css" rel="stylesheet" />
     <style type="text/css">
         .margin-small {
             margin-left: 8px;
             margin-right: 8px;
         }
+
+        body {
+            margin: 0;
+        }
     </style>
+    
     <script type="module" src="/dist/index.js" defer="defer"></script>
 </head>
-<body>
-    <mds-about></mds-about>
+<body class="d-flex flex-column h-100">
+    <mds-header></mds-header>
+    <div class="container mt-4 mb-4">
+        <router-outlet></router-outlet>
+    </div>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="text-muted col-4">
+                    Created by <a class="text-decoration-none" href="https://github.com/mikeyoon/" target="_blank">Mike Yoon</a>
+                </div>
+                <div class="offset-4 col-4 text-end">
+                    <a class="text-decoration-none" href="/about">About</a>
+                  </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

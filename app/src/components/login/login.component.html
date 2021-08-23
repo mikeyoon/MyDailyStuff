@@ -1,0 +1,59 @@
+<div class="row">
+    <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-12">
+      <h3 class="text-center">Login to your account</h3>
+      <br />
+      <div [if]="this.loginError" class="alert alert-danger" [content]="this.loginError"></div>
+      <form id="login_form" class="row g-3">
+        <div class="col-12">
+          <label class="form-label" htmlFor="email">Email:</label>
+          <input
+            class="form-control"
+            id="email"
+            name="email"
+          />
+          <div [if]="this.emailError" class="invalid-feedback" [content]="this.emailError"></div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" htmlFor="password">Password:</label>
+          <input
+            class="form-control"
+            id="password"
+            name="password"
+            type="password"
+          />
+          <div [if]="this.passwordError" class="invalid-feedback" [content]="this.passwordError"></div>
+        </div>
+        <div class="col-6">
+            <div class="form-check">
+                <input
+                  class="form-check-input"
+                  id="rememberMe"
+                  name="persist"
+                  type="checkbox"
+                  value="persist"
+                />
+                <label
+                  class="form-check-label"
+                  htmlFor="rememberMe"
+                >
+                  Keep me logged in
+                </label>
+              </div>
+        </div>
+        <div class="col-6">
+            <div class="col form-group text-end">
+                <a class="text-decoration-none" href="/forgot-password">
+                  I forgot my password
+                </a>
+              </div>
+        </div>
+        <div class="text-center">
+          <button class="btn btn-primary" type="submit">
+            Login
+          </button>
+          <span class="margin-small">or</span>
+          <a class="text-decoration-none" href="/register">Register for a new account</a>
+        </div>
+      </form>
+    </div>
+  </div>

@@ -65,16 +65,8 @@ func ErrorResponse(error string) Response {
 	return Response{Success: false, Error: error}
 }
 
-func ErrorProtectedResponse(error string, token string) Response {
-	return Response{Success: false, Error: error, Token: token}
-}
-
 func SuccessResponse(result interface{}) Response {
 	return Response{Success: true, Result: result}
-}
-
-func ProtectedResponse(result interface{}, token string) Response {
-	return Response{Success: true, Result: result, Token: token}
 }
 
 func PagedSuccessResponse(result interface{}, total int64) Response {
@@ -94,14 +86,15 @@ func (c *Controller) SetOptions(service Service, useSecureCookie bool) {
 func (r *Controller) Login(c *gin.Context) {
 	session := sessions.Default(c)
 	var req LoginRequest
+	fmt.Println(req)
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parameters provided"})
 		return
 	}
 	user, err := r.service.GetUserByLogin(req.Email, req.Password)
 
 	if err != nil {
-		c.JSON(200, ErrorResponse("User not found"))
+		c.JSON(200, ErrorResponse("Incorrect email or password"))
 		return
 	}
 
