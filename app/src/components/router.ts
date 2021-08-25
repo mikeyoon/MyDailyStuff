@@ -4,7 +4,7 @@ interface Route {
   route: string;
   regex: RegExp;
   component: new() => HTMLElement;
-  canActivate?: () => boolean;
+  canActivate?: (params: RouteParams) => boolean | Promise<boolean>;
   title?: string;
 }
 
@@ -44,7 +44,7 @@ export class Router {
   on(route: string, options: {
     component: Route['component'],
     title?: string,
-    canActivate?: () => boolean,
+    canActivate?: (params: RouteParams) => boolean | Promise<boolean>,
   }) {
     this.routes.set(route, {
       route: route,
@@ -66,12 +66,7 @@ export class Router {
       if (route != null) {
         const match = route.regex.exec(url);
         if (match != null) {
-          this.resolve(url, route, match);
-          if (push) {
-            window.history.pushState(null, window.document.title, url);
-          }
-
-          document.title = 'My Daily Stuff' + (route.title ? ' - ' + route.title : '');
+          this.resolve(url, route, match, push);
         }
       } else {
         console.error('404');
@@ -79,22 +74,45 @@ export class Router {
     }
   }
 
-  private resolve(url: string, route: Route, match: RegExpExecArray) {
-    this.resolved = {
-      url,
-      route,
-      params: match.groups || {}
-    };
+  private resolve(url: string, route: Route, match: RegExpExecArray, push: boolean) {
+    const params = match.groups || {};
 
-    if (route.canActivate && !route.canActivate) {
-      // do nothing
-    } else {
+    const process = () => {
+      this.resolved = {
+        url,
+        route,
+        params
+      };
+
+      if (push) {
+        window.history.pushState(null, window.document.title, url);
+      }
+
+      document.title = 'My Daily Stuff' + (route.title ? ' - ' + route.title : '');
+
       this.paramsNotifier.next(this.resolved.params);
       const outlet = this.root.querySelector('router-outlet');
       if (outlet) {
         outlet.innerHTML = '';
         outlet.append(new route.component());
       }
+    }
+
+    if (route.canActivate) {
+      const result = route.canActivate(params);
+      if (result instanceof Promise) {
+        result.then((can) => {
+          if (can) {
+            process();
+          }
+        })
+      } else {
+        if (result) {
+          process();
+        }
+      }
+    } else {
+      process();
     }
   }
 }

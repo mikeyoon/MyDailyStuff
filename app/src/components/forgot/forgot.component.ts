@@ -27,7 +27,7 @@ export class ForgotComponent extends BaseComponent {
 
     this.resetSuccess = authStore.resetSuccess;
 
-    authStore.propChanged$.subscribe((prop) => {
+    this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'resetSuccess':
           this.resetSuccess = authStore.resetSuccess;

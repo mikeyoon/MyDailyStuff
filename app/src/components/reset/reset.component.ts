@@ -1,7 +1,7 @@
 import { importCss, importHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
 import { BaseComponent } from '../base.component.js';
-import { router } from '../router';
+import { router } from '../router.js';
 
 const css = await importCss(import.meta.url, 'reset.component.css');
 const html = await importHtml(import.meta.url, 'reset.component.html');
@@ -30,7 +30,7 @@ export class ResetComponent extends BaseComponent {
 
     this.resetSuccess = authStore.resetSuccess;
 
-    authStore.propChanged$.subscribe((prop) => {
+    this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'resetSuccess':
           this.resetSuccess = authStore.registered;
@@ -43,7 +43,7 @@ export class ResetComponent extends BaseComponent {
       this.digest();
     });
 
-    router.params$.subscribe((params) => {
+    this.subscribe(router.params$, (params) => {
       this.resetToken = params?.token;
     })
   }

@@ -31,8 +31,9 @@ export class LoginComponent extends BaseComponent {
     super(html, css);
 
     this.isLoggedIn = authStore.isLoggedIn;
+    this.loginError = authStore.loginError;
 
-    authStore.propChanged$.subscribe((prop) => {
+    this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'isLoggedIn':
           this.isLoggedIn = authStore.isLoggedIn;
@@ -76,7 +77,10 @@ export class LoginComponent extends BaseComponent {
       ev.preventDefault();
       ev.stopPropagation();
 
-      if (!this.loginError && !this.passwordError) {
+      this.validateEmail();
+      this.validatePassword();
+
+      if (!this.emailError && !this.passwordError) {
         authStore.login({
           email: this.email,
           password: this.password,

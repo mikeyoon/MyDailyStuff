@@ -4,6 +4,7 @@ import { AnalyticsStore, analyticsStore } from "./analytics.store.js";
 import { BaseStore } from "./base.store.js";
 import { fetch } from '../util/fetch.js';
 import * as Requests from '../models/requests.js';
+import { router } from "../components/router.js";
 
 interface StoreProps {
   loggingIn: boolean;
@@ -179,7 +180,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         if (json.success === true) {
           this.isLoggedIn = true;
           await this.getAccount();
-          // page("/journal");
+          router.navigate('/journal');
         } else {
           this.loginError = json.error;
         }
@@ -201,7 +202,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         this.isLoggedIn = false;
         this.email = undefined;
         this.user_id = undefined;
-        // page("/login");
+        router.navigate('/login');
 
         this.notifyPropertyChanged('isLoggedIn', 'email', 'user_id');
       }
@@ -244,11 +245,14 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         if (json.success) {
           this.isLoggedIn = true;
           this.getAccount();
-          // page("/journal");
+          router.navigate('/journal');
+        } else {
+          this.loginError = 'Verification link invalid'
+          router.navigate('/login');
         }
       }
     } catch (err) {
-      // page("/login");
+      router.navigate('/login');
     }
   }
 

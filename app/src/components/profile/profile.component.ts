@@ -30,7 +30,7 @@ export class ProfileComponent extends BaseComponent {
 
     this.saved = authStore.isLoggedIn;
 
-    authStore.propChanged$.subscribe((prop) => {
+    this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'saved':
           this.saved = authStore.saved;

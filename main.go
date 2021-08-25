@@ -47,6 +47,10 @@ func RequireLogin(c *gin.Context) {
 	}
 }
 
+func DefaultPage(c *gin.Context) {
+	c.File("./app/app-dev.html")
+}
+
 func main() {
 	esurl = os.Getenv("ESURL")
 	if esurl == "" {
@@ -111,8 +115,6 @@ func main() {
 
 	public := router.Group("/api")
 
-	defaultPage := "./app/app-dev.html"
-
 	//Login
 	public.POST("/account/login", c.Login)
 	public.POST("/account/logout", LoginRequired, c.Logout)
@@ -141,16 +143,18 @@ func main() {
 	privateAPI.GET("/search/date", c.SearchJournalDates) //Find dates that have entries in month
 	privateAPI.POST("/search", c.SearchJournal)
 
-	privateStatic := router.Group("/")
-	privateStatic.Use(RequireLogin)
-	privateStatic.StaticFile("/profile", defaultPage)
+	router.GET("/profile", RequireLogin, DefaultPage)
 
-	router.StaticFile("/login", defaultPage)
-	router.StaticFile("/journal", defaultPage)
-	router.StaticFile("/register", defaultPage)
-	router.StaticFile("/about", defaultPage)
-	router.StaticFile("/forgot-password", defaultPage)
-	router.StaticFile("/account", defaultPage)
+	router.GET("/login", DefaultPage)
+	router.GET("/journal", DefaultPage)
+	router.GET("/journal/:date", DefaultPage)
+	router.GET("/search/:query", DefaultPage)
+	router.GET("/search/:query/:offset", DefaultPage)
+	router.GET("/register", DefaultPage)
+	router.GET("/about", DefaultPage)
+	router.GET("/forgot-password", DefaultPage)
+	router.GET("/account/verify/:token", DefaultPage)
+	router.GET("/account/reset/:token", DefaultPage)
 
 	router.StaticFile("/", "./public/index.html")
 	router.StaticFile("/favicon.ico", "./public/favicon.ico")

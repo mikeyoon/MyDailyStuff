@@ -7,8 +7,6 @@ const css = await importCss(import.meta.url, 'header.component.css');
 const html = await importHtml(import.meta.url, 'header.component.html');
 
 export class HeaderComponent extends BaseComponent {
-  propSubscription: ReturnType<Observable<any>['subscribe']>;
-
   static get observedAttributes() {
     return ['test'];
   }
@@ -16,17 +14,13 @@ export class HeaderComponent extends BaseComponent {
   constructor() {
     super(html, css);
 
-    this.propSubscription = authStore.propChanged$.subscribe((key) => {
+    this.subscribe(authStore.propChanged$, (key) => {
       switch (key) {
         case 'isLoggedIn':
           this.digest();
           break;
       }
     });
-  }
-
-  disconnectedCallback() {
-    this.propSubscription?.();
   }
 
   get isLoggedIn(): boolean {
