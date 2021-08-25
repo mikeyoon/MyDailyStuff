@@ -7,10 +7,6 @@ const css = await importCss(import.meta.url, 'reset.component.css');
 const html = await importHtml(import.meta.url, 'reset.component.html');
 
 export class ResetComponent extends BaseComponent {
-  static get observedAttributes() {
-    return ['test'];
-  }
-
   private passwordTextbox!: HTMLInputElement;
   private confirmTextbox!: HTMLInputElement;
   private resetForm!: HTMLFormElement;
@@ -22,30 +18,29 @@ export class ResetComponent extends BaseComponent {
   confirmError = '';
   resetToken: string | undefined;
 
-  resetSuccess = false;
-  resetError: string | undefined;
-
   constructor() {
     super(html, css);
-
-    this.resetSuccess = authStore.resetSuccess;
 
     this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'resetSuccess':
-          this.resetSuccess = authStore.registered;
-          break;
         case 'resetError':
-          this.resetError = authStore.resetError;
+          this.digest();
           break;
-      }
-
-      this.digest();
+      }      
     });
 
     this.subscribe(router.params$, (params) => {
       this.resetToken = params?.token;
     })
+  }
+
+  get resetSuccess() {
+    return authStore.resetSuccess;
+  }
+
+  get resetError() {
+    return authStore.resetError;
   }
 
   connectedCallback() {

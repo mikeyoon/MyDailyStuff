@@ -24,27 +24,25 @@ export class LoginComponent extends BaseComponent {
   passwordError = '';
   emailError = '';
 
-  isLoggedIn = false;
-  loginError: string | undefined;
-
   constructor() {
     super(html, css);
-
-    this.isLoggedIn = authStore.isLoggedIn;
-    this.loginError = authStore.loginError;
 
     this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'isLoggedIn':
-          this.isLoggedIn = authStore.isLoggedIn;
-          break;
         case 'loginError':
-          this.loginError = authStore.loginError;
+          this.digest();
           break;
       }
-
-      this.digest();
     });
+  }
+
+  get isLoggedIn() {
+    return authStore.isLoggedIn;
+  }
+
+  get loginError() {
+    return authStore.loginError;
   }
 
   connectedCallback() {

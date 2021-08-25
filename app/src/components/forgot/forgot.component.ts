@@ -16,29 +16,27 @@ export class ForgotComponent extends BaseComponent {
   private forgotForm!: HTMLFormElement;
 
   private email = '';
-
   emailError = '';
-
-  resetSuccess = false;
-  resetError: string | undefined;
 
   constructor() {
     super(html, css);
 
-    this.resetSuccess = authStore.resetSuccess;
-
     this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'resetSuccess':
-          this.resetSuccess = authStore.resetSuccess;
-          break;
         case 'resetError':
-          this.resetError = authStore.resetError;
+          this.digest();
           break;
       }
-
-      this.digest();
     });
+  }
+
+  get resetSuccess() {
+    return authStore.resetSuccess;
+  }
+
+  get resetError() {
+    return authStore.resetError;
   }
 
   connectedCallback() {

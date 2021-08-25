@@ -25,27 +25,25 @@ export class RegisterComponent extends BaseComponent {
   confirmError = '';
   emailError = '';
 
-  registered = false;
-  registerError: string | undefined;
-
   constructor() {
     super(html, css);
 
-    this.registered = authStore.registered;
-    this.email = authStore.email || '';
-
-    authStore.propChanged$.subscribe((prop) => {
+    this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'registered':
-          this.registered = authStore.registered;
-          break;
         case 'registerError':
-          this.registerError = authStore.registerError;
+          this.digest();
           break;
       }
-
-      this.digest();
     });
+  }
+
+  get registered() {
+    return authStore.registered;
+  }
+
+  get registerError() {
+    return authStore.registerError;
   }
 
   connectedCallback() {

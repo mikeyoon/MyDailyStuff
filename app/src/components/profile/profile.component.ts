@@ -22,26 +22,27 @@ export class ProfileComponent extends BaseComponent {
   passwordError = '';
   confirmError = '';
 
-  saved = false;
-  profileError: string | undefined;
-
   constructor() {
     super(html, css);
-
-    this.saved = authStore.isLoggedIn;
 
     this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'saved':
-          this.saved = authStore.saved;
-          break;
         case 'saveError':
-          this.profileError = authStore.saveError;
+          this.digest();
           break;
       }
 
-      this.digest();
+      
     });
+  }
+
+  get saved() {
+    return authStore.saved;
+  }
+
+  get profileError() {
+    return authStore.saveError;
   }
 
   connectedCallback() {
