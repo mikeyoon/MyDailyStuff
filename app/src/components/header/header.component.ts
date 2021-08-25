@@ -7,10 +7,6 @@ const css = await importCss(import.meta.url, 'header.component.css');
 const html = await importHtml(import.meta.url, 'header.component.html');
 
 export class HeaderComponent extends BaseComponent {
-  static get observedAttributes() {
-    return ['test'];
-  }
-
   constructor() {
     super(html, css);
 

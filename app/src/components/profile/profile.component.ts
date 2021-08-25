@@ -6,10 +6,6 @@ const css = await importCss(import.meta.url, 'profile.component.css');
 const html = await importHtml(import.meta.url, 'profile.component.html');
 
 export class ProfileComponent extends BaseComponent {
-  static get observedAttributes() {
-    return ['test'];
-  }
-
   private emailTextbox!: HTMLInputElement;
   private passwordTextbox!: HTMLInputElement;
   private confirmTextbox!: HTMLInputElement;
