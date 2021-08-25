@@ -2,43 +2,45 @@ import { importCss, importHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
 import { BaseComponent } from '../base.component.js';
 
-const css = await importCss(import.meta.url, 'login.component.css');
-const html = await importHtml(import.meta.url, 'login.component.html');
+const css = await importCss(import.meta.url, 'register.component.css');
+const html = await importHtml(import.meta.url, 'register.component.html');
 
 const emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
 
-export class LoginComponent extends BaseComponent {
+export class RegisterComponent extends BaseComponent {
   static get observedAttributes() {
     return ['test'];
   }
 
   private emailTextbox!: HTMLInputElement;
   private passwordTextbox!: HTMLInputElement;
-  private rememberCheckbox!: HTMLInputElement;
-  private loginForm!: HTMLFormElement;
+  private confirmTextbox!: HTMLInputElement;
+  private registerForm!: HTMLFormElement;
 
-  private persist = false;
+  private confirm = '';
   private password = '';
   private email = '';
 
   passwordError = '';
+  confirmError = '';
   emailError = '';
 
-  isLoggedIn = false;
-  loginError: string | undefined;
+  registered = false;
+  registerError: string | undefined;
 
   constructor() {
     super(html, css);
 
-    this.isLoggedIn = authStore.isLoggedIn;
+    this.registered = authStore.registered;
+    this.email = authStore.email;
 
     authStore.propChanged$.subscribe((prop) => {
       switch (prop) {
-        case 'isLoggedIn':
-          this.isLoggedIn = authStore.isLoggedIn;
+        case 'registered':
+          this.registered = authStore.registered;
           break;
-        case 'loginError':
-          this.loginError = authStore.loginError;
+        case 'registerError':
+          this.registerError = authStore.registerError;
           break;
       }
 
@@ -51,8 +53,8 @@ export class LoginComponent extends BaseComponent {
 
     this.emailTextbox = this.root.querySelector('#email') as HTMLInputElement;
     this.passwordTextbox = this.root.querySelector('#password') as HTMLInputElement;
-    this.rememberCheckbox = this.root.querySelector('#rememberMe') as HTMLInputElement;
-    this.loginForm = this.root.querySelector('#login_form') as HTMLFormElement;
+    this.confirmTextbox = this.root.querySelector('#confirm') as HTMLInputElement;
+    this.registerForm = this.root.querySelector('#register_form') as HTMLFormElement;
 
     this.emailTextbox.addEventListener('change', (ev) => {
       this.email = this.emailTextbox.value;
@@ -66,21 +68,25 @@ export class LoginComponent extends BaseComponent {
     });
     this.passwordTextbox.addEventListener('blur', () => this.validatePassword());
 
-    this.rememberCheckbox.addEventListener('change', (ev) => {
-      if (ev.target != null) {
-        this.persist = this.rememberCheckbox.checked;
-      }
+    this.confirmTextbox.addEventListener('change', (ev) => {
+      this.confirm = this.confirmTextbox.value;
+      this.confirmError = '';
+    });
+    this.confirmTextbox.addEventListener('blur', () => this.validatePassword());
+    this.confirmTextbox.addEventListener('focus', () => {
+      this.confirmError = '';
+      this.confirmTextbox.setAttribute('class', 'form-control');
+      this.digest();
     });
 
-    this.loginForm.addEventListener('submit', (ev) => {
+    this.registerForm.addEventListener('submit', (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
 
-      if (!this.loginError && !this.passwordError) {
-        authStore.login({
+      if (!this.emailError && !this.passwordError && !this.confirmError) {
+        authStore.register({
           email: this.email,
           password: this.password,
-          persist: this.persist,
         });
       }
     });
@@ -113,6 +119,16 @@ export class LoginComponent extends BaseComponent {
       this.passwordTextbox.setAttribute('class', 'form-control is-invalid');
     } else {
       this.passwordTextbox.setAttribute('class', 'form-control');
+    }
+
+    if (!this.passwordError && this.password !== this.confirm) {
+      this.confirmError = "Passwords must match";
+    }
+
+    if (this.confirmError) {
+      this.confirmTextbox.setAttribute('class', 'form-control is-invalid');
+    } else {
+      this.confirmTextbox.setAttribute('class', 'form-control');
     }
 
     this.digest();

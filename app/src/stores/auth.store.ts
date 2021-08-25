@@ -211,12 +211,13 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
   async register(request: Requests.Register) {
     this.registering = false;
     this.registerError = undefined;
+    this.email = request.email;
     this.notifyPropertyChanged('registering', 'registerError');
 
     this.analyticsStore.onRegister(request);
 
     try {
-      const response = await fetch("/account/register", { method: 'POST' });
+      const response = await fetch("/account/register", { method: 'POST', body: JSON.stringify(request) });
       if (response.ok) {
         const json = await response.json() as BaseResponse;
         if (json.success === true) {

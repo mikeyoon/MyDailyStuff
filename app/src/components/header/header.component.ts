@@ -32,15 +32,4 @@ export class HeaderComponent extends BaseComponent {
   get isLoggedIn(): boolean {
     return authStore.isLoggedIn;
   }
-
-  attributeChangedCallback(name: string, oldValue: any, newValue: any) {
-    switch (name) {
-      case 'test':
-        const element = this.querySelector('.test');
-        if (element != null) {
-          element.textContent = newValue;
-        }
-        break;
-    }
-  }
 }

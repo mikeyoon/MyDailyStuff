@@ -20,6 +20,8 @@ export class Router {
     params: RouteParams;
   } | null;
 
+  private root!: ShadowRoot;
+
   constructor(private baseUrl: string) {
     this.routes = new Map();
     this.resolved = null;
@@ -51,6 +53,10 @@ export class Router {
       canActivate: options.canActivate,
       title: options.title,
     });
+  }
+
+  init(root: ShadowRoot) {
+    this.root = root;
   }
   
   navigate(url: string, push = true) {
@@ -84,7 +90,7 @@ export class Router {
       // do nothing
     } else {
       this.paramsNotifier.next(this.resolved.params);
-      const outlet = window.document.querySelector('router-outlet');
+      const outlet = this.root.querySelector('router-outlet');
       if (outlet) {
         outlet.innerHTML = '';
         outlet.append(new route.component());
@@ -92,3 +98,5 @@ export class Router {
     }
   }
 }
+
+export const router = new Router('./');

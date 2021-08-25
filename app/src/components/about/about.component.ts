@@ -12,15 +12,4 @@ export class AboutComponent extends BaseComponent {
   constructor() {
     super(html, css);
   }
-
-  attributeChangedCallback(name: string, oldValue: any, newValue: any) {
-    switch (name) {
-      case 'test':
-        const element = this.querySelector('.test');
-        if (element != null) {
-          element.textContent = newValue;
-        }
-        break;
-    }
-  }
 }

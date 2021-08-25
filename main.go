@@ -143,7 +143,13 @@ func main() {
 	router.Static("/fonts", "./public/fonts")
 	router.Static("/img", "./public/img")
 	router.Static("/js", "./public/js")
-	router.Static("/dist", "./app/dist")
+
+	dist := router.Group("/dist")
+	dist.Use(func(c *gin.Context) {
+		c.Header("Cache-Control", "no-cache")
+		c.File("./app" + c.Request.URL.Path)
+	})
+	dist.Static("/", "./app/dist")
 
 	router.NoRoute(func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)

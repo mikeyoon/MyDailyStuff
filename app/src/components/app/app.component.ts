@@ -1,34 +1,18 @@
 import { importCss, importHtml } from '../../loader.js';
+import { BaseComponent } from '../base.component.js';
+import { router } from '../router.js';
 
 const css = await importCss(import.meta.url, 'app.component.css');
 const html = await importHtml(import.meta.url, 'app.component.html');
 
-export class AboutComponent extends HTMLElement {
-  root: ShadowRoot;
-
-  static get observedAttributes() {
-    return ['test'];
-  }
-
+export class AppComponent extends BaseComponent {
   constructor() {
-    super();
-
-    this.root = this.attachShadow({ mode: 'open' });
+    super(html, css);
+    router.init(this.root);
   }
 
   connectedCallback() {
-    this.root.appendChild(css);
-    this.root.appendChild(html.cloneNode(true));
-  }
-
-  attributeChangedCallback(name: string, oldValue: any, newValue: any) {
-    switch (name) {
-      case 'test':
-        const element = this.root.querySelector('.test');
-        if (element != null) {
-          element.textContent = newValue;
-        }
-        break;
-    }
+    super.connectedCallback();
+    router.navigate(window.document.location.pathname + window.document.location.search, false);
   }
 }
