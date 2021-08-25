@@ -1,0 +1,29 @@
+<div class="row">
+  <div class="col-lg-6 offset-lg-3 col-md-6 offset-md-3 col-sm-8 offset-sm-2 col-xs-12">
+    <h3 class="text-center">Update Your Profile</h3>
+    <br />
+    <div [if]="this.profileError" class="alert alert-danger" [content]="this.profileError"></div>
+    <div [if]="this.saved" class="alert alert-success">Profile Updated Successfully</div>
+    <form id="profile_form" class="row g-3">
+      <div class="col-12">
+        <label class="form-label" htmlFor="email">Email:</label>
+        <input class="form-control" id="email" name="email" disabled="disabled" />
+      </div>
+      <div class="col-12">
+        <label class="form-label" htmlFor="password">Password:</label>
+        <input class="form-control" id="password" name="password" type="password" />
+        <div [if]="this.passwordError" class="invalid-feedback" [content]="this.passwordError"></div>
+      </div>
+      <div class="col-12">
+        <label class="form-label" htmlFor="password">Confirm Password:</label>
+        <input class="form-control" id="confirm" name="confirm" type="password" />
+        <div [if]="this.confirmError" class="invalid-feedback" [content]="this.confirmError"></div>
+      </div>
+      <div class="text-center">
+        <button class="btn btn-primary" type="submit">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -38,6 +38,15 @@ func LoginRequired(c *gin.Context) {
 	}
 }
 
+func RequireLogin(c *gin.Context) {
+	session := sessions.Default(c)
+	if session.Get("userId") == nil {
+		c.Redirect(302, "/login")
+	} else {
+		c.Next()
+	}
+}
+
 func main() {
 	esurl = os.Getenv("ESURL")
 	if esurl == "" {
@@ -117,25 +126,31 @@ func main() {
 		c.Status(200)
 	})
 
-	private := router.Group("/api")
-	private.Use(LoginRequired)
-	private.GET("/account", c.Profile)       //Get user account information
-	private.PUT("/account", c.UpdateProfile) //Modify user account
+	privateAPI := router.Group("/api")
+	privateAPI.Use(LoginRequired)
+	privateAPI.GET("/account", c.Profile)       //Get user account information
+	privateAPI.PUT("/account", c.UpdateProfile) //Modify user account
 
-	private.GET("/account/streak/:date", c.GetStreak)
+	privateAPI.GET("/account/streak/:date", c.GetStreak)
 
-	private.GET("/journal/:date", c.GetEntryByDate) //Get a journal entry
-	private.DELETE("/journal/:id", c.DeleteEntry)
-	private.POST("/journal", c.CreateEntry)
-	private.PUT("/journal/:id", c.UpdateEntry)
+	privateAPI.GET("/journal/:date", c.GetEntryByDate) //Get a journal entry
+	privateAPI.DELETE("/journal/:id", c.DeleteEntry)
+	privateAPI.POST("/journal", c.CreateEntry)
+	privateAPI.PUT("/journal/:id", c.UpdateEntry)
 
-	private.GET("/search/date", c.SearchJournalDates) //Find dates that have entries in month
-	private.POST("/search", c.SearchJournal)
+	privateAPI.GET("/search/date", c.SearchJournalDates) //Find dates that have entries in month
+	privateAPI.POST("/search", c.SearchJournal)
+
+	privateStatic := router.Group("/")
+	privateStatic.Use(RequireLogin)
+	privateStatic.StaticFile("/profile", defaultPage)
 
 	router.StaticFile("/login", defaultPage)
 	router.StaticFile("/journal", defaultPage)
 	router.StaticFile("/register", defaultPage)
 	router.StaticFile("/about", defaultPage)
+	router.StaticFile("/forgot-password", defaultPage)
+	router.StaticFile("/account", defaultPage)
 
 	router.StaticFile("/", "./public/index.html")
 	router.StaticFile("/favicon.ico", "./public/favicon.ico")

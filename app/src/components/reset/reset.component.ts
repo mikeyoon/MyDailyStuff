@@ -1,66 +1,59 @@
 import { importCss, importHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
 import { BaseComponent } from '../base.component.js';
+import { router } from '../router';
 
-const css = await importCss(import.meta.url, 'register.component.css');
-const html = await importHtml(import.meta.url, 'register.component.html');
+const css = await importCss(import.meta.url, 'reset.component.css');
+const html = await importHtml(import.meta.url, 'reset.component.html');
 
-const emailRegex = /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/;
-
-export class RegisterComponent extends BaseComponent {
+export class ResetComponent extends BaseComponent {
   static get observedAttributes() {
     return ['test'];
   }
 
-  private emailTextbox!: HTMLInputElement;
   private passwordTextbox!: HTMLInputElement;
   private confirmTextbox!: HTMLInputElement;
-  private registerForm!: HTMLFormElement;
+  private resetForm!: HTMLFormElement;
 
   private confirm = '';
   private password = '';
-  private email = '';
 
   passwordError = '';
   confirmError = '';
-  emailError = '';
+  resetToken: string | undefined;
 
-  registered = false;
-  registerError: string | undefined;
+  resetSuccess = false;
+  resetError: string | undefined;
 
   constructor() {
     super(html, css);
 
-    this.registered = authStore.registered;
-    this.email = authStore.email || '';
+    this.resetSuccess = authStore.resetSuccess;
 
     authStore.propChanged$.subscribe((prop) => {
       switch (prop) {
-        case 'registered':
-          this.registered = authStore.registered;
+        case 'resetSuccess':
+          this.resetSuccess = authStore.registered;
           break;
-        case 'registerError':
-          this.registerError = authStore.registerError;
+        case 'resetError':
+          this.resetError = authStore.resetError;
           break;
       }
 
       this.digest();
     });
+
+    router.params$.subscribe((params) => {
+      this.resetToken = params?.token;
+    })
   }
 
   connectedCallback() {
     super.connectedCallback();
 
-    this.emailTextbox = this.root.querySelector('#email') as HTMLInputElement;
     this.passwordTextbox = this.root.querySelector('#password') as HTMLInputElement;
     this.confirmTextbox = this.root.querySelector('#confirm') as HTMLInputElement;
-    this.registerForm = this.root.querySelector('#register_form') as HTMLFormElement;
-
-    this.emailTextbox.addEventListener('change', (ev) => {
-      this.email = this.emailTextbox.value;
-      this.emailError = '';
-    });
-    this.emailTextbox.addEventListener('blur', () => this.validateEmail());
+    this.resetForm = this.root.querySelector('#register_form') as HTMLFormElement;
 
     this.passwordTextbox.addEventListener('change', (ev) => {
       this.passwordError = '';
@@ -79,33 +72,17 @@ export class RegisterComponent extends BaseComponent {
       this.digest();
     });
 
-    this.registerForm.addEventListener('submit', (ev) => {
+    this.resetForm.addEventListener('submit', (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
 
-      if (!this.emailError && !this.passwordError && !this.confirmError) {
-        authStore.register({
-          email: this.email,
-          password: this.password,
+      if (!this.passwordError && !this.confirmError && this.resetToken) {
+        authStore.resetPassword({
+          token: this.resetToken,
+          password: this.password
         });
       }
     });
-  }
-
-  validateEmail() {
-    if (!this.email) {
-      this.emailError = "Email is required";
-    } else if (!emailRegex.test(this.email)) {
-      this.emailError = "Email is invalid";
-    }
-
-    if (this.emailError) {
-      this.emailTextbox.setAttribute('class', 'form-control is-invalid');
-    } else {
-      this.emailTextbox.setAttribute('class', 'form-control');
-    }
-
-    this.digest();
   }
 
   validatePassword() {

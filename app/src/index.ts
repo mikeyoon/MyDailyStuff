@@ -1,8 +1,11 @@
 import { AppComponent } from './components/app/app.component.js';
 import { AboutComponent } from './components/about/about.component.js';
+import { ForgotComponent } from './components/forgot/forgot.component.js';
 import { HeaderComponent } from './components/header/header.component.js';
 import { LoginComponent } from './components/login/login.component.js';
+import { ProfileComponent } from './components/profile/profile.component.js';
 import { RegisterComponent } from './components/register/register.component.js';
+import { ResetComponent } from './components/reset/reset.component.js';
 import { router } from './components/router.js';
 import { fetch } from './util/fetch.js';
 
@@ -10,16 +13,19 @@ customElements.define('mds-about', AboutComponent);
 customElements.define('mds-header', HeaderComponent);
 customElements.define('mds-login', LoginComponent);
 customElements.define('mds-register', RegisterComponent);
+customElements.define('mds-profile', ProfileComponent);
+customElements.define('mds-forgot', ForgotComponent);
+customElements.define('mds-reset', ResetComponent);
 
 router.on('/login', { component: LoginComponent, title: 'Login' });
 router.on('/register', { component: RegisterComponent, title: 'Register' });
-// router.on('/forgot-password', () => ForgotPasswordComponent);
-// router.on('/account/reset/:token', () => ForgotPasswordComponent);
+router.on('/forgot-password', { component: ForgotComponent, title: 'Reset Password' });
+router.on('/account/reset/:token', { component: ResetComponent, title: 'Reset Password' });
 // router.on('/account/verify/:token', () => ForgotPasswordComponent);
 // router.on('/search/:query', () => SearchComponent);
 // router.on('/search/:query/:offset', () => SearchComponent);
 
-// router.on('/profile', () => ProfileComponent);
+router.on('/profile', { component: ProfileComponent, title: 'Update Password' });
 router.on('/about', { component: AboutComponent, title: 'About' });
 // router.on('/journal', () => JournalComponent);
 // router.on('/journal/:date', () => JournalComponent);
