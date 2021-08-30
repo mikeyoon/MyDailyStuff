@@ -31,6 +31,7 @@ var (
 func LoginRequired(c *gin.Context) {
 	session := sessions.Default(c)
 	c.Header("X-Csrf-Token", csrf.GetToken(c))
+
 	if session.Get("userId") == nil {
 		c.AbortWithStatusJSON(401, lib.ErrorResponse("User not logged in"))
 	} else {
@@ -107,8 +108,6 @@ func main() {
 			c.Abort()
 		},
 	}))
-
-	//m.Use(martini.Static("public", martini.StaticOptions{Fallback: "dist/app.html", Exclude: ""}))
 
 	c := lib.Controller{}
 	c.SetOptions(mds, secret != *DEFAULT_SESSION_SECRET)

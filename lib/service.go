@@ -47,8 +47,8 @@ type User struct {
 	PasswordHash  string    `json:"password_hash"`
 	CreateDate    time.Time `json:"create_date"`
 	LastLoginDate time.Time `json:"last_login_date"`
-	VerifyToken   string    `json:"verify_token,omitempty"`
-	ResetToken    string    `json:"reset_token,omitempty"`
+	VerifyToken   *string   `json:"verify_token"`
+	ResetToken    *string   `json:"reset_token"`
 }
 
 func (u *User) GetID() string   { return u.ID }
@@ -294,8 +294,8 @@ func (s MdsService) GetUserByLogin(email string, password string) (User, error) 
 		return User{}, UserNotFound
 	}
 
-	if user.ResetToken != "" {
-		user.ResetToken = ""
+	if user.ResetToken != nil {
+		user.ResetToken = nil
 		s.es.Update().Index(userIndex()).Type(userType).Refresh("true").Doc(user).Do(ctx)
 	}
 
@@ -342,7 +342,7 @@ func (s MdsService) UpdateUser(id string, email string, password string) error {
 		pass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 		if err == nil {
 			user.PasswordHash = base64.StdEncoding.EncodeToString(pass)
-			user.ResetToken = ""
+			user.ResetToken = nil
 
 			_, err = s.es.Update().Index(userIndex()).Type(userType).Id(id).Doc(user).Refresh("true").Do(ctx)
 		}
@@ -412,7 +412,7 @@ func (s MdsService) CreateUserVerification(email string, password string) error 
 
 		return err
 	} else {
-		if user.VerifyToken == "" {
+		if user.VerifyToken == nil {
 			return EmailInUse
 		}
 
@@ -453,12 +453,13 @@ func (s MdsService) CreateUser(verificationToken string) (string, error) {
 		Email:        verify.Email,
 		CreateDate:   time.Now(),
 		PasswordHash: verify.PasswordHash,
-		VerifyToken:  "",
+		VerifyToken:  nil,
 	}
 
 	_, err = s.es.Update().Index(userIndex()).Type(userType).Doc(user).Id(verify.ID).Do(ctx)
 
 	if err != nil {
+		log.Println("Error", err)
 		return "", err
 	}
 

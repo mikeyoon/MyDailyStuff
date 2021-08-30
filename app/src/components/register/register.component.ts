@@ -49,41 +49,54 @@ export class RegisterComponent extends BaseComponent {
     this.passwordTextbox = this.root.querySelector('#password') as HTMLInputElement;
     this.confirmTextbox = this.root.querySelector('#confirm') as HTMLInputElement;
     this.registerForm = this.root.querySelector('#register_form') as HTMLFormElement;
+  }
 
-    this.emailTextbox.addEventListener('change', (ev) => {
-      this.email = this.emailTextbox.value;
-      this.emailError = '';
-    });
-    this.emailTextbox.addEventListener('blur', () => this.validateEmail());
+  emailChanged(event: InputEvent) {
+    this.email = this.emailTextbox.value;
+    this.emailError = '';
+  }
 
-    this.passwordTextbox.addEventListener('change', (ev) => {
-      this.passwordError = '';
-      this.password = this.passwordTextbox.value;
-    });
-    this.passwordTextbox.addEventListener('blur', () => this.validatePassword());
+  emailBlurred(event: Event) {
+    this.validateEmail();
+  }
 
-    this.confirmTextbox.addEventListener('change', (ev) => {
-      this.confirm = this.confirmTextbox.value;
-      this.confirmError = '';
-    });
-    this.confirmTextbox.addEventListener('blur', () => this.validatePassword());
-    this.confirmTextbox.addEventListener('focus', () => {
-      this.confirmError = '';
-      this.confirmTextbox.setAttribute('class', 'form-control');
-      this.digest();
-    });
+  passwordChanged(event: InputEvent) {
+    this.passwordError = '';
+    this.password = this.passwordTextbox.value;
+  }
 
-    this.registerForm.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
+  passwordBlurred(event: Event) {
+    this.validatePassword();
+  }
 
-      if (!this.emailError && !this.passwordError && !this.confirmError) {
-        authStore.register({
-          email: this.email,
-          password: this.password,
-        });
-      }
-    });
+  confirmChanged(event: InputEvent) {
+    this.confirm = this.confirmTextbox.value;
+    this.confirmError = '';
+  }
+
+  confirmBlurred(event: Event) {
+    this.validatePassword();
+  }
+
+  confirmFocused(event: Event) {
+    this.confirmError = '';
+    this.confirmTextbox.setAttribute('class', 'form-control');
+    this.digest();
+  }
+
+  register(ev: Event) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    this.validateEmail();
+    this.validatePassword();
+
+    if (!this.emailError && !this.passwordError && !this.confirmError) {
+      authStore.register({
+        email: this.email,
+        password: this.password,
+      });
+    }
   }
 
   validateEmail() {
@@ -91,12 +104,6 @@ export class RegisterComponent extends BaseComponent {
       this.emailError = "Email is required";
     } else if (!emailRegex.test(this.email)) {
       this.emailError = "Email is invalid";
-    }
-
-    if (this.emailError) {
-      this.emailTextbox.setAttribute('class', 'form-control is-invalid');
-    } else {
-      this.emailTextbox.setAttribute('class', 'form-control');
     }
 
     this.digest();
@@ -109,20 +116,8 @@ export class RegisterComponent extends BaseComponent {
       this.passwordError = "Password needs to be less than 50 characters";
     }
 
-    if (this.passwordError) {
-      this.passwordTextbox.setAttribute('class', 'form-control is-invalid');
-    } else {
-      this.passwordTextbox.setAttribute('class', 'form-control');
-    }
-
     if (!this.passwordError && this.password !== this.confirm) {
       this.confirmError = "Passwords must match";
-    }
-
-    if (this.confirmError) {
-      this.confirmTextbox.setAttribute('class', 'form-control is-invalid');
-    } else {
-      this.confirmTextbox.setAttribute('class', 'form-control');
     }
 
     this.digest();

@@ -11,11 +11,12 @@
       aria-controls="navbar"
       aria-expanded="false"
       aria-label="Toggle navigation"
+      [click]="this.toggleCollapsedMenu()"
     >
-      <span class="navbar-toggler-icon" />
+      <span class="navbar-toggler-icon"></span>
     </button>
   
-    <div class="collapse navbar-collapse" id="navbar">
+    <div class="navbar-collapse" id="navbar" [classes]="{ collapse: !this.showCollapsedMenu }">
       <ul class="navbar-nav mr-auto me-auto">
         <li class="nav-item" [if]="this.isLoggedIn">
           <!-- Logged in -->
@@ -46,16 +47,16 @@
   
       <ul class="nav navbar-nav d-flex">
         <!-- Logged in -->
-          <li class="dropdown" [if]="this.isLoggedIn">
+          <li class="dropdown" [if]="this.isLoggedIn" [classes]="{ show: this.isDropdownOpen }" [click]="this.toggleDropdown()">
             <a
               class="btn btn-link nav-link dropdown-toggle"
               data-toggle="dropdown"
               role="button"
               aria-haspopup="true"
               aria-expanded="false"
-              [email]
             >
-              <span class="caret" />
+              <span [content]="this.email"></span>
+              <span class="caret"></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" role="menu">
               <a class="dropdown-item" href="/profile">

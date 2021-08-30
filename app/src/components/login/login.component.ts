@@ -49,39 +49,40 @@ export class LoginComponent extends BaseComponent {
     this.rememberCheckbox = this.root.querySelector('#rememberMe') as HTMLInputElement;
     this.loginForm = this.root.querySelector('#login_form') as HTMLFormElement;
 
-    this.emailTextbox.addEventListener('change', (ev) => {
-      this.email = this.emailTextbox.value;
-      this.emailError = '';
-    });
     this.emailTextbox.addEventListener('blur', () => this.validateEmail());
-
-    this.passwordTextbox.addEventListener('change', (ev) => {
-      this.passwordError = '';
-      this.password = this.passwordTextbox.value;
-    });
     this.passwordTextbox.addEventListener('blur', () => this.validatePassword());
+  }
 
-    this.rememberCheckbox.addEventListener('change', (ev) => {
-      if (ev.target != null) {
-        this.persist = this.rememberCheckbox.checked;
-      }
-    });
+  emailChanged(event: InputEvent) {
+    this.email = this.emailTextbox.value;
+    this.emailError = '';
+  }
 
-    this.loginForm.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
+  passwordChanged(event: InputEvent) {
+    this.passwordError = '';
+    this.password = this.passwordTextbox.value;
+  }
 
-      this.validateEmail();
-      this.validatePassword();
+  rememberChanged(event: InputEvent) {
+    if (event.target != null) {
+      this.persist = this.rememberCheckbox.checked;
+    }
+  }
 
-      if (!this.emailError && !this.passwordError) {
-        authStore.login({
-          email: this.email,
-          password: this.password,
-          persist: this.persist,
-        });
-      }
-    });
+  login(ev: Event) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    this.validateEmail();
+    this.validatePassword();
+
+    if (!this.emailError && !this.passwordError) {
+      authStore.login({
+        email: this.email,
+        password: this.password,
+        persist: this.persist,
+      });
+    }
   }
 
   validateEmail() {
@@ -89,12 +90,6 @@ export class LoginComponent extends BaseComponent {
       this.emailError = "Email is required";
     } else if (!emailRegex.test(this.email)) {
       this.emailError = "Email is invalid";
-    }
-
-    if (this.emailError) {
-      this.emailTextbox.setAttribute('class', 'form-control is-invalid');
-    } else {
-      this.emailTextbox.setAttribute('class', 'form-control');
     }
 
     this.digest();
@@ -105,12 +100,6 @@ export class LoginComponent extends BaseComponent {
       this.passwordError = "Password needs to be 6 or more characters";
     } else if (this.password && this.password.length > 50) {
       this.passwordError = "Password needs to be less than 50 characters";
-    }
-
-    if (this.passwordError) {
-      this.passwordTextbox.setAttribute('class', 'form-control is-invalid');
-    } else {
-      this.passwordTextbox.setAttribute('class', 'form-control');
     }
 
     this.digest();

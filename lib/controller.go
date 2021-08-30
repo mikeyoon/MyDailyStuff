@@ -111,6 +111,7 @@ func (r *Controller) Login(c *gin.Context) {
 	})
 
 	session.Set("userId", user.ID)
+	session.Save()
 	c.JSON(200, SuccessResponse(nil))
 }
 
@@ -221,6 +222,7 @@ func (r *Controller) VerifyAccount(c *gin.Context) {
 
 	if err == nil {
 		session.Set("userId", id)
+		session.Save()
 		c.JSON(200, SuccessResponse(nil))
 	} else {
 		c.JSON(200, ErrorResponse(err.Error()))

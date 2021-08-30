@@ -1,42 +1,30 @@
-import { observable, action, runInAction, computed, reaction } from "mobx";
-import moment from "moment";
-
 import * as Requests from "../models/requests";
 import * as Responses from "../models/responses";
-import { RestClient } from "./client";
 import { AnalyticsStore } from "./analytics.store";
-import { RouteStore, Routes } from "./route.store";
+import { router } from '../components/router';
 
 export class JournalStore {
-  @observable
   editing = false;
-  @observable
   adding = false;
-  @observable
   loading = false;
-  @observable
   deleting = false;
-  @observable
   started = false; //Whether the journal page has loaded
-  @observable
   error: string | undefined;
 
-  @observable
   current: Responses.JournalEntry | null = null;
-  @computed
+  localDate: Date;
+  showCalendar = false;
+
   get hasEntry() {
     return this.current != null;
   }
-  @observable
-  localDate: Date;
-  @observable
-  showCalendar = false;
 
   constructor(
     private analyticsStore: AnalyticsStore,
-    private router: RouteStore
   ) {
     this.localDate = new Date();
+    router.params$.subscribe((params) => {
+    });
     reaction(
       () => this.router.params,
       params => {
@@ -48,7 +36,6 @@ export class JournalStore {
     );
   }
 
-  @action
   async add(entry: string) {
     this.adding = true;
     this.error = undefined;
@@ -75,7 +62,6 @@ export class JournalStore {
     }
   }
 
-  @action
   async edit(req: Requests.EditJournalEntry) {
     this.editing = true;
     this.error = undefined;
@@ -118,7 +104,6 @@ export class JournalStore {
     }
   }
 
-  @action
   async delete() {
     this.deleting = true;
     this.error = undefined;
@@ -145,7 +130,6 @@ export class JournalStore {
     }
   }
 
-  @action
   async get(date: Date) {
     this.loading = true;
     this.error = undefined;
@@ -178,7 +162,6 @@ export class JournalStore {
     }
   }
 
-  @action
   toggleCalendar(show: boolean) {
     this.showCalendar = show;
   }

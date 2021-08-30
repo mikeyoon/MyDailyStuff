@@ -81,7 +81,9 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
       }
     } catch (err) {
       this.streak = undefined;
-      this.streakError = err.message;
+      if (err instanceof Error) {
+        this.streakError = err.message;
+      }
     } finally {
       this.streakLoading = false;
       this.notifyPropertyChanged('streak', 'streakLoading', 'streakError');
@@ -107,7 +109,9 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         }
       }
     } catch (err) {
-      this.getAccountError = err.message;
+      if (err instanceof Error) {
+        this.getAccountError = err.message;
+      }
     } finally {
       this.gettingAccount = false;
       this.notifyPropertyChanged('gettingAccount', 'getAccountError', 'isLoggedIn');
@@ -159,7 +163,9 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         }
       }
     } catch (err) {
-      this.resetError = err.message;
+      if (err instanceof Error) {
+        this.resetError = err.message;
+      }
     } finally {
       this.sendingReset = false;
       this.notifyPropertyChanged('sendingReset', 'resetError', 'resetSuccess');
@@ -228,7 +234,9 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         }
       }
     } catch (err) {
-      this.registerError = err.message;
+      if (err instanceof Error) {
+        this.registerError = err.message;
+      }
     } finally {
       this.registering = false;
       this.notifyPropertyChanged('registerError', 'registering', 'registered');
@@ -278,7 +286,9 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         }
       }
     } catch (err) {
-      this.saveError = err.message;
+      if (err instanceof Error) {
+        this.saveError = err.message;
+      }
     } finally {
       this.saving = false;
       this.notifyPropertyChanged('saving', 'saved', 'saveError');

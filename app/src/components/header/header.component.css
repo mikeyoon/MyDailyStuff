@@ -1,1 +1,6 @@
 @import url('/dist/bootstrap.min.css');
+
+.dropdown.show .dropdown-menu {
+  right: 6px;
+  display: block;
+}

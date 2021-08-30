@@ -1,0 +1,106 @@
+<div class="row">
+    <div class="col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-sm-12">
+        <div class="d-flex justify-content-between journal-header">
+            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handlePrev(event)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="100%" fill="currentColor"
+                    class="bi bi-chevron-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                </svg>
+            </button>
+            <h2 [content]="this.fullDate"></h2>
+
+            <!-- <Manager>
+                <Reference>
+                    {({ ref }) => (
+                    <button type="button" class="btn btn-link date-toggle" ref={ref} onClick={e=>
+                        this.handleToggleCalendar(e)}
+                        >
+                        <h2>{today.format("ddd, MMM Do YYYY")}</h2>
+                    </button>
+                    )}
+                </Reference>
+                {this.showCalendar ? (
+                <Popper placement="bottom" eventsEnabled={true}>
+                    {({ ref, style, placement, arrowProps }) => (
+                    <div class="daypicker-container" ref={node=> (this.node = node) && ref(node)}
+                        style={style}
+                        data-placement={placement}
+                        >
+                        <DayPicker month={this.props.store.journalStore.localDate} toMonth={new Date()} modifiers={{
+                            highlighted: day=> this.isHighlight(day) }}
+                            disabledDays={{ after: new Date() }}
+                            selectedDays={this.props.store.journalStore.localDate}
+                            onDayClick={e => this.handleDateChange(e)}
+                            />
+                            {/*
+                            <div ref={arrowProps.ref} style={arrowProps.style} data-placement={placement} /> */}
+                    </div>
+                    )}
+                </Popper>
+                ) : null}
+            </Manager> -->
+
+            <!-- TODO: Hide button when at current date -->
+            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handleNext(event)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="100%" fill="currentColor"
+                    class="bi bi-chevron-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- {this.renderEntries()} -->
+        <div className="journal mt-4">
+            {this.props.store.journalStore.current.entries.map(
+              (e: string, index: number) => (
+                <div className="card" key={index}>
+                  <button
+                    className="btn btn-outline-secondary btn-sm btn-journal-delete"
+                    key="delete"
+                    onClick={ev => this.handleDeleteEntry(index, ev)}
+                  >
+                    <GoX />
+                  </button>
+                  <div
+                    className="card-body journal-entry"
+                    dangerouslySetInnerHTML={{ __html: marked(e) }}
+                  />
+                </div>
+              )
+            )}
+          </div>
+
+
+        <hr class="mt-2" />
+
+        <div [if]="this.saveError" class="alert alert-danger" [content]="this.saveError">
+        </div>
+
+        <form [if]="!this.isFull" [submit]="this.addEntry(event)">
+            <div class="form-group">
+                <label class="control-label pull-left">
+                    Add a new entry (markdown)
+                </label>
+                <label class="float-right">
+                    <StreakComponent store={this.props.store} />
+                </label>
+                <textarea placeholder="New entry..."
+                    class="form-control"
+                    [classes]="{ 'is-invalid': this.newEntryError }" rows="4" style="width: 100%"
+                    maxLength="500" change="this.updateEntryText(event)"></textarea>
+                <span class="invalid-feedback" [content]="this.newEntryError"></span>
+            </div>
+
+            <button class="btn btn-primary" [classes]="{ disabled: this.invalid }" type="submit">
+                Add
+            </button>
+            <span class="margin-small">(or press ctrl + enter)</span>
+        </form>
+        <div [if]="this.isFull" class="alert alert-info">
+            You've got <span [content]="this.entries.length"></span>
+            entries, that should cover it!
+        </div>
+    </div>
+</div>

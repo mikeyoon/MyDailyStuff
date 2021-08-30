@@ -12,13 +12,16 @@
         Click <a href="/login">here</a> to return to the login page
       </p>
     </div>
-    <form [if]="!this.registered" id="register_form" class="row g-3">
+    <form [if]="!this.registered" [submit]="this.register(event)" id="register_form" class="row g-3">
       <div class="col-12">
         <label class="form-label" htmlFor="email">Email:</label>
         <input
           class="form-control"
+          [class]="this.emailError ? 'is-invalid' : ''"
           id="email"
           name="email"
+          [change]="this.emailChanged(event)"
+          [blur]="this.emailBlurred(event)"
         />
         <div [if]="this.emailError" class="invalid-feedback" [content]="this.emailError"></div>
       </div>
@@ -26,9 +29,12 @@
         <label class="form-label" htmlFor="password">Password:</label>
         <input
           class="form-control"
+          [class]="this.passwordError ? 'is-invalid' : ''"
           id="password"
           name="password"
           type="password"
+          [change]="this.passwordChanged(event)"
+          [blur]="this.passwordBlurred(event)"
         />
         <div [if]="this.passwordError" class="invalid-feedback" [content]="this.passwordError"></div>
       </div>
@@ -36,9 +42,12 @@
         <label class="form-label" htmlFor="password">Confirm Password:</label>
         <input
           class="form-control"
+          [class]="this.confirmError ? 'is-invalid' : ''"
           id="confirm"
           name="confirm"
           type="password"
+          [change]="this.confirmChanged(event)"
+          [blur]="this.confirmBlurred(event)"
         />
         <div [if]="this.confirmError" class="invalid-feedback" [content]="this.confirmError"></div>
       </div>

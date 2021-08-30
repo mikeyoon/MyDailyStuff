@@ -2,6 +2,7 @@ import { AppComponent } from './components/app/app.component.js';
 import { AboutComponent } from './components/about/about.component.js';
 import { ForgotComponent } from './components/forgot/forgot.component.js';
 import { HeaderComponent } from './components/header/header.component.js';
+import { JournalComponent } from './components/journal/journal.component.js';
 import { LoginComponent } from './components/login/login.component.js';
 import { ProfileComponent } from './components/profile/profile.component.js';
 import { RegisterComponent } from './components/register/register.component.js';
@@ -19,6 +20,7 @@ customElements.define('mds-profile', ProfileComponent);
 customElements.define('mds-forgot', ForgotComponent);
 customElements.define('mds-reset', ResetComponent);
 customElements.define('mds-streak', StreakComponent);
+customElements.define('mds-journal', JournalComponent);
 
 router.on('/login', { component: LoginComponent, title: 'Login' });
 router.on('/register', { component: RegisterComponent, title: 'Register' });
@@ -35,15 +37,17 @@ router.on('/account/verify/:token', {
 
 router.on('/profile', { component: ProfileComponent, title: 'Update Password' });
 router.on('/about', { component: AboutComponent, title: 'About' });
-// router.on('/journal', () => JournalComponent);
-// router.on('/journal/:date', () => JournalComponent);
+router.on('/journal', { component: JournalComponent, title: '' });
+router.on('/journal/:date', { component: JournalComponent, title: '' });
 
 customElements.define('mds-main', AppComponent)
 
 await fetch('/csrf', {
   method: 'OPTIONS'
 });
+await authStore.getAccount();
 
+// Hijack anchor tags
 document.body.addEventListener('click', (event) => {
   const target = event.composedPath()[0] as HTMLElement | undefined;
   if (target != null && target.tagName) {
