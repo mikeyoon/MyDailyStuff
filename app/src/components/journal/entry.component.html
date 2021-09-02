@@ -52,7 +52,26 @@
         </div>
 
         <!-- {this.renderEntries()} -->
-        <h3 class="text-center" [if]="this.entries.length === 0">No entries</h3>
+        <div className="journal mt-4">
+            {this.props.store.journalStore.current.entries.map(
+              (e: string, index: number) => (
+                <div className="card" key={index}>
+                  <button
+                    className="btn btn-outline-secondary btn-sm btn-journal-delete"
+                    key="delete"
+                    onClick={ev => this.handleDeleteEntry(index, ev)}
+                  >
+                    <GoX />
+                  </button>
+                  <div
+                    className="card-body journal-entry"
+                    dangerouslySetInnerHTML={{ __html: marked(e) }}
+                  />
+                </div>
+              )
+            )}
+          </div>
+
 
         <hr class="mt-2" />
 
@@ -65,18 +84,16 @@
                     Add a new entry (markdown)
                 </label>
                 <label class="float-right">
-                    <mds-streak></mds-streak>
+                    <StreakComponent store={this.props.store} />
                 </label>
                 <textarea placeholder="New entry..."
                     class="form-control"
                     [classes]="{ 'is-invalid': this.newEntryError }" rows="4" style="width: 100%"
-                    [input]="this.entryChanged(event)"
-                    [keypress]="this.entryKeypress(event)"
-                    maxLength="500"></textarea>
+                    maxLength="500" change="this.updateEntryText(event)"></textarea>
                 <span class="invalid-feedback" [content]="this.newEntryError"></span>
             </div>
 
-            <button class="btn btn-primary" [classes]="{ disabled: this.invalid || this.adding }" type="submit">
+            <button class="btn btn-primary" [classes]="{ disabled: this.invalid }" type="submit">
                 Add
             </button>
             <span class="margin-small">(or press ctrl + enter)</span>

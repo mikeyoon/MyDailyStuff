@@ -46,6 +46,13 @@ export class HeaderComponent extends BaseComponent {
     this.digest();
   }
 
+  logout(event: PointerEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    authStore.logout();
+  }
+
   get email(): string | undefined {
     return authStore.email;
   }

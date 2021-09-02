@@ -94,7 +94,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
     this.gettingAccount = true;
     this.getAccountError = undefined;
     this.notifyPropertyChanged('gettingAccount', 'getAccountError');
-    
+
     try {
       const response = await fetch("/account");
       if (response.ok) {
@@ -208,9 +208,9 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         this.isLoggedIn = false;
         this.email = undefined;
         this.user_id = undefined;
-        router.navigate('/login');
-
         this.notifyPropertyChanged('isLoggedIn', 'email', 'user_id');
+
+        window.location.href = "/login";
       }
     }
   }

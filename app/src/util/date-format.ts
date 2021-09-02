@@ -1,5 +1,5 @@
 export function toGoDateString(date: Date) {
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`;
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 }
 
 export function toDateString(date: Date) {

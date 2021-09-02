@@ -86,7 +86,7 @@ func (c *Controller) SetOptions(service Service, useSecureCookie bool) {
 func (r *Controller) Login(c *gin.Context) {
 	session := sessions.Default(c)
 	var req LoginRequest
-	fmt.Println(req)
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parameters provided"})
 		return
@@ -112,7 +112,41 @@ func (r *Controller) Login(c *gin.Context) {
 
 	session.Set("userId", user.ID)
 	session.Save()
+	c.Header("X-Csrf-Token", csrf.GetToken(c))
+
 	c.JSON(200, SuccessResponse(nil))
+}
+
+func (r *Controller) RequireLogin(c *gin.Context) {
+	session := sessions.Default(c)
+
+	if session.Get("userId") == nil {
+		c.Redirect(302, "/login")
+	} else {
+		_, err := r.service.GetUserById(session.Get("userId").(string))
+		if err == nil {
+			c.Next()
+		} else {
+			session.Delete(("userId"))
+			c.Redirect(302, "/login")
+		}
+	}
+}
+
+func (r *Controller) BypassIfLoggedIn(c *gin.Context) {
+	session := sessions.Default(c)
+
+	if session.Get("userId") != nil {
+		_, err := r.service.GetUserById(session.Get("userId").(string))
+		if err == nil {
+			c.Redirect(301, "/journal")
+			return
+		} else {
+			session.Delete(("userId"))
+		}
+	}
+
+	c.Next()
 }
 
 func (r *Controller) Logout(c *gin.Context) {
@@ -170,7 +204,6 @@ func (r *Controller) UpdateProfile(c *gin.Context) {
 	}
 
 	err := r.service.UpdateUser(session.Get("userId").(string), "", req.Password)
-	c.Header("X-Csrf-Token", csrf.GetToken(c))
 
 	if err != nil {
 		c.JSON(200, ErrorResponse(err.Error()))
@@ -223,6 +256,7 @@ func (r *Controller) VerifyAccount(c *gin.Context) {
 	if err == nil {
 		session.Set("userId", id)
 		session.Save()
+		c.Header("X-Csrf-Token", csrf.GetToken(c))
 		c.JSON(200, SuccessResponse(nil))
 	} else {
 		c.JSON(200, ErrorResponse(err.Error()))

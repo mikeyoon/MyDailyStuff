@@ -1,9 +1,25 @@
-import * as Requests from "../models/requests";
-import * as Responses from "../models/responses";
-import { AnalyticsStore } from "./analytics.store";
-import { router } from '../components/router';
+import * as Requests from "../models/requests.js";
+import * as Responses from "../models/responses.js";
+import { BaseStore } from "./base.store.js";
+import { analyticsStore, AnalyticsStore } from "./analytics.store.js";
+import { router } from '../components/router.js';
+import { BaseResponse, fetch } from '../util/fetch.js';
+import { toGoDateString } from "../util/date-format.js";
 
-export class JournalStore {
+interface StoreProps {
+  editing: boolean;
+  adding: boolean;
+  loading: boolean;
+  deleting: boolean;
+  started: boolean;
+  error: string | undefined;
+
+  current: Responses.JournalEntry | null;
+  localDate: Date;
+  showCalendar: boolean;
+}
+
+export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   editing = false;
   adding = false;
   loading = false;
@@ -22,49 +38,51 @@ export class JournalStore {
   constructor(
     private analyticsStore: AnalyticsStore,
   ) {
+    super();
     this.localDate = new Date();
     router.params$.subscribe((params) => {
-    });
-    reaction(
-      () => this.router.params,
-      params => {
-        if (this.router.route === Routes.Journal) {
-          this.localDate = params.date != null ? moment(params.date, 'YYYY-M-D').toDate() : new Date();
-          this.get(this.localDate);
-        }
+      if (params.date) {
+        this.localDate = new Date(params.date);
+        this.get(this.localDate);
       }
-    );
+    });
   }
 
   async add(entry: string) {
     this.adding = true;
     this.error = undefined;
+    this.notifyPropertyChanged('error', 'adding');
 
     this.analyticsStore.onJournalAdd(entry);
 
     try {
-      const response = await RestClient.post("/journal", {
-        entries: [entry],
-        date: moment(this.localDate).format("YYYY-M-D")
+      const response = await fetch("/journal", {
+        method: 'POST',
+        body: JSON.stringify({ entries: [entry], date: toGoDateString(this.localDate) }),
       });
-      runInAction(() => {
-        this.adding = false;
-        if (response.entity.success) {
-          this.current = response.entity.result;
+
+      if (response.ok) {
+        const json = await response.json() as BaseResponse<Responses.JournalEntry>;
+        if (json.success === true) {
+          this.current = json.result;
         } else {
-          this.error = response.entity.error;
+          this.error = json.error;
         }
-      });
+      }
     } catch (err) {
-      runInAction(() => (this.error = err.message));
+      if (err instanceof Error) {
+        this.error = err.message;
+      }
     } finally {
-      runInAction(() => (this.adding = false));
+      this.adding = false;
+      this.notifyPropertyChanged('current', 'error', 'adding');
     }
   }
 
   async edit(req: Requests.EditJournalEntry) {
     this.editing = true;
     this.error = undefined;
+    this.notifyPropertyChanged('error', 'editing');
 
     this.analyticsStore.onJournalEdit(req);
 
@@ -81,32 +99,33 @@ export class JournalStore {
     }
 
     try {
-      const response = await RestClient.put("/journal/" + this.current.id, {
-        entries: entries
+      const response = await fetch("/journal/" + this.current.id, {
+        body: JSON.stringify({ entries }),
+        method: 'PUT'
       });
-      runInAction(() => {
-        this.editing = false;
-        if (response.entity.success) {
-          //We're relying on the current to be updated client-side due to delays in indexing in ES
-          if (this.current != null) {
-            this.current.entries = entries;
-          } else {
-            this.error = "Something went wrong, please refresh";
-          }
+
+      if (response.ok) {
+        const json = await response.json() as BaseResponse<Responses.JournalEntry>;
+        if (json.success === true) {
+          this.current.entries = entries;
         } else {
-          this.error = response.entity.error;
+          this.error = json.error;
         }
-      });
+      }
     } catch (err) {
-      runInAction(() => (this.error = err.message));
+      if (err instanceof Error) {
+        this.error = err.message;
+      }
     } finally {
-      runInAction(() => (this.editing = false));
+      this.editing = false;
+      this.notifyPropertyChanged('error', 'editing', 'current');
     }
   }
 
   async delete() {
     this.deleting = true;
     this.error = undefined;
+    this.notifyPropertyChanged('error', 'deleting');
 
     this.analyticsStore.onJournalDelete();
 
@@ -115,18 +134,22 @@ export class JournalStore {
     }
 
     try {
-      const response = await RestClient.del("/journal/" + this.current.id);
-      runInAction(() => {
-        if (response.entity.success) {
+      const response = await fetch("/journal/" + this.current.id, { method: 'DELETE' });
+      if (response.ok) {
+        const json = await response.json() as BaseResponse<void>;
+        if (json.success === true) {
           this.current = null;
         } else {
-          this.error = response.entity.error;
+          this.error = json.error;
         }
-      });
+      }
     } catch (err) {
-      runInAction(() => (this.error = err.message));
+      if (err instanceof Error) {
+        this.error = err.message;
+      }
     } finally {
-      runInAction(() => (this.deleting = false));
+      this.deleting = false;
+      this.notifyPropertyChanged('error', 'deleting', 'current');
     }
   }
 
@@ -135,34 +158,36 @@ export class JournalStore {
     this.error = undefined;
 
     try {
-      const response = await RestClient.get(
-        "/journal/" + moment(date).format("YYYY-M-D")
-      );
-      runInAction(() => {
-        this.loading = false;
-        this.started = true;
-        this.showCalendar = false;
+      const response = await fetch("/journal/" + toGoDateString(date));
 
-        if (response.entity.success) {
-          this.current = response.entity.result;
+      this.started = true;
+      this.showCalendar = false;
+
+      if (response.ok) {
+        const json = await response.json() as BaseResponse<Responses.JournalEntry>;
+        if (json.success === true) {
+          this.current = json.result;
         } else {
-          this.current = null;
+          this.error = json.error;
         }
-      });
+      }
     } catch (err) {
-      runInAction(() => {
-        this.started = true;
-        this.loading = false;
-        this.showCalendar = false;
-        this.current = null;
+      this.current = null;
+      if (err instanceof Error) {
         this.error = err.message;
-      });
+      }
     } finally {
-      runInAction(() => (this.loading = false));
+      this.started = true;
+      this.loading = false;
+      this.showCalendar = false;
+      this.notifyPropertyChanged('started', 'loading', 'error', 'showCalendar', 'current');
     }
   }
 
   toggleCalendar(show: boolean) {
     this.showCalendar = show;
+    this.notifyPropertyChanged('showCalendar');
   }
 }
+
+export const journalStore = new JournalStore(analyticsStore);

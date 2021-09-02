@@ -15,7 +15,7 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-  
+
     <div class="navbar-collapse" id="navbar" [classes]="{ collapse: !this.showCollapsedMenu }">
       <ul class="navbar-nav mr-auto me-auto">
         <li class="nav-item" [if]="this.isLoggedIn">
@@ -44,7 +44,7 @@
           <!-- Logged in -->
         </li>
       </ul>
-  
+
       <ul class="nav navbar-nav d-flex">
         <!-- Logged in -->
           <li class="dropdown" [if]="this.isLoggedIn" [classes]="{ show: this.isDropdownOpen }" [click]="this.toggleDropdown()">
@@ -65,7 +65,7 @@
               <a
                 class="dropdown-item"
                 href="#"
-                onClick={this.handleLogout}
+                [click]="this.logout(event)"
               >
                 Logout
               </a>
@@ -87,5 +87,5 @@
       </ul>
     </div>
   </div>
-  
+
 </nav>

@@ -28,8 +28,7 @@ export async function fetch(url: string, init?: RequestInit) {
 
   const result = await window.fetch(BASE_URL + url, init);
   if (result.status === 401) {
-    window.location.href = '/login';
-    // Would be nice to return a fake failure response
+    // TODO: Pop a login modal
   }
 
   if (result.headers.get(CSRF_HEADER)) {

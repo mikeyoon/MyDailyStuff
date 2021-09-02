@@ -9,7 +9,6 @@ import { RegisterComponent } from './components/register/register.component.js';
 import { ResetComponent } from './components/reset/reset.component.js';
 import { StreakComponent } from './components/streak/streak.component.js';
 import { router } from './components/router.js';
-import { fetch } from './util/fetch.js';
 import { authStore } from './stores/auth.store.js';
 
 customElements.define('mds-about', AboutComponent);
@@ -26,7 +25,7 @@ router.on('/login', { component: LoginComponent, title: 'Login' });
 router.on('/register', { component: RegisterComponent, title: 'Register' });
 router.on('/forgot-password', { component: ForgotComponent, title: 'Reset Password' });
 router.on('/account/reset/:token', { component: ResetComponent, title: 'Reset Password' });
-router.on('/account/verify/:token', { 
+router.on('/account/verify/:token', {
   component: LoginComponent,
   canActivate: (params) => {
     return authStore.verify(params.token).then(() => false);
@@ -42,10 +41,7 @@ router.on('/journal/:date', { component: JournalComponent, title: '' });
 
 customElements.define('mds-main', AppComponent)
 
-await fetch('/csrf', {
-  method: 'OPTIONS'
-});
-await authStore.getAccount();
+authStore.getAccount();
 
 // Hijack anchor tags
 document.body.addEventListener('click', (event) => {

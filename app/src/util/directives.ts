@@ -116,7 +116,7 @@ export class CompiledClassesDirective extends CompiledDirective {
 export class CompiledClickDirective extends CompiledDirective {
   handler: (event: MouseEvent) => void;
 
-  constructor(expr: string, node: Element, parent: Element, scope: HTMLElement) {
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
     super(expr, node, parent, ['event']);
     this.handler = (event) => this.func.call(scope, event);
     (node as HTMLElement).addEventListener('click', this.handler);
@@ -128,7 +128,7 @@ export class CompiledClickDirective extends CompiledDirective {
 export class CompiledChangeDirective extends CompiledDirective {
   handler: (event: Event) => void;
 
-  constructor(expr: string, node: Element, parent: Element, scope: HTMLElement) {
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
     super(expr, node, parent, ['event']);
     this.handler = (event) => this.func.call(scope, event);
     (node as HTMLInputElement).addEventListener('change', this.handler);
@@ -137,10 +137,22 @@ export class CompiledChangeDirective extends CompiledDirective {
   execute(context: any) {}
 }
 
+export class CompiledInputDirective extends CompiledDirective {
+  handler: (event: Event) => void;
+
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
+    super(expr, node, parent, ['event']);
+    this.handler = (event) => this.func.call(scope, event);
+    (node as HTMLInputElement).addEventListener('input', this.handler);
+  }
+
+  execute(context: any) { }
+}
+
 export class CompiledBlurDirective extends CompiledDirective {
   handler: (event: Event) => void;
 
-  constructor(expr: string, node: Element, parent: Element, scope: HTMLElement) {
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
     super(expr, node, parent, ['event']);
     this.handler = (event) => this.func.call(scope, event);
     (node as HTMLInputElement).addEventListener('blur', this.handler);
@@ -152,19 +164,31 @@ export class CompiledBlurDirective extends CompiledDirective {
 export class CompiledFocusDirective extends CompiledDirective {
   handler: (event: Event) => void;
 
-  constructor(expr: string, node: Element, parent: Element, scope: HTMLElement) {
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
     super(expr, node, parent, ['event']);
     this.handler = (event) => this.func.call(scope, event);
-    (node as HTMLInputElement).addEventListener('fpcus', this.handler);
+    (node as HTMLInputElement).addEventListener('focus', this.handler);
   }
 
   execute(context: any) {}
 }
 
+export class CompiledKeypressDirective extends CompiledDirective {
+  handler: (event: Event) => void;
+
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
+    super(expr, node, parent, ['event']);
+    this.handler = (event) => this.func.call(scope, event);
+    (node as HTMLInputElement).addEventListener('keypress', this.handler);
+  }
+
+  execute(context: any) { }
+}
+
 export class CompiledSubmitDirective extends CompiledDirective {
   handler: (event: Event) => void;
 
-  constructor(expr: string, node: Element, parent: Element, scope: HTMLElement) {
+  constructor(expr: string, node: Element, parent: Element, scope: any) {
     super(expr, node, parent, ['event']);
     this.handler = (event) => this.func.call(scope, event);
     if (node.tagName === 'FORM') {
@@ -183,7 +207,7 @@ export class CompiledSubmitDirective extends CompiledDirective {
 //     super(expr, node, parent);
 //     this.value = null;
 //     this.originalNodes = Array.from(parent.children);
-    
+
 //     node.remove();
 //   }
 

@@ -39,15 +39,6 @@ func LoginRequired(c *gin.Context) {
 	}
 }
 
-func RequireLogin(c *gin.Context) {
-	session := sessions.Default(c)
-	if session.Get("userId") == nil {
-		c.Redirect(302, "/login")
-	} else {
-		c.Next()
-	}
-}
-
 func DefaultPage(c *gin.Context) {
 	c.File("./app/app-dev.html")
 }
@@ -122,10 +113,15 @@ func main() {
 	public.GET("/account/reset/:token", c.GetResetPasswordRequest)       //Check if reset link is valid
 	public.POST("/account/reset/", c.ResetPassword)
 	public.GET("/account/verify/:token", c.VerifyAccount)
-	public.OPTIONS("/csrf", func(c *gin.Context) {
-		c.Header("X-Csrf-Token", csrf.GetToken(c))
-		c.Status(200)
-	})
+	// public.OPTIONS("/csrf", func(c *gin.Context) {
+	// 	session := sessions.Default(c)
+	// 	if session.Get("userId") != nil {
+	// 		c.Header("X-Csrf-Token", csrf.GetToken(c))
+	// 		c.Status(200)
+	// 	}
+
+	// 	c.Status(401)
+	// })
 
 	privateAPI := router.Group("/api")
 	privateAPI.Use(LoginRequired)
@@ -142,18 +138,20 @@ func main() {
 	privateAPI.GET("/search/date", c.SearchJournalDates) //Find dates that have entries in month
 	privateAPI.POST("/search", c.SearchJournal)
 
-	router.GET("/profile", RequireLogin, DefaultPage)
+	private := router.Group("/")
+	private.Use(c.RequireLogin)
+	private.GET("/profile", DefaultPage)
+	private.GET("/journal", DefaultPage)
+	private.GET("/journal/:date", DefaultPage)
+	private.GET("/search/:query", DefaultPage)
+	private.GET("/search/:query/:offset", DefaultPage)
 
-	router.GET("/login", DefaultPage)
-	router.GET("/journal", DefaultPage)
-	router.GET("/journal/:date", DefaultPage)
-	router.GET("/search/:query", DefaultPage)
-	router.GET("/search/:query/:offset", DefaultPage)
-	router.GET("/register", DefaultPage)
+	router.GET("/login", c.BypassIfLoggedIn, DefaultPage)
+	router.GET("/register", c.BypassIfLoggedIn, DefaultPage)
 	router.GET("/about", DefaultPage)
-	router.GET("/forgot-password", DefaultPage)
-	router.GET("/account/verify/:token", DefaultPage)
-	router.GET("/account/reset/:token", DefaultPage)
+	router.GET("/forgot-password", c.BypassIfLoggedIn, DefaultPage)
+	router.GET("/account/verify/:token", c.BypassIfLoggedIn, DefaultPage)
+	router.GET("/account/reset/:token", c.BypassIfLoggedIn, DefaultPage)
 
 	router.StaticFile("/", "./public/index.html")
 	router.StaticFile("/favicon.ico", "./public/favicon.ico")
