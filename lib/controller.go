@@ -268,7 +268,11 @@ func (r *Controller) GetEntryByDate(c *gin.Context) {
 	entry, err := r.service.GetJournalEntryByDate(session.Get("userId").(string), now.MustParse(c.Param("date")))
 
 	if err != nil {
-		c.JSON(200, ErrorResponse(err.Error()))
+		if err == NoJournalWithDate {
+			c.JSON(200, SuccessResponse(nil))
+		} else {
+			c.JSON(200, ErrorResponse(err.Error()))
+		}
 	} else {
 		c.JSON(200, SuccessResponse(entry))
 	}

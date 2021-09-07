@@ -8,7 +8,7 @@
                         d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
                 </svg>
             </button>
-            <h2 [content]="this.fullDate"></h2>
+            <h2 class="text-center" [content]="this.fullDate"></h2>
 
             <!-- <Manager>
                 <Reference>
@@ -52,14 +52,15 @@
         </div>
 
         <!-- {this.renderEntries()} -->
-        <h3 class="text-center" [if]="this.entries.length === 0">No entries</h3>
+        <div class="journal mt-4" [if]="this.entries.length > 0" id="entries"></div>
+        <h3 class="text-center" [if]="this.entries.length === 0">No entries today</h3>
 
-        <hr class="mt-2" />
+        <hr class="mt-4" />
 
         <div [if]="this.saveError" class="alert alert-danger" [content]="this.saveError">
         </div>
 
-        <form [if]="!this.isFull" [submit]="this.addEntry(event)">
+        <form [if]="!this.isFull" [submit]="this.addEntry(event)" class="row g-3">
             <div class="form-group">
                 <label class="control-label pull-left">
                     Add a new entry (markdown)

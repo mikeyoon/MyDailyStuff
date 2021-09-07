@@ -115,88 +115,109 @@ export class CompiledClassesDirective extends CompiledDirective {
 
 export class CompiledClickDirective extends CompiledDirective {
   handler: (event: MouseEvent) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     (node as HTMLElement).addEventListener('click', this.handler);
   }
 
-  execute(context: any) {}
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 export class CompiledChangeDirective extends CompiledDirective {
   handler: (event: Event) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     (node as HTMLInputElement).addEventListener('change', this.handler);
   }
 
-  execute(context: any) {}
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 export class CompiledInputDirective extends CompiledDirective {
   handler: (event: Event) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     (node as HTMLInputElement).addEventListener('input', this.handler);
   }
 
-  execute(context: any) { }
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 export class CompiledBlurDirective extends CompiledDirective {
   handler: (event: Event) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     (node as HTMLInputElement).addEventListener('blur', this.handler);
   }
 
-  execute(context: any) {}
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 export class CompiledFocusDirective extends CompiledDirective {
   handler: (event: Event) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     (node as HTMLInputElement).addEventListener('focus', this.handler);
   }
 
-  execute(context: any) {}
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 export class CompiledKeypressDirective extends CompiledDirective {
   handler: (event: Event) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     (node as HTMLInputElement).addEventListener('keypress', this.handler);
   }
 
-  execute(context: any) { }
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 export class CompiledSubmitDirective extends CompiledDirective {
   handler: (event: Event) => void;
+  context: any = {};
 
-  constructor(expr: string, node: Element, parent: Element, scope: any) {
+  constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent, ['event']);
-    this.handler = (event) => this.func.call(scope, event);
+    this.handler = (event) => this.func.call(this.context, event);
     if (node.tagName === 'FORM') {
       (node as HTMLFormElement).addEventListener('submit', this.handler);
     }
   }
 
-  execute(context: any) {}
+  execute(context: any) {
+    this.context = context;
+  }
 }
 
 // export class CompiledRepeatDirective extends CompiledDirective {

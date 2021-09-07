@@ -21,23 +21,19 @@ const TEMPLATED_DIRECTIVE_SELECTOR = [
 export class CompiledElement {
   private digestTimeout: number | null = null;
 
-  constructor(private html: DocumentFragment, private compiledDirectives: Directives.CompiledDirective[], private context: any) {
+  constructor(private html: DocumentFragment, private compiledDirectives: Directives.CompiledDirective[]) {
   }
 
-  digest() {
+  digest(context: any) {
     if (!this.digestTimeout) {
       this.digestTimeout = window.setTimeout(() => {
         this.digestTimeout = null;
 
         this.compiledDirectives.forEach((c) => {
-          c.execute(this.context);
+          c.execute(context);
         });
       }, 10);
     }
-  }
-
-  render(container: Element) {
-    container.append(this.html);
   }
 }
 
@@ -93,8 +89,7 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledClickDirective(
         element.getAttribute('[click]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
 
@@ -102,8 +97,7 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledChangeDirective(
         element.getAttribute('[change]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
 
@@ -111,8 +105,7 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledInputDirective(
         element.getAttribute('[input]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
 
@@ -120,8 +113,7 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledKeypressDirective(
         element.getAttribute('[keypress]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
 
@@ -129,8 +121,7 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledSubmitDirective(
         element.getAttribute('[submit]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
 
@@ -138,8 +129,7 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledBlurDirective(
         element.getAttribute('[blur]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
 
@@ -147,11 +137,10 @@ export function compileFragment(html: DocumentFragment, root: Element) {
       compiled.push(new Directives.CompiledFocusDirective(
         element.getAttribute('[focus]') || '',
         element,
-        element.parentElement || root,
-        root)
+        element.parentElement || root)
       );
     }
   });
 
-  return new CompiledElement(html, compiled, root);
+  return new CompiledElement(html, compiled);
 }

@@ -11,7 +11,7 @@ interface StoreProps {
   adding: boolean;
   loading: boolean;
   deleting: boolean;
-  started: boolean;
+  initialized: boolean;
   error: string | undefined;
 
   current: Responses.JournalEntry | null;
@@ -24,7 +24,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   adding = false;
   loading = false;
   deleting = false;
-  started = false; //Whether the journal page has loaded
+  initialized = false; //Whether the journal page has loaded
   error: string | undefined;
 
   current: Responses.JournalEntry | null = null;
@@ -42,8 +42,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     this.localDate = new Date();
     router.params$.subscribe((params) => {
       if (params.date) {
-        this.localDate = new Date(params.date);
-        this.get(this.localDate);
+        this.get(new Date(params.date));
       }
     });
   }
@@ -156,11 +155,13 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   async get(date: Date) {
     this.loading = true;
     this.error = undefined;
+    this.localDate = date;
+    this.notifyPropertyChanged('loading', 'error', 'localDate');
 
     try {
       const response = await fetch("/journal/" + toGoDateString(date));
 
-      this.started = true;
+      this.initialized = true;
       this.showCalendar = false;
 
       if (response.ok) {
@@ -177,10 +178,10 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
         this.error = err.message;
       }
     } finally {
-      this.started = true;
+      this.initialized = true;
       this.loading = false;
       this.showCalendar = false;
-      this.notifyPropertyChanged('started', 'loading', 'error', 'showCalendar', 'current');
+      this.notifyPropertyChanged('initialized', 'loading', 'error', 'showCalendar', 'current');
     }
   }
 

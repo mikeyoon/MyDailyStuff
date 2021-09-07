@@ -36,8 +36,8 @@ router.on('/account/verify/:token', {
 
 router.on('/profile', { component: ProfileComponent, title: 'Update Password' });
 router.on('/about', { component: AboutComponent, title: 'About' });
-router.on('/journal', { component: JournalComponent, title: '' });
 router.on('/journal/:date', { component: JournalComponent, title: '' });
+router.on('/journal', { component: JournalComponent, title: '' });
 
 customElements.define('mds-main', AppComponent)
 
