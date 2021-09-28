@@ -75,3 +75,5 @@ export class ForgotComponent extends BaseComponent {
     this.digest();
   }
 }
+
+customElements.define('mds-forgot', ForgotComponent);

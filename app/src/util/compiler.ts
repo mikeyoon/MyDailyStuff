@@ -14,9 +14,10 @@ const DIRECTIVE_SELECTOR = [
   '[\\[focus\\]]',
 ].join(',');
 
-const TEMPLATED_DIRECTIVE_SELECTOR = [
-  '[\\[repeat\\]]',
-].join(',');
+const DEFERRED_DIRECTIVES = [
+  '[repeat]',
+  '[if]'
+];
 
 export class CompiledElement {
   private digestTimeout: number | null = null;
@@ -37,7 +38,33 @@ export class CompiledElement {
   }
 }
 
+class DeferredNode {
+  children: DeferredNode[];
+  directives: Directives.CompiledDirective[];
+
+  constructor(public element: HTMLElement) {
+    // Compile all directives on the element
+    // if should be executed before repeat
+    // find child deferred directives, recurse
+  }
+
+  public digest() {
+    // If need to create dom, create it
+    // If DOM created, then compile it
+    // digest all directives
+  }
+}
+
+function compileDeferredDirectives(element: HTMLElement) {
+  const attrs = new Set(element.getAttributeNames());
+  const directives = DEFERRED_DIRECTIVES.filter((d) => attrs.has(d));
+  if (directives.length > 0) {
+    element.child
+  }
+}
+
 export function compileFragment(html: DocumentFragment, root: Element) {
+  
   const compiled: Directives.CompiledDirective[] = [];
 
   // const templated = html.querySelectorAll(TEMPLATED_DIRECTIVE_SELECTOR);

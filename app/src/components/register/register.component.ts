@@ -123,3 +123,5 @@ export class RegisterComponent extends BaseComponent {
     this.digest();
   }
 }
+
+customElements.define('mds-register', RegisterComponent);

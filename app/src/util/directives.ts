@@ -61,7 +61,7 @@ export class CompiledContentDirective extends CompiledDirective {
   execute(context: any) {
     const value = this.func.call(context);
     if (this.value !== value) {
-      this.node.innerHTML = value || '';
+      this.node.innerHTML = value;
       this.value = value;
     }
   }

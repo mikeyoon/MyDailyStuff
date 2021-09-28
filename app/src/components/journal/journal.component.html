@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-lg-8 offset-lg-2 col-md-10 offset-md-1 col-sm-12">
         <div class="d-flex justify-content-between journal-header">
-            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handlePrev(event)">
+            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handlePrev(event)" title="Go to the previous day">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="100%" fill="currentColor"
                     class="bi bi-chevron-left" viewBox="0 0 16 16">
                     <path fill-rule="evenodd"
@@ -42,7 +42,7 @@
             </Manager> -->
 
             <!-- TODO: Hide button when at current date -->
-            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handleNext(event)">
+            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handleNext(event)" title="Go to the next day">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="100%" fill="currentColor"
                     class="bi bi-chevron-right" viewBox="0 0 16 16">
                     <path fill-rule="evenodd"
@@ -61,13 +61,17 @@
         </div>
 
         <form [if]="!this.isFull" [submit]="this.addEntry(event)" class="row g-3">
-            <div class="form-group">
-                <label class="control-label pull-left">
+            <div class="col-6">
+                <label class="control-label">
                     Add a new entry (markdown)
                 </label>
-                <label class="float-right">
+            </div>
+            <div class="col-6 text-end">
+                <label>
                     <mds-streak></mds-streak>
                 </label>
+            </div>
+            <div class="col-12">
                 <textarea placeholder="New entry..."
                     class="form-control"
                     [classes]="{ 'is-invalid': this.newEntryError }" rows="4" style="width: 100%"
@@ -76,11 +80,13 @@
                     maxLength="500"></textarea>
                 <span class="invalid-feedback" [content]="this.newEntryError"></span>
             </div>
-
-            <button class="btn btn-primary" [classes]="{ disabled: this.invalid || this.adding }" type="submit">
-                Add
-            </button>
-            <span class="margin-small">(or press ctrl + enter)</span>
+            <div class="col-12">
+                <button class="btn btn-primary" [classes]="{ disabled: this.invalid || this.adding }" type="submit">
+                    Add
+                </button>
+                <span class="margin-small">(or press ctrl + enter)</span>
+            </div>
+            
         </form>
         <div [if]="this.isFull" class="alert alert-info">
             You've got <span [content]="this.entries.length"></span>

@@ -74,6 +74,7 @@ export class ProfileComponent extends BaseComponent {
 
       if (!this.profileError && !this.passwordError) {
         authStore.updateProfile(this.password);
+        this.profileForm.reset();
       }
     });
   }
@@ -94,3 +95,5 @@ export class ProfileComponent extends BaseComponent {
     this.digest();
   }
 }
+
+customElements.define('mds-profile', ProfileComponent);

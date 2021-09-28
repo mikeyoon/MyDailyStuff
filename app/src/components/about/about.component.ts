@@ -9,3 +9,5 @@ export class AboutComponent extends BaseComponent {
     super(html, css);
   }
 }
+
+customElements.define('mds-about', AboutComponent);

@@ -1,11 +1,19 @@
 import { BehaviorSubject, Observable } from '../util/observable.js';
 
+type ElementConstructor = new() => HTMLElement;
+
 interface Route {
   route: string;
   regex: RegExp;
-  component: new() => HTMLElement;
+  component?: ElementConstructor;
+  lazyLoader?: () => Promise<ElementConstructor>;
   canActivate?: (params: RouteParams) => boolean | Promise<boolean>;
   title?: string;
+}
+
+export interface ActiveRoute {
+  params: RouteParams;
+  route: string | undefined;
 }
 
 export interface RouteParams { 
@@ -26,8 +34,8 @@ export class Router {
     this.routes = new Map();
     this.resolved = null;
 
-    this.paramsNotifier = new BehaviorSubject<RouteParams>({});
-    this.params$ = this.paramsNotifier;
+    this.routeNotifier = new BehaviorSubject<ActiveRoute>({ params: {}, route: undefined });
+    this.activeRoute$ = this.routeNotifier;
 
     window.addEventListener('popstate', (event) => {
       this.navigate(window.document.location.href, false);
@@ -38,11 +46,12 @@ export class Router {
     return new RegExp(route.replace(/:([a-z0-9_]+)(\/)?/gi, '(?<$1>[^\/]*)$2').replace('/', "\\/"), 'i');
   }
 
-  paramsNotifier: BehaviorSubject<RouteParams>;
-  params$: Observable<RouteParams>;
+  private routeNotifier: BehaviorSubject<ActiveRoute>;
+  activeRoute$: Observable<ActiveRoute>;
 
   on(route: string, options: {
-    component: Route['component'],
+    component?: Route['component'],
+    lazyLoader?: Route['lazyLoader'],
     title?: string,
     canActivate?: (params: RouteParams) => boolean | Promise<boolean>,
   }) {
@@ -50,6 +59,7 @@ export class Router {
       route: route,
       regex: this.toRegex(route),
       component: options.component,
+      lazyLoader: options.lazyLoader,
       canActivate: options.canActivate,
       title: options.title,
     });
@@ -77,25 +87,38 @@ export class Router {
   private resolve(url: string, route: Route, match: RegExpExecArray, push: boolean) {
     const params = match.groups || {};
 
-    const process = () => {
+    const process = async () => {
       this.resolved = {
         url,
         route,
         params
       };
 
-      if (push) {
-        window.history.pushState(null, window.document.title, url);
+      let Element = route.component;
+
+      if (route.lazyLoader) {
+        Element = await route.lazyLoader();
       }
 
-      document.title = 'My Daily Stuff' + (route.title ? ' - ' + route.title : '');
+      if (Element) {
+        if (push) {
+          window.history.pushState(null, window.document.title, url);
+        }
+  
+        document.title = 'My Daily Stuff' + (route.title ? ' - ' + route.title : '');
+  
+        this.routeNotifier.next({
+          params: this.resolved.params,
+          route: route.route
+        });
 
-      this.paramsNotifier.next(this.resolved.params);
-      const outlet = this.root.querySelector('router-outlet');
-      if (outlet) {
-        outlet.innerHTML = '';
-        outlet.append(new route.component());
-      }
+        const outlet = this.root.querySelector('router-outlet');
+  
+        if (outlet && !(outlet.firstElementChild instanceof Element)) {
+          outlet.innerHTML = '';
+          outlet.append(new Element());
+        }
+      }      
     }
 
     if (route.canActivate) {

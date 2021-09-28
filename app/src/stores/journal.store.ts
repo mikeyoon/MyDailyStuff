@@ -2,9 +2,10 @@ import * as Requests from "../models/requests.js";
 import * as Responses from "../models/responses.js";
 import { BaseStore } from "./base.store.js";
 import { analyticsStore, AnalyticsStore } from "./analytics.store.js";
-import { router } from '../components/router.js';
+import { router, Router } from '../components/router.js';
 import { BaseResponse, fetch } from '../util/fetch.js';
 import { toGoDateString } from "../util/date-format.js";
+import { authStore } from "./auth.store.js";
 
 interface StoreProps {
   editing: boolean;
@@ -36,13 +37,16 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   }
 
   constructor(
+    router: Router,
     private analyticsStore: AnalyticsStore,
   ) {
     super();
     this.localDate = new Date();
-    router.params$.subscribe((params) => {
-      if (params.date) {
-        this.get(new Date(params.date));
+    
+    router.activeRoute$.subscribe((activated) => {
+      if (activated.route && activated.route.startsWith('/journal')) {
+        const date = activated.params.date ? new Date(activated.params.date) : this.localDate;
+        this.get(date);
       }
     });
   }
@@ -168,6 +172,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
         const json = await response.json() as BaseResponse<Responses.JournalEntry>;
         if (json.success === true) {
           this.current = json.result;
+          await authStore.getStreak();
         } else {
           this.error = json.error;
         }
@@ -191,4 +196,4 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   }
 }
 
-export const journalStore = new JournalStore(analyticsStore);
+export const journalStore = new JournalStore(router, analyticsStore);

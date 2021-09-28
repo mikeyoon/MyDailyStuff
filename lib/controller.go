@@ -159,6 +159,7 @@ func (r *Controller) Logout(c *gin.Context) {
 		Path:     "/",
 	})
 
+	session.Save()
 	c.JSON(200, SuccessResponse(nil))
 }
 

@@ -105,3 +105,5 @@ export class LoginComponent extends BaseComponent {
     this.digest();
   }
 }
+
+customElements.define('mds-login', LoginComponent);

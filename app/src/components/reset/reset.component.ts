@@ -30,7 +30,7 @@ export class ResetComponent extends BaseComponent {
       }      
     });
 
-    this.subscribe(router.params$, (params) => {
+    this.subscribe(router.activeRoute$, (params) => {
       this.resetToken = params?.token;
     })
   }
@@ -106,3 +106,5 @@ export class ResetComponent extends BaseComponent {
     this.digest();
   }
 }
+
+customElements.define('mds-reset', ResetComponent);
