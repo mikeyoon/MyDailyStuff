@@ -1,3 +1,5 @@
+/// <reference path="override.d.ts" />
+
 import { AppComponent } from './components/app/app.component.js';
 import { HeaderComponent } from './components/header/header.component.js';
 import { router } from './components/router.js';

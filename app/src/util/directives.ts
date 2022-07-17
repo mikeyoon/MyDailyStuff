@@ -8,8 +8,38 @@ export abstract class CompiledDirective {
   abstract execute(context: any): void;
 }
 
+export abstract class CompiledDeferredDirective extends CompiledDirective {
+  childDeferredDirectives: CompiledDeferredDirective[];
+  
+  constructor(expr: string, protected node: Element, protected parent: Element, args: string[] = []) {
+    super(expr, node, parent, args);
+    this.childDeferredDirectives = [];
+
+    /**
+     * 1. Find and "compile" all direct deferred children
+     */
+    node.remove();
+  }
+
+  execute(context: any): void {
+    this.childDeferredDirectives.forEach((directive) => {
+      directive.execute(context);
+    });
+    // Execute all non-deferred directives
+  }
+}
 
 export class CompiledIfDirective extends CompiledDirective {
+  /** 
+   * if evaluates false -> true
+   * mount the dom and then compile the subtree of directives below
+   * 
+   * if evaluates true -> false
+   * then unmount the element
+   * 
+   * if true during execute, then execute all descendent directives
+   **/
+
   value: boolean;
   originalNodes: Element[];
 
@@ -28,6 +58,7 @@ export class CompiledIfDirective extends CompiledDirective {
         const currentNodes = Array.from(this.parent.children);
         let inserted = false;
 
+        // Find original position based on sibling positions and reinsert
         for (let ii = index + 1; ii < this.originalNodes.length; ii++) {
           const sibIndex = currentNodes.indexOf(this.originalNodes[ii]);
           if (sibIndex >= 0) {
@@ -36,11 +67,14 @@ export class CompiledIfDirective extends CompiledDirective {
             break;
           }
         }
+
+        // If siblings are no longer present, or if no siblings, just insert
         if (!inserted) {
           this.parent.appendChild(this.node);
         }
+
+        // compile children here
       } else {
-        this.node.nextElementSibling
         this.node.remove();
       }
 
@@ -219,6 +253,8 @@ export class CompiledSubmitDirective extends CompiledDirective {
     this.context = context;
   }
 }
+
+
 
 // export class CompiledRepeatDirective extends CompiledDirective {
 //   value: any[] | null;

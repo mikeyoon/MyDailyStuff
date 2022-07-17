@@ -41,8 +41,7 @@
                 ) : null}
             </Manager> -->
 
-            <!-- TODO: Hide button when at current date -->
-            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading }" [click]="this.handleNext(event)" title="Go to the next day">
+            <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading || !this.showNext }" [click]="this.handleNext(event)" title="Go to the next day">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="100%" fill="currentColor"
                     class="bi bi-chevron-right" viewBox="0 0 16 16">
                     <path fill-rule="evenodd"
@@ -51,10 +50,13 @@
             </button>
         </div>
 
-        <!-- {this.renderEntries()} -->
-        <div class="journal mt-4" [if]="this.entries.length > 0" id="entries"></div>
-        <h3 class="text-center" [if]="this.entries.length === 0">No entries today</h3>
-
+        <div [if]="!this.loading">
+            <div class="journal mt-4" [if]="this.entries.length > 0">
+                <mds-entry [repeat]="entry of this.entries" let-entry="entry"></mds-entry>
+            </div>
+            <h3 class="text-center" [if]="this.entries.length === 0">No entries today</h3>
+        </div>
+    
         <hr class="mt-4" />
 
         <div [if]="this.saveError" class="alert alert-danger" [content]="this.saveError">

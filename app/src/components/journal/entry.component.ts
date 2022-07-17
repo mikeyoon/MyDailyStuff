@@ -1,25 +1,44 @@
-import { importHtml } from '../../loader.js';
-import { ChildComponent } from '../base.component.js';
+import { importCss, importHtml } from '../../loader.js';
+import { BaseComponent } from '../base.component.js';
+import { toHtml } from '../../util/markdown.js';
 
-// const css = await importCss(import.meta.url, 'journal.component.css');
+const css = await importCss(import.meta.url, 'entry.component.css');
 const html = await importHtml(import.meta.url, 'entry.component.html');
 
-export class EntryComponent extends ChildComponent {
+import { journalStore } from '../../stores/journal.store.js';
+
+export class EntryComponent extends BaseComponent {
   static get observedAttributes() {
-    return ['entry'];
-  }
-  constructor(context: any) {
-    super(context, html);
+    return ['let-entry'];
   }
 
-  attributeChangedCallback(name: string, oldValue: any, newValue: any) {
-    switch (name) {
-      case 'test':
-        const element = this.querySelector('.test');
-        if (element != null) {
-          element.textContent = newValue;
-        }
-        break;
+  constructor() {
+    super(html, css);
+  }
+
+  entryHtml: string | undefined;
+  index: number | undefined;
+
+  connectedCallback(): void {
+    this.entryHtml = toHtml(this.bindings[this.getAttribute('let-entry') || ''] as string);
+    this.index = parseInt(this.getAttribute('data-index') || '0');
+    super.connectedCallback();
+  }
+
+  get entries(): string[] {
+    return journalStore.current?.entries || [];
+  }
+
+  deleteEntry(event: Event) {
+    if (this.entries.length > 1) {
+      journalStore.edit({
+        index: this.index || 0,
+        entry: null
+      });
+    } else {
+      journalStore.delete();
     }
   }
 }
+
+customElements.define('mds-entry', EntryComponent);

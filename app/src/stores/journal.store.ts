@@ -23,7 +23,7 @@ interface StoreProps {
 export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   editing = false;
   adding = false;
-  loading = false;
+  loading = true;
   deleting = false;
   initialized = false; //Whether the journal page has loaded
   error: string | undefined;

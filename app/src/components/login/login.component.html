@@ -5,24 +5,26 @@
       <div [if]="this.loginError" class="alert alert-danger" [content]="this.loginError"></div>
       <form id="login_form" class="row g-3" [submit]="this.login(event)">
         <div class="col-12">
-          <label class="form-label" htmlFor="email">Email:</label>
+          <label class="form-label" for="email">Email:</label>
           <input
             class="form-control"
             [class]="this.emailError ? 'is-invalid' : ''"
             id="email"
             name="email"
             [change]="this.emailChanged(event)"
+            [blur]="this.validateEmail()"
           />
           <div [if]="this.emailError" class="invalid-feedback" [content]="this.emailError"></div>
         </div>
         <div class="col-12">
-          <label class="form-label" htmlFor="password">Password:</label>
+          <label class="form-label" for="password">Password:</label>
           <input
             class="form-control"
             [class]="this.passwordError ? 'is-invalid' : ''"
             id="password"
             name="password"
             type="password"
+            [blur]="this.validatePassword()"
             [change]="this.passwordChanged(event)"
           />
           <div [if]="this.passwordError" class="invalid-feedback" [content]="this.passwordError"></div>
@@ -39,7 +41,7 @@
                 />
                 <label
                   class="form-check-label"
-                  htmlFor="rememberMe"
+                  for="rememberMe"
                 >
                   Keep me logged in
                 </label>

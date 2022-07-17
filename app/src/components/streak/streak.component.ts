@@ -8,7 +8,14 @@ const html = await importHtml(import.meta.url, 'streak.component.html');
 export class StreakComponent extends BaseComponent {
   constructor() {
     super(html, css);
+  }
 
+  get streak() {
+    return authStore.streak;
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
     this.subscribe(authStore.propChanged$, (prop) => {
       switch (prop) {
         case 'streakLoading':
@@ -17,10 +24,6 @@ export class StreakComponent extends BaseComponent {
           break;
       }
     });
-  }
-
-  get streak() {
-    return authStore.streak;
   }
 }
 

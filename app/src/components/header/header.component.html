@@ -23,7 +23,7 @@
             <form
             class="form-inline my-2 my-lg-0"
               role="search"
-              [onSubmit]={this.handleSearch}
+              [submit]="this.handleSearch"
             >
               <div class="input-group">
                 <input
@@ -32,7 +32,7 @@
                   placeholder="Search"
                   [value]="query"
                   [onChange]="updateQueryText(e.target.value)"
-                  [onKeyDown]="this.handleSearchKeyDown"
+                  [keypress]="this.handleSearchKeyDown"
                 />
                 <button type="submit" class="btn btn-primary">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">

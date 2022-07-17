@@ -31,7 +31,7 @@ export class ResetComponent extends BaseComponent {
     });
 
     this.subscribe(router.activeRoute$, (params) => {
-      this.resetToken = params?.token;
+      //this.resetToken = params?.params;
     })
   }
 

@@ -1,10 +1,16 @@
 import { Observable } from '../util/observable.js';
-import { compileFragment, CompiledElement } from '../util/compiler.js';
+import { compileFragment, CompiledGraph } from '../util/compiler.js';
+import { importRelative } from '../loader.js';
+
+const bsCss = new CSSStyleSheet();
+bsCss.replaceSync(await importRelative(import.meta.url, '../bootstrap.min.css'));
+document.adoptedStyleSheets = [bsCss];
 
 export abstract class BaseComponent extends HTMLElement {
   protected subscriptions: Array<Function>;
   protected root: ShadowRoot;
-  protected scope!: CompiledElement;
+  protected compiled: CompiledGraph = [];
+  public bindings: any;
 
   private digestTimeout: number | null = null;
 
@@ -19,8 +25,9 @@ export abstract class BaseComponent extends HTMLElement {
   routeParamsChanged(params: any) { }
 
   connectedCallback() {
+    this.root.adoptedStyleSheets = [bsCss];
     if (this.css != null) {
-      this.root.appendChild(this.css);
+      this.root.appendChild(this.css.cloneNode(true));
     }
 
     const html = this.html.cloneNode(true) as DocumentFragment;
@@ -37,43 +44,49 @@ export abstract class BaseComponent extends HTMLElement {
     this.subscriptions.forEach((unsub) => unsub());
   }
 
+  setBindings(bindings: any) {
+    this.bindings = bindings;
+  }
+
   private compile(html: DocumentFragment) {
-    this.scope = compileFragment(html, this.root.host || this);
+    compileFragment(html, this.root.host || this, this.compiled);
     this.digest();
   }
 
-  protected digest() {
-    this.scope.digest(this);
+  public digest() {
+    this.compiled.forEach((ce) => {
+      ce.digest(this);
+    });
   }
 }
 
-export abstract class ChildComponent extends HTMLElement {
-  protected subscriptions: Array<Function>;
-  protected scope!: CompiledElement;
+// export abstract class ChildComponent extends HTMLElement {
+//   protected subscriptions: Array<Function>;
+//   protected scope!: CompiledElement;
 
-  constructor(protected context: any, private html: DocumentFragment, private css?: HTMLStyleElement) {
-    super();
-    this.subscriptions = [];
-  }
+//   constructor(protected context: any, private html: DocumentFragment, private css?: HTMLStyleElement) {
+//     super();
+//     this.subscriptions = [];
+//   }
 
-  connectedCallback() {
-    if (this.css != null) {
-      this.appendChild(this.css);
-    }
+//   connectedCallback() {
+//     if (this.css != null) {
+//       this.appendChild(this.css);
+//     }
 
-    const html = this.html.cloneNode(true) as DocumentFragment;
-    this.compile(html);
-  }
+//     const html = this.html.cloneNode(true) as DocumentFragment;
+//     this.compile(html);
+//   }
 
-  disconnectedCallback() {
-    this.subscriptions.forEach((unsub) => unsub());
-  }
+//   disconnectedCallback() {
+//     this.subscriptions.forEach((unsub) => unsub());
+//   }
 
-  private compile(html: DocumentFragment) {
-    this.scope = compileFragment(html, this);
-  }
+//   private compile(html: DocumentFragment) {
+//     this.scope = compileDirectives(html, this);
+//   }
 
-  protected digest(context: any) {
-    this.scope.digest(context);
-  }
-}
+//   protected digest(context: any) {
+//     this.scope.digest(context);
+//   }
+// }

@@ -5,38 +5,26 @@
             <span [content]="this.total"></span> results for <span [content]="this.query"></span>
         </h4>
         <div>
-            {this.props.store.searchStore.searchResults.map(
-            (result, index) => {
-                return (
-                <div class="card panel-default" key={index}>
-                    <div class="card-body">
-                    {index + 1 + this.props.store.searchStore.offset}.{" "}
-                    <a
-                        href={
-                        "/journal/" +
-                        moment(result.date)
-                            .utc()
-                            .format("YYYY-M-D")
-                        }
-                    >
-                        {moment(result.date)
+            <div [repeat]="result of this.results" class="card panel-default">
+                <div class="card-body">
+                {index + 1 + this.props.store.searchStore.offset}.{" "}
+                <a
+                    href={
+                    "/journal/" +
+                    moment(result.date)
                         .utc()
-                        .format("dddd, MMMM Do YYYY")}
-                    </a>
-                    </div>
-                    <ul class="list-group">
-                    {result.entries.map((entry, ii) => (
-                        <li
-                        class="list-group-item"
-                        key={ii}
-                        dangerouslySetInnerHTML={{ __html: entry }}
-                        />
-                    ))}
-                    </ul>
+                        .format("YYYY-M-D")
+                    }
+                >
+                    {moment(result.date)
+                    .utc()
+                    .format("dddd, MMMM Do YYYY")}
+                </a>
                 </div>
-                );
-            }
-            )}
+                <ul class="list-group">
+                    <li class="list-group-item" [repeat]="entry of result.entries" [content]="entry" />
+                </ul>
+            </div>
         </div>
         <ul class="pager">
             <li class="previous">

@@ -14,7 +14,7 @@
     </div>
     <form [if]="!this.registered" [submit]="this.register(event)" id="register_form" class="row g-3">
       <div class="col-12">
-        <label class="form-label" htmlFor="email">Email:</label>
+        <label class="form-label" for="email">Email:</label>
         <input
           class="form-control"
           [class]="this.emailError ? 'is-invalid' : ''"
@@ -26,7 +26,7 @@
         <div [if]="this.emailError" class="invalid-feedback" [content]="this.emailError"></div>
       </div>
       <div class="col-12">
-        <label class="form-label" htmlFor="password">Password:</label>
+        <label class="form-label" for="password">Password:</label>
         <input
           class="form-control"
           [class]="this.passwordError ? 'is-invalid' : ''"
@@ -39,7 +39,7 @@
         <div [if]="this.passwordError" class="invalid-feedback" [content]="this.passwordError"></div>
       </div>
       <div class="col-12">
-        <label class="form-label" htmlFor="password">Confirm Password:</label>
+        <label class="form-label" for="password">Confirm Password:</label>
         <input
           class="form-control"
           [class]="this.confirmError ? 'is-invalid' : ''"

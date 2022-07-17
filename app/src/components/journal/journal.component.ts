@@ -1,39 +1,20 @@
-import { CompiledElement, compileFragment } from '../../util/compiler.js';
 import { importCss, importHtml } from '../../loader.js';
 import { BaseComponent } from '../base.component.js';
-import { toHtml } from '../../util/markdown.js';
 
 import { journalStore } from '../../stores/journal.store.js';
 import { router } from '../router.js';
 import { toGoDateString } from '../../util/date-format.js';
 
 import '../streak/streak.component.js';
+import './entry.component.js';
 
 const css = await importCss(import.meta.url, 'journal.component.css');
 const html = await importHtml(import.meta.url, 'journal.component.html');
 
-const ENTRY_TEMPLATE =  `
-<div class="journal mt-4">
-  <div class="card">
-      <button
-          class="btn btn-outline-secondary btn-sm btn-journal-delete"
-          [click]="this.deleteEntry(this.index, event)"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-        </svg>
-      </button>
-      <div class="card-body journal-entry" [content]="this.entry"></div>
-  </div>
-</div>`;
-
 export class JournalComponent extends BaseComponent {
   invalid = true;
 
-  submitForm!: HTMLFormElement;
   newEntry: string = '';
-  compiledEntries: CompiledElement[] = [];
-  entriesContainer!: HTMLElement;
 
   constructor() {
     super(html, css);
@@ -41,7 +22,6 @@ export class JournalComponent extends BaseComponent {
     this.subscribe(journalStore.propChanged$, (prop) => {
       switch (prop) {
         case 'current':
-          this.compileEntries();
         case 'error':
         case 'editing':
         case 'loading':
@@ -50,6 +30,12 @@ export class JournalComponent extends BaseComponent {
           break;
       }
     });
+  }
+
+  get showNext(): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return journalStore.localDate < today;
   }
 
   get entries(): string[] {
@@ -85,47 +71,10 @@ export class JournalComponent extends BaseComponent {
     return this.entries.length >= 7;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.entriesContainer = this.root.querySelector('#entries') as HTMLElement;
-    this.submitForm = this.root.querySelector('form') as HTMLFormElement;
-
-    if (this.entries.length) {
-      this.compileEntries();
-      this.digest();
-    }
-  }
-
-  digest() {
-    super.digest();
-    this.compiledEntries.forEach((compiled, index) => {
-      compiled.digest({
-        deleteEntry: this.deleteEntry.bind(this),
-        entry: toHtml(this.entries[index]),
-        index
-      });
-    });
-  }
-
-  compileEntries() {
-    this.compiledEntries = [];
-    const children: Node[] = [];
-
-    this.entries.forEach((entry) => {
-      const fragment = this.ownerDocument.createElement('template');
-      fragment.innerHTML = ENTRY_TEMPLATE;
-
-      //this.appendChild(fragment.content);
-      children.push(fragment.content);
-      const compiled = compileFragment(fragment.content, this.root.host);
-      this.compiledEntries.push(compiled);
-    });
-
-    this.entriesContainer.replaceChildren(...children);
-  }
-
   addEntry(event: Event) {
     event.preventDefault();
+
+    const submitForm = this.root.querySelector('form') as HTMLFormElement;
     if (journalStore.current != null) {
       journalStore.edit({
         entry: this.newEntry,
@@ -133,32 +82,23 @@ export class JournalComponent extends BaseComponent {
       }).then(() => {
         if (!journalStore.error) {
           this.newEntry = '';
-          this.submitForm.reset();
+          submitForm.reset();
+          this.digest();
         }
       });
     } else {
       journalStore.add(this.newEntry).then(() => {
         if (!journalStore.error) {
           this.newEntry = '';
-          this.submitForm.reset();
+          submitForm.reset();
+          this.digest();
         }
       });
     }
   }
 
-  deleteEntry(index: number, event: Event) {
-    if (this.entries.length > 1) {
-      journalStore.edit({
-        index,
-        entry: null
-      });
-    } else {
-      journalStore.delete();
-    }
-  }
-
   entryKeypress(event: KeyboardEvent) {
-    if (event.ctrlKey && event.code === 'Enter') {
+    if (event.ctrlKey && event.code === 'Enter' && this.newEntry) {
       this.addEntry(event);
     }
   }

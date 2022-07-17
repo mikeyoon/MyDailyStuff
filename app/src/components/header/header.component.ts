@@ -25,9 +25,9 @@ export class HeaderComponent extends BaseComponent {
 
   connectedCallback() {
     super.connectedCallback();
-    const dropdown = this.root.querySelector('.dropdown') as HTMLElement;
 
     document.body.addEventListener('click', (event) => {
+      const dropdown = this.root.querySelector('.dropdown') as HTMLElement;
       const target = event.composedPath()[0] as HTMLElement | undefined;
       if (target != null && target != dropdown && !isDescendent(dropdown, target)) {
         this.isDropdownOpen = false;
