@@ -8,6 +8,8 @@ const enum DirectiveType {
   Attr = 10,
 }
 
+let keyCounter = 0;
+
 function compileDirectives(element: Element, root: Element) {
   const compiled: CompiledDirective[] = [];
 
@@ -126,33 +128,6 @@ abstract class CompiledActionDirective extends CompiledDirective {
 
 abstract class CompiledStructuralDirective extends CompiledDirective {
   readonly type = DirectiveType.Structural;
-
-  constructor(expr: string, node: Element, parent: Element, args: string[] = []) {
-    super(expr, node, parent, args);
-  }
-
-  abstract execute(context: any): boolean;
-
-  reinsertElement(originalNodes: Element[], originalNode: Element, nodeToInsert: Element, parent: Element) {
-    const index = originalNodes.indexOf(originalNode);
-    const currentNodes = Array.from(parent.children);
-    let inserted = false;
-
-    // Find original position based on sibling positions and reinsert
-    for (let ii = index + 1; ii < originalNodes.length; ii++) {
-      const sibIndex = currentNodes.indexOf(originalNodes[ii]);
-      if (sibIndex >= 0) {
-        parent.insertBefore(nodeToInsert, currentNodes[sibIndex]);
-        inserted = true;
-        break;
-      }
-    }
-
-    // If siblings are no longer present, or if no siblings, just insert
-    if (!inserted) {
-      parent.appendChild(nodeToInsert);
-    }
-  }
 }
 
 export class CompiledElement {
@@ -163,17 +138,24 @@ export class CompiledElement {
     this.hasStructuralDirective = compiledDirectives.some((d) => d.type === DirectiveType.Structural);
   }
 
-  digest(context: any) {
+  digest(context: any, immediate = false) {
     if (!this.digestTimeout) {
-      this.digestTimeout = window.setTimeout(() => {
-        this.digestTimeout = null;
+      if (immediate) {
+        this.execute(context);
+      } else {
+        this.digestTimeout = window.setTimeout(() => {
+          this.execute(context);
+          this.digestTimeout = null;
+        }, 5);
+      }
+    }
+  }
 
-        for (const c of this.compiledDirectives) {
-          if (!c.execute(context)) {
-            break;
-          }
-        }
-      }, 10);
+  private execute(context: any) {
+    for (const c of this.compiledDirectives) {
+      if (!c.execute(context)) {
+        break;
+      }
     }
   }
 }
@@ -399,12 +381,15 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
   value: any[] | null;
   generatedNodes: Element[] = [];
   originalNodes: Element[];
+  placeholder: HTMLTemplateElement;
 
   constructor(protected expr: string, node: Element, parent: Element) {
     super('null', node, parent);
     this.value = null;
     this.originalNodes = Array.from(parent.children);
 
+    this.placeholder = document.createElement('template');
+    node.before(this.placeholder);
     node.remove();
   }
 
@@ -420,15 +405,14 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
 
       values.forEach((value, index) => {
         const element = this.node.cloneNode(true) as BaseComponent;
-        element.bindings = { entry: value };
+        element.bindings = { [key]: value };
         element.setAttribute('data-index', index.toString());
 
         // Insert element
         if (this.generatedNodes?.length) {
           this.generatedNodes[this.generatedNodes.length - 1].after(element);
         } else {
-          // find closest prev sibling, otherwise insert into beginning
-          this.reinsertElement(this.originalNodes, this.node, element, this.parent);
+          this.placeholder.after(element);
         }
 
         this.generatedNodes.push(element);
@@ -444,6 +428,7 @@ export class CompiledIfDirective extends CompiledStructuralDirective {
   value: boolean | undefined;
   originalNodes: Element[];
   children: CompiledGraph;
+  placeholder: HTMLTemplateElement;
 
   constructor(expr: string, node: Element, parent: Element) {
     super(expr, node, parent);
@@ -451,8 +436,11 @@ export class CompiledIfDirective extends CompiledStructuralDirective {
     this.originalNodes = Array.from(parent.children);
     this.children = [];
 
-    compileChildren(this.node, this.parent, this.children);
+    this.placeholder = document.createElement('template');
+    this.node.before(this.placeholder);
     this.node.remove();
+
+    compileChildren(this.node, this.parent, this.children);
   }
 
   execute(context: any) {
@@ -460,13 +448,13 @@ export class CompiledIfDirective extends CompiledStructuralDirective {
 
     if (value) {
       this.children.forEach((child) => {
-        child.digest(context);
+        child.digest(context, true);
       });
     }
 
     if (this.value !== value) {
       if (value) {
-        this.reinsertElement(this.originalNodes, this.node, this.node, this.parent);
+        this.placeholder.after(this.node);
       } else {
         this.node.remove();
       }

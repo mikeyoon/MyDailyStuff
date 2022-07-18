@@ -10,9 +10,8 @@ export abstract class BaseComponent extends HTMLElement {
   protected subscriptions: Array<Function>;
   protected root: ShadowRoot;
   protected compiled: CompiledGraph = [];
+  protected content: DocumentFragment;
   public bindings: any;
-
-  private digestTimeout: number | null = null;
 
   constructor(private html: DocumentFragment, private css?: HTMLStyleElement) {
     super();
@@ -20,6 +19,8 @@ export abstract class BaseComponent extends HTMLElement {
     this.subscriptions = [];
 
     this.root = this.attachShadow({ mode: 'open' });
+    this.content = html.cloneNode(true) as DocumentFragment;
+    this.compile(this.content);
   }
 
   routeParamsChanged(params: any) { }
@@ -30,9 +31,8 @@ export abstract class BaseComponent extends HTMLElement {
       this.root.appendChild(this.css.cloneNode(true));
     }
 
-    const html = this.html.cloneNode(true) as DocumentFragment;
-    this.compile(html);
-    this.root.appendChild(html);
+    this.digest(true);
+    this.root.appendChild(this.content);
   };
 
   protected subscribe<T>(obs: Observable<T>, onSuccess: (val: T) => void) {
@@ -50,12 +50,11 @@ export abstract class BaseComponent extends HTMLElement {
 
   private compile(html: DocumentFragment) {
     compileFragment(html, this.root.host || this, this.compiled);
-    this.digest();
   }
 
-  public digest() {
+  public digest(immediate = false) {
     this.compiled.forEach((ce) => {
-      ce.digest(this);
+      ce.digest(this, immediate);
     });
   }
 }
