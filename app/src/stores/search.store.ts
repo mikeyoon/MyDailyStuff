@@ -1,11 +1,10 @@
 import * as Responses from "../models/responses";
-import { RestClient } from "./client";
 import { SearchResult } from "../types";
-import { journalStore, JournalStore } from "./journal.store";
+import { journalStore, JournalStore } from "./journal.store.js";
+import { BaseErrorResponse, fetch } from '../util/fetch.js';
 import { readAsUtcMonth, readAsUtcDate } from "../date.util";
-import { Router, router } from "../components/router";
-import { BaseStore } from "./base.store";
-import { BaseResponse } from "../util/fetch";
+import { Router, router } from "../components/router.js";
+import { BaseStore } from "./base.store.js";
 
 const LIMIT = 10;
 
@@ -38,7 +37,7 @@ export class SearchStore extends BaseStore<StoreProps> {
   prevOffset: number | undefined;
   offset: number;
 
-  private query: string;
+  query: string | null = null;
 
   get monthYear() {
     return `${this.journal.localDate.getFullYear()}-${this.journal.localDate.getMonth() + 1}-1`;
@@ -124,16 +123,16 @@ export class SearchStore extends BaseStore<StoreProps> {
       });
 
       if (response.ok) {
-        const json = await response.json() as BaseResponse<Responses.QuerySearchResult>;
+        const json = await response.json() as Responses.QuerySearchResult | BaseErrorResponse;
         if (json.success === true) {
-          this.searchResults = json.result.entries.map((r) => ({
+          this.searchResults = json.result.map((r) => ({
             entries: r.entries,
             id: r.id,
-            date: r.date
+            date: new Date(r.date)
           }));
           offset = offset || 0;
 
-          this.total = json.result.total || 0;
+          this.total = json.total || 0;
           this.searching = false;
           this.nextOffset =
             offset + LIMIT < (this.total || 0) ? offset + LIMIT : undefined;

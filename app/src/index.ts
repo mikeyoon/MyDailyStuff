@@ -16,8 +16,8 @@ router.on('/account/verify/:token', {
     return authStore.verify(params.token).then(() => false);
   }
 });
-// router.on('/search/:query', () => SearchComponent);
-// router.on('/search/:query/:offset', () => SearchComponent);
+router.on('/search/:query/:offset', { lazyLoader: () => import('./components/search/search.component.js').then((m) => m.SearchComponent), title: 'Search' });
+router.on('/search/:query', { lazyLoader: () => import('./components/search/search.component.js').then((m) => m.SearchComponent), title: 'Search' });
 
 router.on('/profile', { lazyLoader: () => import('./components/profile/profile.component.js').then((m) => m.ProfileComponent), title: 'Update Password' });
 router.on('/about', { lazyLoader: () => import('./components/about/about.component.js').then((m) => m.AboutComponent), title: 'About' });

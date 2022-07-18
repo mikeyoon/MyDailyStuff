@@ -5,3 +5,7 @@ export function toGoDateString(date: Date) {
 export function toDateString(date: Date) {
   return `${date.getMonth()}-${date.getDay()}-${date.getFullYear()}`;
 }
+
+export function toLongDateString(date: Date) {
+  return date.toLocaleDateString(undefined, {  dateStyle: 'full' });
+}

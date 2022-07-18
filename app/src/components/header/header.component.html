@@ -21,18 +21,16 @@
         <li class="nav-item" [if]="this.isLoggedIn">
           <!-- Logged in -->
             <form
-            class="form-inline my-2 my-lg-0"
+              class="form-inline my-2 my-lg-0"
               role="search"
-              [submit]="this.handleSearch"
+              [submit]="this.search(event)"
             >
               <div class="input-group">
                 <input
                   class="form-control"
                   type="search"
                   placeholder="Search"
-                  [value]="query"
-                  [onChange]="updateQueryText(e.target.value)"
-                  [keypress]="this.handleSearchKeyDown"
+                  [input]="this.updateQueryText(event.target.value)"
                 />
                 <button type="submit" class="btn btn-primary">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">

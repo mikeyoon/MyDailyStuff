@@ -49,7 +49,7 @@ export abstract class BaseComponent extends HTMLElement {
   }
 
   private compile(html: DocumentFragment) {
-    compileFragment(html, this.root.host || this, this.compiled);
+    compileFragment(html, (this.root.host as BaseComponent) || this, this.compiled);
   }
 
   public digest(immediate = false) {

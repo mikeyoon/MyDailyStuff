@@ -1,6 +1,7 @@
 import { BaseComponent } from '../base.component.js';
 import { importCss, importHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
+import { router } from '../router.js';
 import { isDescendent } from '../../util/dom.js';
 
 const css = await importCss(import.meta.url, 'header.component.css');
@@ -9,6 +10,7 @@ const html = await importHtml(import.meta.url, 'header.component.html');
 export class HeaderComponent extends BaseComponent {
   isDropdownOpen = false;
   showCollapsedMenu = false;
+  currentQuery = '';
 
   constructor() {
     super(html, css);
@@ -51,6 +53,15 @@ export class HeaderComponent extends BaseComponent {
     event.stopPropagation();
 
     authStore.logout();
+  }
+
+  updateQueryText(query: string) {
+    this.currentQuery = query;
+  }
+
+  search(event: Event) {
+    event.preventDefault();
+    router.navigate(`/search/${this.currentQuery}/0`);
   }
 
   get email(): string | undefined {

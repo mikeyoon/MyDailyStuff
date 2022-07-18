@@ -1,4 +1,4 @@
-import { BaseComponent } from "src/components/base.component";
+import { BaseComponent } from "../components/base.component.js";
 
 export type CompiledGraph = Array<CompiledElement>;
 
@@ -10,7 +10,7 @@ const enum DirectiveType {
 
 let keyCounter = 0;
 
-function compileDirectives(element: Element, root: Element) {
+function compileDirectives(element: Element, root: BaseComponent) {
   const compiled: CompiledDirective[] = [];
 
   for (const attr of element.attributes) {
@@ -23,7 +23,8 @@ function compileDirectives(element: Element, root: Element) {
         );
         break;
       case '[class]':
-        compiled.push(new CompiledClassDirective(
+        compiled.push(new CompiledAttrDirective(
+          'class',
           attr.value || '',
           element,
           element.parentElement || root)
@@ -45,6 +46,14 @@ function compileDirectives(element: Element, root: Element) {
         break;
       case '[change]':
         compiled.push(new CompiledChangeDirective(
+          attr.value || '',
+          element,
+          element.parentElement || root)
+        );
+        break;
+      case '[href]':
+        compiled.push(new CompiledAttrDirective(
+          'href',
           attr.value || '',
           element,
           element.parentElement || root)
@@ -89,14 +98,16 @@ function compileDirectives(element: Element, root: Element) {
         compiled.push(new CompiledIfDirective(
           attr.value || '',
           element,
-          element.parentElement || root)
+          element.parentElement || root,
+          root as BaseComponent)
         );
         break;
       case '[repeat]':
         compiled.push(new CompiledRepeatDirective(
           attr.value || '',
           element,
-          element.parentElement || root)
+          element.parentElement || root,
+          root as BaseComponent)
         );
         break;
     }
@@ -128,6 +139,10 @@ abstract class CompiledActionDirective extends CompiledDirective {
 
 abstract class CompiledStructuralDirective extends CompiledDirective {
   readonly type = DirectiveType.Structural;
+
+  constructor(expr: string, node: Element, parent: Element, protected compiledAncestor: BaseComponent, args: string[] = []) {
+    super(expr, node, parent, args);
+  }
 }
 
 export class CompiledElement {
@@ -160,7 +175,7 @@ export class CompiledElement {
   }
 }
 
-export function compileFragment(html: DocumentFragment, root: Element, graph: CompiledGraph = []) {
+export function compileFragment(html: DocumentFragment, root: BaseComponent, graph: CompiledGraph = []) {
   Array.from(html.children).forEach((element) => {
     const compiledDirectives = compileDirectives(element, root);
     if (compiledDirectives.length > 0) {
@@ -168,27 +183,27 @@ export function compileFragment(html: DocumentFragment, root: Element, graph: Co
       graph.push(compiledElement);
 
       if (!compiledElement.hasStructuralDirective) {
-        compileChildren(element, root, graph);
+        compileChildren(element, root, root, graph);
       }
     } else {
-      compileChildren(element, root, graph);
+      compileChildren(element, root, root, graph);
     }
   });
 }
 
-function compileChildren(element: Element, root: Element, graph: CompiledGraph = []) {
+function compileChildren(element: Element, root: Element, compiledAncestor: BaseComponent, graph: CompiledGraph = []) {
   Array.from(element.children).forEach((child) => {
     // Compile all directives on immediate children
-    const directives = compileDirectives(child, element);
+    const directives = compileDirectives(child, compiledAncestor);
     if (directives.length > 0) {
       const compiledElement = new CompiledElement(element, directives);
       graph.push(compiledElement);
 
       if (!compiledElement.hasStructuralDirective) {
-        compileChildren(child, root, graph);
+        compileChildren(child, root, compiledAncestor, graph);
       }
     } else {
-      compileChildren(child, root, graph);
+      compileChildren(child, root, compiledAncestor,graph);
     }
   });
 }
@@ -213,20 +228,20 @@ export class CompiledContentDirective extends CompiledDirective {
   }
 }
 
-export class CompiledClassDirective extends CompiledDirective {
+export class CompiledAttrDirective extends CompiledDirective {
   value: string | null;
-  originalClass: string | null;
+  originalValue: string | null;
 
-  constructor(expr: string, node: Element, parent: Element) {
+  constructor(private name: string, expr: string, node: Element, parent: Element) {
     super(expr, node, parent);
     this.value = null;
-    this.originalClass = node.getAttribute('class');
+    this.originalValue = node.getAttribute(name) || '';
   }
 
   execute(context: any) {
     const value = this.func.call(context);
     if (this.value !== value) {
-      this.node.setAttribute('class', (this.originalClass + ' ' + value).trim());
+      this.node.setAttribute(this.name, (this.originalValue + ' ' + value).trim());
       this.value = value;
     }
 
@@ -383,8 +398,8 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
   originalNodes: Element[];
   placeholder: HTMLTemplateElement;
 
-  constructor(protected expr: string, node: Element, parent: Element) {
-    super('null', node, parent);
+  constructor(protected expr: string, node: Element, parent: Element, compiledAncestor: BaseComponent) {
+    super('null', node, parent, compiledAncestor);
     this.value = null;
     this.originalNodes = Array.from(parent.children);
 
@@ -403,10 +418,30 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
         this.generatedNodes = [];
       }
 
+      // TODO: Passing values to elements this way is really hacky. Should use a scope tree instead.
       values.forEach((value, index) => {
-        const element = this.node.cloneNode(true) as BaseComponent;
-        element.bindings = { [key]: value };
-        element.setAttribute('data-index', index.toString());
+        const element = this.node.cloneNode(true) as Element;
+        // if node is a webcomponent and hasn't been mounted, the cloned node won't be instantiated until mounted
+        if (element.tagName.startsWith('MDS-')) {
+          (element as BaseComponent).bindings = { [key]: value };
+          element.setAttribute('data-index', index.toString());
+        } else {
+          const childGraph: CompiledGraph = [];
+          // To handle any regular DOM elements with directives
+          compileChildren(element, this.parent, this.compiledAncestor, childGraph);
+          element.__digest = () => {
+            childGraph.forEach((ce, index) => {
+              // Hacks all the way down
+              const context = Object.create(this.compiledAncestor);
+              Object.assign(context, {
+                [key]: value,
+                __index: index
+              });
+               
+              ce.digest(context, true);
+            });
+          }
+        }
 
         // Insert element
         if (this.generatedNodes?.length) {
@@ -419,6 +454,14 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
       });
     }
 
+    this.generatedNodes.forEach((node) => {
+      if (node.__digest) { 
+        node.__digest();
+      } else if (node instanceof BaseComponent) {
+        node.digest();
+      }
+    });
+
     this.value = values;
     return true;
   }
@@ -430,8 +473,8 @@ export class CompiledIfDirective extends CompiledStructuralDirective {
   children: CompiledGraph;
   placeholder: HTMLTemplateElement;
 
-  constructor(expr: string, node: Element, parent: Element) {
-    super(expr, node, parent);
+  constructor(expr: string, node: Element, parent: Element, compiledAncestor: BaseComponent) {
+    super(expr, node, parent, compiledAncestor);
 
     this.originalNodes = Array.from(parent.children);
     this.children = [];
@@ -440,7 +483,7 @@ export class CompiledIfDirective extends CompiledStructuralDirective {
     this.node.before(this.placeholder);
     this.node.remove();
 
-    compileChildren(this.node, this.parent, this.children);
+    compileChildren(this.node, this.parent, compiledAncestor, this.children);
   }
 
   execute(context: any) {

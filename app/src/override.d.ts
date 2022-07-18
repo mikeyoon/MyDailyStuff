@@ -9,3 +9,7 @@ declare interface ShadowRoot {
 declare interface CSSStyleSheet {
   replaceSync(css: string): void;
 }
+
+declare interface Element {
+  __digest?: () => void;
+}

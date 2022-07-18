@@ -1,14 +1,15 @@
 <div class="row">
-
-    <div [if]="this.query" class="col-md-10 offset-md-1">
+    <div [if]="!this.searching" class="col-md-10 offset-md-1">
         <h4>
-            <span [content]="this.total"></span> results for <span [content]="this.query"></span>
+            <span [content]="this.total"></span> <span [content]="this.total > 1 ? 'results' : 'result'"></span> for "<span [content]="this.query"></span>"
         </h4>
         <div>
             <div [repeat]="result of this.results" class="card panel-default">
                 <div class="card-body">
-                {index + 1 + this.props.store.searchStore.offset}.{" "}
-                <a
+                    <span [content]="this.__index + 1 + this.offset + '.'"></span>
+                    <a [href]="'/journal/' + this.getShortDate(this.result.date)"
+                        [content]="this.getLongDate(this.result.date)"></a>
+                    <!-- <a
                     href={
                     "/journal/" +
                     moment(result.date)
@@ -19,16 +20,22 @@
                     {moment(result.date)
                     .utc()
                     .format("dddd, MMMM Do YYYY")}
-                </a>
+                </a> -->
                 </div>
                 <ul class="list-group">
-                    <li class="list-group-item" [repeat]="entry of result.entries" [content]="entry" />
+                    <li class="list-group-item" [repeat]="entry of this.result.entries">
+                        <span [content]="this.entry"></span>
+                    </li>
                 </ul>
             </div>
         </div>
         <ul class="pager">
             <li class="previous">
-            <a
+                <a class="btn btn-link" [href]="`/search/${this.query}/${this.prevOffset}`"
+                    [classes]="{ disabled: this.prevOffset == null }" [click]="this.prevPage()">
+                    prev
+                </a>
+                <!-- 
                 href={`/search/${this.props.store.searchStore.query}/${
                 this.props.store.searchStore.prevOffset
                 }`}
@@ -46,45 +53,30 @@
                 }
             >
                 <GoChevronLeft /> prev
-            </a>
+            </a> -->
             </li>
             <li class="next">
-            <a
-                class={classNames("btn", "btn-link", {
-                disabled: this.props.store.searchStore.nextOffset == null
-                })}
-                href={`/search/${this.props.store.searchStore.query}/${
-                this.props.store.searchStore.nextOffset
-                }`}
-                onClick={this.handlePageLink.bind(
-                this,
-                this.props.store.searchStore.nextOffset
-                )}
-                rel={
-                this.props.store.searchStore.nextOffset === null
-                    ? "external"
-                    : undefined
-                }
-            >
-                next <GoChevronRight />
-            </a>
+                <a class="btn btn-link" [classes]="{ disabled: this.nextOffset == null }" [href]="`/search/${this.query}/${this.nextOffset}`" [click]="this.nextPage()">
+                    next
+                </a>
+                
+                <!-- <a class={classNames("btn", "btn-link" , { disabled:
+                    this.props.store.searchStore.nextOffset==null })}
+                    href={`/search/${this.props.store.searchStore.query}/${ this.props.store.searchStore.nextOffset }`}
+                    onClick={this.handlePageLink.bind( this, this.props.store.searchStore.nextOffset )} rel={
+                    this.props.store.searchStore.nextOffset===null ? "external" : undefined }>
+                    next
+                    <GoChevronRight />
+                </a> -->
             </li>
         </ul>
     </div>
 
-    {this.props.store.searchStore.query ? (
-      
-    ) : (
-      <div class="col-md-8 col-md-offset-2">
+    <div class="col-md-8 col-md-offset-2" [if]="this.searching">
         <div class="mt-4">
-          <div class="progress">
-            <div
-              class="progress-bar progress-bar-striped active"
-              role="progressbar"
-              style={{ width: "100%" }}
-            />
-          </div>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%" />
+            </div>
         </div>
-      </div>
-    )}
-  </div>
+    </div>
+</div>

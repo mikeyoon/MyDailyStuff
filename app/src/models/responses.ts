@@ -11,8 +11,9 @@ export interface JournalEntry {
 }
 
 export interface QuerySearchResult {
-    entries: JournalEntry[];
-    total: number
+    result: JournalEntry[];
+    total: number;
+    success: true;
 }
 
 export interface EmptyResponse {
