@@ -40,7 +40,7 @@ export class SearchStore extends BaseStore<StoreProps> {
   query: string | null = null;
 
   get monthYear() {
-    return `${this.journal.localDate.getFullYear()}-${this.journal.localDate.getMonth() + 1}-1`;
+    return `${this.journal.utcDate.getFullYear()}-${this.journal.utcDate.getMonth() + 1}-1`;
   }
 
   constructor(private router: Router, private journal: JournalStore) {

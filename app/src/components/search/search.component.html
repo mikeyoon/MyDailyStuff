@@ -1,7 +1,8 @@
 <div class="row">
     <div [if]="!this.searching" class="col-md-10 offset-md-1">
         <h4>
-            <span [content]="this.total"></span> <span [content]="this.total > 1 ? 'results' : 'result'"></span> for "<span [content]="this.query"></span>"
+            <span [content]="this.total"></span> <span [content]="this.total > 1 ? 'results' : 'result'"></span> for
+            "<span [content]="this.query"></span>"
         </h4>
         <div>
             <div [repeat]="result of this.results" class="card panel-default">
@@ -9,18 +10,6 @@
                     <span [content]="this.__index + 1 + this.offset + '.'"></span>
                     <a [href]="'/journal/' + this.getShortDate(this.result.date)"
                         [content]="this.getLongDate(this.result.date)"></a>
-                    <!-- <a
-                    href={
-                    "/journal/" +
-                    moment(result.date)
-                        .utc()
-                        .format("YYYY-M-D")
-                    }
-                >
-                    {moment(result.date)
-                    .utc()
-                    .format("dddd, MMMM Do YYYY")}
-                </a> -->
                 </div>
                 <ul class="list-group">
                     <li class="list-group-item" [repeat]="entry of this.result.entries">
@@ -33,41 +22,24 @@
             <li class="previous">
                 <a class="btn btn-link" [href]="`/search/${this.query}/${this.prevOffset}`"
                     [classes]="{ disabled: this.prevOffset == null }" [click]="this.prevPage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-chevron-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                    </svg>
                     prev
                 </a>
-                <!-- 
-                href={`/search/${this.props.store.searchStore.query}/${
-                this.props.store.searchStore.prevOffset
-                }`}
-                class={classNames("btn", "btn-link", {
-                disabled: this.props.store.searchStore.prevOffset == null
-                })}
-                onClick={this.handlePageLink.bind(
-                this,
-                this.props.store.searchStore.prevOffset
-                )}
-                rel={
-                this.props.store.searchStore.prevOffset === null
-                    ? "external"
-                    : undefined
-                }
-            >
-                <GoChevronLeft /> prev
-            </a> -->
             </li>
             <li class="next">
-                <a class="btn btn-link" [classes]="{ disabled: this.nextOffset == null }" [href]="`/search/${this.query}/${this.nextOffset}`" [click]="this.nextPage()">
+                <a class="btn btn-link" [classes]="{ disabled: this.nextOffset == null }"
+                    [href]="`/search/${this.query}/${this.nextOffset}`" [click]="this.nextPage()">
                     next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-chevron-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                    </svg>
                 </a>
-                
-                <!-- <a class={classNames("btn", "btn-link" , { disabled:
-                    this.props.store.searchStore.nextOffset==null })}
-                    href={`/search/${this.props.store.searchStore.query}/${ this.props.store.searchStore.nextOffset }`}
-                    onClick={this.handlePageLink.bind( this, this.props.store.searchStore.nextOffset )} rel={
-                    this.props.store.searchStore.nextOffset===null ? "external" : undefined }>
-                    next
-                    <GoChevronRight />
-                </a> -->
             </li>
         </ul>
     </div>

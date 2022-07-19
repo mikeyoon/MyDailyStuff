@@ -16,7 +16,7 @@ interface StoreProps {
   error: string | undefined;
 
   current: Responses.JournalEntry | null;
-  localDate: Date;
+  utcDate: Date;
   showCalendar: boolean;
 }
 
@@ -29,7 +29,10 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   error: string | undefined;
 
   current: Responses.JournalEntry | null = null;
-  localDate: Date;
+  /**
+   * The selected date at midnight, in UTC timezone
+   */
+  utcDate: Date;
   showCalendar = false;
 
   get hasEntry() {
@@ -41,11 +44,12 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     private analyticsStore: AnalyticsStore,
   ) {
     super();
-    this.localDate = new Date();
+    const now = new Date();
+    this.utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     
     router.activeRoute$.subscribe((activated) => {
       if (activated.route && activated.route.startsWith('/journal')) {
-        const date = activated.params.date ? new Date(activated.params.date) : this.localDate;
+        const date = activated.params.date ? new Date(activated.params.date) : this.utcDate;
         this.get(date);
       }
     });
@@ -61,7 +65,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     try {
       const response = await fetch("/journal", {
         method: 'POST',
-        body: JSON.stringify({ entries: [entry], date: toGoDateString(this.localDate) }),
+        body: JSON.stringify({ entries: [entry], date: toGoDateString(this.utcDate) }),
       });
 
       if (response.ok) {
@@ -159,8 +163,8 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   async get(date: Date) {
     this.loading = true;
     this.error = undefined;
-    this.localDate = date;
-    this.notifyPropertyChanged('loading', 'error', 'localDate');
+    this.utcDate = date;
+    this.notifyPropertyChanged('loading', 'error', 'utcDate');
 
     try {
       const response = await fetch("/journal/" + toGoDateString(date));

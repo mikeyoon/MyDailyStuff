@@ -35,7 +35,7 @@ export class JournalComponent extends BaseComponent {
   get showNext(): boolean {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return journalStore.localDate < today;
+    return journalStore.utcDate < today;
   }
 
   get entries(): string[] {
@@ -59,7 +59,7 @@ export class JournalComponent extends BaseComponent {
   }
 
   get fullDate(): string {
-    return journalStore.localDate.toLocaleDateString('en-us', {
+    return journalStore.utcDate.toLocaleDateString('en-us', {
       weekday: 'short',
       month: 'short',
       day: '2-digit',
@@ -112,15 +112,15 @@ export class JournalComponent extends BaseComponent {
   }
 
   handlePrev(event: PointerEvent) {
-    const newDate = new Date(journalStore.localDate);
-    newDate.setDate(journalStore.localDate.getDate() - 1);
+    const newDate = new Date(journalStore.utcDate);
+    newDate.setDate(journalStore.utcDate.getDate() - 1);
     router.navigate('/journal/' + toGoDateString(newDate));
     this.digest();
   }
 
   handleNext(event: PointerEvent) {
-    const newDate = new Date(journalStore.localDate);
-    newDate.setDate(journalStore.localDate.getDate() + 1);
+    const newDate = new Date(journalStore.utcDate);
+    newDate.setDate(journalStore.utcDate.getDate() + 1);
     router.navigate('/journal/' + toGoDateString(newDate));
     this.digest();
   }

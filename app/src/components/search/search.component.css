@@ -14,6 +14,24 @@
   width: 315px;
 }
 
+ul.pager {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.pager li {
+  list-style: none;
+}
+
+.pager li a {
+  text-decoration: none;
+}
+
+.pager li a.disabled {
+  cursor: not-allowed;
+}
+
 .card {
   position: relative;
 }
