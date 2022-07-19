@@ -90,7 +90,11 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
     }
   }
 
-  async getAccount() {
+  async getAccount(refresh = false) {
+    if ((this.isLoggedIn || this.getAccountError) && !refresh || this.gettingAccount) {
+      return;
+    }
+
     this.gettingAccount = true;
     this.getAccountError = undefined;
     this.notifyPropertyChanged('gettingAccount', 'getAccountError');

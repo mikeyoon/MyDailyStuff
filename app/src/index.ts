@@ -7,6 +7,11 @@ import { authStore } from './stores/auth.store.js';
 
 customElements.define('mds-header', HeaderComponent);
 
+async function checkAuth() {
+  await authStore.getAccount();
+  return authStore.isLoggedIn;
+}
+
 router.on('/login', { lazyLoader: () => import('./components/login/login.component.js').then((m) => m.LoginComponent), title: 'Login' });
 router.on('/register', { lazyLoader: () => import('./components/register/register.component.js').then((m) => m.RegisterComponent), title: 'Register' });
 router.on('/forgot-password', { lazyLoader: () => import('./components/forgot/forgot.component.js').then((m) => m.ForgotComponent), title: 'Reset Password' });
@@ -22,24 +27,18 @@ router.on('/search/:query', { lazyLoader: () => import('./components/search/sear
 router.on('/profile', {
   lazyLoader: () => import('./components/profile/profile.component.js').then((m) => m.ProfileComponent),
   title: 'Update Password',
-  canActivate: (params) => {
-    return authStore.isLoggedIn;
-  }
+  canActivate: checkAuth
 });
 router.on('/about', { lazyLoader: () => import('./components/about/about.component.js').then((m) => m.AboutComponent), title: 'About' });
 router.on('/journal/:date', {
   lazyLoader: () => import('./components/journal/journal.component.js').then((m) => m.JournalComponent),
   title: '',
-  canActivate: (params) => {
-    return authStore.isLoggedIn;
-  }
+  canActivate: checkAuth
 });
 router.on('/journal', {
   lazyLoader: () => import('./components/journal/journal.component.js').then((m) => m.JournalComponent),
   title: '',
-  canActivate: (params) => {
-    return authStore.isLoggedIn;
-  }
+  canActivate: checkAuth
 });
 
 customElements.define('mds-main', AppComponent)
