@@ -1,11 +1,10 @@
 import { BaseComponent } from '../base.component.js';
-import { importCss, importHtml } from '../../loader.js';
+import { importCssAndHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
 import { router } from '../router.js';
 import { isDescendent } from '../../util/dom.js';
 
-const css = await importCss(import.meta.url, 'header.component.css');
-const html = await importHtml(import.meta.url, 'header.component.html');
+const [css, html] = await importCssAndHtml(import.meta.url, 'header.component');
 
 export class HeaderComponent extends BaseComponent {
   isDropdownOpen = false;

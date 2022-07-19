@@ -1,9 +1,8 @@
 import { BaseComponent } from '../base.component.js';
-import { importCss, importHtml } from '../../loader.js';
+import { importCssAndHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
 
-const css = await importCss(import.meta.url, 'streak.component.css');
-const html = await importHtml(import.meta.url, 'streak.component.html');
+const [css, html] = await importCssAndHtml(import.meta.url, 'streak.component');
 
 export class StreakComponent extends BaseComponent {
   constructor() {

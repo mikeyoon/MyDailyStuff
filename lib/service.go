@@ -257,10 +257,10 @@ func (s MdsService) GetUserByEmail(email string, verified bool) (User, error) {
 	ctx := context.Background()
 
 	query := elastic.NewBoolQuery().
-		Must(elastic.NewMatchQuery("email", strings.ToLower(email)))
+		Must(elastic.NewTermQuery("email", strings.ToLower(email)))
 
 	if verified {
-		query.Must(elastic.NewMatchQuery("verify_token", ""))
+		query = query.MustNot(elastic.NewExistsQuery("verify_token"))
 	}
 
 	result, err := s.es.Search(userIndex()).Type(userType).Query(query).Do(ctx)
@@ -308,7 +308,7 @@ func (s MdsService) GetUserById(id string) (User, error) {
 
 	ctx := context.Background()
 	query := elastic.NewBoolQuery().
-		Must(elastic.NewMatchQuery("verify_token", "")).
+		MustNot(elastic.NewExistsQuery("verify_token")).
 		Must(elastic.NewIdsQuery(userType).Ids(id))
 
 	result, err := s.es.Search().Index(userIndex()).Type(userType).Query(query).Do(ctx)

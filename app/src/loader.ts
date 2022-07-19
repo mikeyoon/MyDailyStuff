@@ -19,3 +19,7 @@ export async function importHtml(metaUrl: string, file: string) {
 
   return template.content;
 }
+
+export async function importCssAndHtml(metaUrl: string, name: string) {
+  return await Promise.all([importCss(metaUrl, name + '.css'), importHtml(metaUrl, `${name}.html`)]);
+}

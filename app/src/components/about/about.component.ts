@@ -1,8 +1,7 @@
-import { importCss, importHtml } from '../../loader.js';
+import { importCssAndHtml } from '../../loader.js';
 import { BaseComponent } from '../base.component.js';
 
-const css = await importCss(import.meta.url, 'about.component.css');
-const html = await importHtml(import.meta.url, 'about.component.html');
+const [css, html] = await importCssAndHtml(import.meta.url, 'about.component');
 
 export class AboutComponent extends BaseComponent {
   constructor() {

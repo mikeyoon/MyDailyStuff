@@ -1,4 +1,4 @@
-import { importCss, importHtml } from '../../loader.js';
+import { importCssAndHtml } from '../../loader.js';
 import { BaseComponent } from '../base.component.js';
 
 import { journalStore } from '../../stores/journal.store.js';
@@ -8,8 +8,7 @@ import { toGoDateString } from '../../util/date-format.js';
 import '../streak/streak.component.js';
 import './entry.component.js';
 
-const css = await importCss(import.meta.url, 'journal.component.css');
-const html = await importHtml(import.meta.url, 'journal.component.html');
+const [css, html] = await importCssAndHtml(import.meta.url, 'journal.component');
 
 export class JournalComponent extends BaseComponent {
   invalid = true;

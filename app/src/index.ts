@@ -19,12 +19,27 @@ router.on('/account/verify/:token', {
 router.on('/search/:query/:offset', { lazyLoader: () => import('./components/search/search.component.js').then((m) => m.SearchComponent), title: 'Search' });
 router.on('/search/:query', { lazyLoader: () => import('./components/search/search.component.js').then((m) => m.SearchComponent), title: 'Search' });
 
-router.on('/profile', { lazyLoader: () => import('./components/profile/profile.component.js').then((m) => m.ProfileComponent), title: 'Update Password' });
+router.on('/profile', {
+  lazyLoader: () => import('./components/profile/profile.component.js').then((m) => m.ProfileComponent),
+  title: 'Update Password',
+  canActivate: (params) => {
+    return authStore.isLoggedIn;
+  }
+});
 router.on('/about', { lazyLoader: () => import('./components/about/about.component.js').then((m) => m.AboutComponent), title: 'About' });
-router.on('/journal/:date', { lazyLoader: () => import('./components/journal/journal.component.js').then((m) => m.JournalComponent), title: '' });
-router.on('/journal', { 
+router.on('/journal/:date', {
   lazyLoader: () => import('./components/journal/journal.component.js').then((m) => m.JournalComponent),
   title: '',
+  canActivate: (params) => {
+    return authStore.isLoggedIn;
+  }
+});
+router.on('/journal', {
+  lazyLoader: () => import('./components/journal/journal.component.js').then((m) => m.JournalComponent),
+  title: '',
+  canActivate: (params) => {
+    return authStore.isLoggedIn;
+  }
 });
 
 customElements.define('mds-main', AppComponent)

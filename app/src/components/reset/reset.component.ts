@@ -1,10 +1,9 @@
-import { importCss, importHtml } from '../../loader.js';
+import { importCssAndHtml } from '../../loader.js';
 import { authStore } from '../../stores/auth.store.js';
 import { BaseComponent } from '../base.component.js';
 import { router } from '../router.js';
 
-const css = await importCss(import.meta.url, 'reset.component.css');
-const html = await importHtml(import.meta.url, 'reset.component.html');
+const [css, html] = await importCssAndHtml(import.meta.url, 'reset.component');
 
 export class ResetComponent extends BaseComponent {
   private passwordTextbox!: HTMLInputElement;

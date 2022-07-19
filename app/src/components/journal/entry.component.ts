@@ -1,9 +1,8 @@
-import { importCss, importHtml } from '../../loader.js';
+import { importCssAndHtml } from '../../loader.js';
 import { BaseComponent } from '../base.component.js';
 import { toHtml } from '../../util/markdown.js';
 
-const css = await importCss(import.meta.url, 'entry.component.css');
-const html = await importHtml(import.meta.url, 'entry.component.html');
+const [css, html] = await importCssAndHtml(import.meta.url, 'entry.component');
 
 import { journalStore } from '../../stores/journal.store.js';
 
