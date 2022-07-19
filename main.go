@@ -40,7 +40,12 @@ func LoginRequired(c *gin.Context) {
 }
 
 func DefaultPage(c *gin.Context) {
-	c.File("./app/app-dev.html")
+	env := os.Getenv("NODE_ENV")
+	if env == "production" {
+		c.File("./app/app-prod.html")
+	} else {
+		c.File("./app/app-dev.html")
+	}
 }
 
 func main() {

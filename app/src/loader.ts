@@ -1,7 +1,8 @@
 export async function importRelative(metaUrl: string, file: string) {
   const directory = metaUrl.substring(0, metaUrl.lastIndexOf('/') + 1);
   const url = directory + file;
-  const response = await fetch(url, { cache: 'no-cache', mode: 'same-origin' });
+  // TODO: ETags
+  const response = await fetch(url, { cache: window.ENV === 'production' ? "default" : 'no-cache', mode: 'same-origin' });
   return await response.text();
 }
 

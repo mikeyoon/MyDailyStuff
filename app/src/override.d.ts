@@ -1,3 +1,7 @@
+declare interface Window {
+  ENV: 'production' | undefined;
+}
+
 declare interface Document {
   adoptedStyleSheets: CSSStyleSheet[];
 }
