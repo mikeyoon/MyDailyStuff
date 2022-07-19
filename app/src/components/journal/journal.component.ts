@@ -32,9 +32,7 @@ export class JournalComponent extends BaseComponent {
   }
 
   get showNext(): boolean {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return journalStore.utcDate < today;
+    return journalStore.utcDate < journalStore.today;
   }
 
   get entries(): string[] {

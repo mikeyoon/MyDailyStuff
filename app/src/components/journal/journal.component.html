@@ -10,37 +10,6 @@
             </button>
             <h2 class="text-center" [content]="this.fullDate"></h2>
 
-            <!-- <Manager>
-                <Reference>
-                    {({ ref }) => (
-                    <button type="button" class="btn btn-link date-toggle" ref={ref} onClick={e=>
-                        this.handleToggleCalendar(e)}
-                        >
-                        <h2>{today.format("ddd, MMM Do YYYY")}</h2>
-                    </button>
-                    )}
-                </Reference>
-                {this.showCalendar ? (
-                <Popper placement="bottom" eventsEnabled={true}>
-                    {({ ref, style, placement, arrowProps }) => (
-                    <div class="daypicker-container" ref={node=> (this.node = node) && ref(node)}
-                        style={style}
-                        data-placement={placement}
-                        >
-                        <DayPicker month={this.props.store.journalStore.localDate} toMonth={new Date()} modifiers={{
-                            highlighted: day=> this.isHighlight(day) }}
-                            disabledDays={{ after: new Date() }}
-                            selectedDays={this.props.store.journalStore.localDate}
-                            onDayClick={e => this.handleDateChange(e)}
-                            />
-                            {/*
-                            <div ref={arrowProps.ref} style={arrowProps.style} data-placement={placement} /> */}
-                    </div>
-                    )}
-                </Popper>
-                ) : null}
-            </Manager> -->
-
             <button class="btn btn-link" [classes]="{ 'disabled': this.isLoading || !this.showNext }" [click]="this.handleNext(event)" title="Go to the next day">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="100%" fill="currentColor"
                     class="bi bi-chevron-right" viewBox="0 0 16 16">

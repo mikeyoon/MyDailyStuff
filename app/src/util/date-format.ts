@@ -3,7 +3,7 @@ export function toGoDateString(utcDate: Date) {
 }
 
 export function toDateString(utcDate: Date) {
-  return `${utcDate.getUTCMonth()}-${utcDate.getUTCDate()}-${utcDate.getUTCFullYear()}`;
+  return `${utcDate.getUTCMonth() + 1}-${utcDate.getUTCDate()}-${utcDate.getUTCFullYear()}`;
 }
 
 export function toLongDateString(utcDate: Date) {

@@ -2,7 +2,6 @@ import * as Responses from "../models/responses";
 import { SearchResult } from "../types";
 import { journalStore, JournalStore } from "./journal.store.js";
 import { BaseErrorResponse, fetch } from '../util/fetch.js';
-import { readAsUtcMonth, readAsUtcDate } from "../date.util";
 import { Router, router } from "../components/router.js";
 import { BaseStore } from "./base.store.js";
 
