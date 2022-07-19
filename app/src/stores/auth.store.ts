@@ -19,7 +19,7 @@ interface StoreProps {
   resetError: string | undefined;
   resetSuccess: boolean;
 
-  gettingAccount: boolean;
+  getAccountLoading: boolean;
   getAccountError: string | undefined;
   email: string | undefined;
   user_id: string | undefined;
@@ -46,7 +46,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
   resetError: string | undefined;
   resetSuccess = false;
 
-  gettingAccount = false;
+  getAccountRequest: Promise<void> | null = null;
   getAccountError: string | undefined;
   email: string | undefined;
   user_id: string | undefined;
@@ -63,6 +63,10 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
     super();
 
     this.streak = 0;
+  }
+
+  get getAccountLoading() {
+    return this.getAccountRequest != null;
   }
 
   async getStreak() {
@@ -91,35 +95,40 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
   }
 
   async getAccount(refresh = false) {
-    if ((this.isLoggedIn || this.getAccountError) && !refresh || this.gettingAccount) {
-      return;
+    if (this.getAccountRequest != null) {
+      return this.getAccountRequest;
     }
 
-    this.gettingAccount = true;
+    if (!refresh && (this.isLoggedIn || this.getAccountError)) {
+      return  Promise.resolve();
+    }
+
     this.getAccountError = undefined;
-    this.notifyPropertyChanged('gettingAccount', 'getAccountError');
+    this.notifyPropertyChanged('getAccountLoading', 'getAccountError');
 
-    try {
-      const response = await fetch("/account");
-      if (response.ok) {
-        const json = await response.json() as BaseResponse<{ email: string; id: string; }>;
-        if (json.success === true) {
-          this.isLoggedIn = true;
-          this.email = json.result.email;
-          this.user_id = json.result.id;
-        } else {
-          this.isLoggedIn = false;
-          this.getAccountError = json.error;
+    return this.getAccountRequest = (async () => {
+      try {
+        const response = await fetch("/account");
+        if (response.ok) {
+          const json = await response.json() as BaseResponse<{ email: string; id: string; }>;
+          if (json.success === true) {
+            this.isLoggedIn = true;
+            this.email = json.result.email;
+            this.user_id = json.result.id;
+          } else {
+            this.isLoggedIn = false;
+            this.getAccountError = json.error;
+          }
         }
+      } catch (err) {
+        if (err instanceof Error) {
+          this.getAccountError = err.message;
+        }
+      } finally {
+        this.getAccountRequest = null;
+        this.notifyPropertyChanged('getAccountLoading', 'getAccountError', 'isLoggedIn');
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        this.getAccountError = err.message;
-      }
-    } finally {
-      this.gettingAccount = false;
-      this.notifyPropertyChanged('gettingAccount', 'getAccountError', 'isLoggedIn');
-    }
+    })();
   }
 
   clearPasswordReset() {
