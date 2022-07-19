@@ -62,7 +62,8 @@ export class JournalComponent extends BaseComponent {
       weekday: 'short',
       month: 'short',
       day: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'utc'
     });
   }
 
