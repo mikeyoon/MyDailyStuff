@@ -1,0 +1,7 @@
+<span title="Number of contiguous entries over the last ten days">
+  Streak
+  <span class="badge bg-primary rounded-pill">
+    <span [content]="this.streak"></span>
+    <span [if]="this.streak >= 10" class="glyphicon glyphicon-star"></span>
+  </span>
+</span>

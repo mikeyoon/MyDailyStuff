@@ -1,0 +1,31 @@
+<div class="row">
+  <div class="col-lg-6 offset-lg-3 col-md-6 offset-md-3 col-sm-8 offset-sm-2 col-xs-12">
+    <h3 class="text-center">Reset your Password</h3>
+    <br />
+    <div [if]="this.resetError" class="alert alert-danger" [content]="this.resetError"></div>
+    <div [if]="this.resetSuccess">
+      <div class="alert alert-success">
+        You will receive an email from us shortly if the address you
+        provided is in our system.
+      </div>
+      <p>
+        Click <a href="/login">here</a> to return to the login page
+      </p>
+    </div>
+    <form [if]="!this.resetSuccess" id="login_form" class="row g-3" [submit]="this.forgotPassword(event)">
+      <div class="col-12">
+        <label class="form-label" for="email">Email:</label>
+        <input class="form-control" id="email" name="email" [classes]="{ 'is-invalid': this.emailError }" [change]="emailChanged(event)" [blur]="this.validateEmail()" />
+        <div [if]="this.emailError" class="invalid-feedback" [content]="this.emailError"></div>
+      </div>
+
+      <div class="text-center">
+        <button class="btn btn-primary" type="submit">
+          Send Reset Password Email
+        </button>
+        <span class="margin-small">or</span>
+        <a class="text-decoration-none" href="/login">Back to Login</a>
+      </div>
+    </form>
+  </div>
+</div>

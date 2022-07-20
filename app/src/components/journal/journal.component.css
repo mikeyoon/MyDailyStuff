@@ -1,0 +1,45 @@
+
+.journal-header svg {
+  height: 24px;
+  vertical-align: top;
+}
+
+.journal-header .date-toggle {
+  padding: 0;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.journal-header h2 {
+  font-weight: 400;
+  width: 315px;
+}
+
+.loading {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.empty {
+  margin: 30px 0;
+}
+
+.card {
+  position: relative;
+}
+
+.btn-journal-delete {
+  position: absolute;
+  display: flex;
+  right: 14px;
+  padding: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 25px;
+}
+
+mds-entry:not(:last-of-type) {
+  display: block;
+  margin-bottom: 12px;
+}

@@ -1,0 +1,61 @@
+ul.pager {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.pager li {
+  list-style: none;
+}
+
+.pager li a {
+  text-decoration: none;
+}
+
+.pager li a.disabled {
+  cursor: not-allowed;
+}
+
+.loading {
+  position: absolute;
+  left: 0;
+  top: calc(50% - 19px);
+}
+
+.card {
+  position: relative;
+}
+
+.card.panel-default .list-group {
+  border-top: none;
+}
+
+.card.panel-default {
+  box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+
+.card.panel-default:not(:last-of-type) {
+  margin-bottom: 20px;
+}
+
+.card.panel-default .card-body {
+  padding: 10px 15px;
+}
+
+.card.panel-default .list-group-item {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0;
+  margin-bottom: 0;
+  padding: 10px 15px;
+  font-size: .9rem;
+}
+
+.card.panel-default .list-group-item:last-of-type {
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+.card a:not(:hover) {
+  text-decoration: none;
+}

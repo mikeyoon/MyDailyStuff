@@ -11,9 +11,9 @@ export interface JournalEntry {
 }
 
 export interface QuerySearchResult {
-    entries: string[];
-    date: Date;
-    id: string;
+    result: JournalEntry[];
+    total: number;
+    success: true;
 }
 
 export interface EmptyResponse {

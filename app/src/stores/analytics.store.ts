@@ -1,5 +1,6 @@
-import * as Requests from "../models/requests";
-import moment from "moment";
+import * as Requests from "../models/requests.js";
+import { toDateString } from "../util/date-format.js";
+// import moment from "moment";
 
 declare var _gaq: any;
 
@@ -21,9 +22,9 @@ export class AnalyticsStore {
     console.log('GA Enabled: ' + this.enabled);
   }
 
-  track(...args: any[]) {
+  track(...args: Parameters<typeof trackEvent>) {
     if (this.enabled) {
-      trackEvent.call(null, args);
+      trackEvent.apply(null, args);
     }
   }
 
@@ -70,7 +71,7 @@ export class AnalyticsStore {
   }
 
   onJournalGet(date: Date) {
-    this.track("journal", "get", moment(date).format("MM-DD-YYYY"));
+    this.track("journal", "get", toDateString(date));
   }
 
   onJournalDelete() {
@@ -85,3 +86,5 @@ export class AnalyticsStore {
     this.track("search", "query", query);
   }
 }
+
+export const analyticsStore = new AnalyticsStore();

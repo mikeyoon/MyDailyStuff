@@ -1,0 +1,54 @@
+<div class="row">
+  <div class="col-lg-6 offset-lg-3 col-md-6 offset-md-3 col-sm-8 offset-sm-2 col-xs-12">
+    <h3 class="text-center">Register for an account</h3>
+    <br />
+    <div [if]="this.registerError" class="alert alert-danger" [content]="this.registerError"></div>
+    <div [if]="this.registered">
+      <div class="alert alert-success">
+        Verification email sent to <span [content]="this.email"></span>. Please check your email
+        for directions to complete your signup.
+      </div>
+      <p>
+        Click <a href="/login">here</a> to return to the login page
+      </p>
+    </div>
+    <form [if]="!this.registered" id="register_form" class="row g-3">
+      <div class="col-12">
+        <label class="form-label" for="email">Email:</label>
+        <input
+          class="form-control"
+          id="email"
+          name="email"
+        />
+        <div [if]="this.emailError" class="invalid-feedback" [content]="this.emailError"></div>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="password">Password:</label>
+        <input
+          class="form-control"
+          id="password"
+          name="password"
+          type="password"
+        />
+        <div [if]="this.passwordError" class="invalid-feedback" [content]="this.passwordError"></div>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="password">Confirm Password:</label>
+        <input
+          class="form-control"
+          id="confirm"
+          name="confirm"
+          type="password"
+        />
+        <div [if]="this.confirmError" class="invalid-feedback" [content]="this.confirmError"></div>
+      </div>
+      <div class="text-center">
+        <button class="btn btn-primary" type="submit">
+          Register
+        </button>
+        <span class="margin-small">or</span>
+        <a href="/login">Login with an existing account</a>
+      </div>
+    </form>
+  </div>
+</div>

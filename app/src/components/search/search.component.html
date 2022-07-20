@@ -1,0 +1,66 @@
+<div class="row">
+    <div [if]="!this.searching" class="col-md-10 offset-md-1">
+        <h4>
+            <span [content]="this.total"></span> <span [content]="this.total === 1 ? 'result' : 'results'"></span> for
+            <span class="badge bg-secondary" [content]="decodeURI(this.query)"></span>
+        </h4>
+        <div>
+            <div [repeat]="result of this.results" class="card panel-default">
+                <div class="card-body">
+                    <span [content]="(this.__index + 1 + this.offset) + '.'"></span>
+                    <a [href]="'/journal/' + this.getShortDate(this.result.date)"
+                        [content]="this.getLongDate(this.result.date)"></a>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item" [repeat]="entry of this.result.entries">
+                        <span [content]="this.entry"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <ul class="pager">
+            <li class="previous">
+                <a class="btn btn-link" [href]="`/search/${this.query}/${this.prevOffset}`"
+                    [classes]="{ disabled: this.prevOffset == null }" [click]="this.prevPage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-chevron-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                    </svg>
+                    prev
+                </a>
+            </li>
+            <li class="next">
+                <a class="btn btn-link" [classes]="{ disabled: this.nextOffset == null }"
+                    [href]="`/search/${this.query}/${this.nextOffset}`" [click]="this.nextPage()">
+                    next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-chevron-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div [if]="this.searching" class="loading text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" stroke="rgb(13, 110, 253)">
+            <g fill="none" fill-rule="evenodd">
+                <g transform="translate(1 1)" stroke-width="2">
+                    <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
+                    <path d="M36 18c0-9.94-8.06-18-18-18">
+                        <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+                    </path>
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <!-- <div class="col-md-8 col-md-offset-2" [if]="this.searching">
+        <div class="mt-4">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%" />
+            </div>
+        </div>
+    </div> -->
+</div>
