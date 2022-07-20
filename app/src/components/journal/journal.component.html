@@ -23,7 +23,19 @@
             <div class="journal mt-4" [if]="this.entries.length > 0">
                 <mds-entry [repeat]="entry of this.entries" let-entry="entry"></mds-entry>
             </div>
-            <h3 class="text-center" [if]="this.entries.length === 0">No entries today</h3>
+            <div class="alert alert-info text-center empty" [if]="this.entries.length === 0">No entries today</div>
+        </div>
+        <div [if]="this.loading" class="loading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="rgb(13, 110, 253)">
+                <g fill="none" fill-rule="evenodd">
+                    <g transform="translate(1 1)" stroke-width="2">
+                        <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
+                        <path d="M36 18c0-9.94-8.06-18-18-18">
+                            <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+                        </path>
+                    </g>
+                </g>
+            </svg>
         </div>
     
         <hr class="mt-4" />

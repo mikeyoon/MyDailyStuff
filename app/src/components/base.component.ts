@@ -1,10 +1,19 @@
 import { Observable } from '../util/observable.js';
 import { compileFragment, CompiledGraph } from '../util/compiler.js';
 import { importRelative } from '../loader.js';
+import { SUPPORTS_CON_CSS } from '../util/dom.js';
+
+const bsCssText = await importRelative(import.meta.url, '../bootstrap.min.css');
 
 const bsCss = new CSSStyleSheet();
-bsCss.replaceSync(await importRelative(import.meta.url, '../bootstrap.min.css'));
-document.adoptedStyleSheets = [bsCss];
+if (SUPPORTS_CON_CSS) {
+  bsCss.replaceSync(bsCssText);
+  document.adoptedStyleSheets = [bsCss];
+} else {
+  const css = document.createElement('style');
+  css.textContent = bsCssText;
+  document.head.appendChild(css);
+}
 
 export abstract class BaseComponent extends HTMLElement {
   protected subscriptions: Array<Function>;
@@ -26,9 +35,21 @@ export abstract class BaseComponent extends HTMLElement {
   routeParamsChanged(params: any) { }
 
   connectedCallback() {
-    this.root.adoptedStyleSheets = [bsCss];
-    if (this.css != null) {
-      this.root.appendChild(this.css.cloneNode(true));
+    if (SUPPORTS_CON_CSS) {
+      const componentCss = new CSSStyleSheet();
+      if (this.css?.textContent) {
+        componentCss.replaceSync(this.css.textContent);
+      }
+      
+      this.root.adoptedStyleSheets = [bsCss, componentCss];
+    } else {
+      const bs = document.createElement('style');
+      bs.textContent = bsCssText;
+      this.root.appendChild(bs);
+
+      if (this.css?.textContent) {
+        this.root.appendChild(this.css.cloneNode(true));
+      }
     }
 
     this.digest(true);

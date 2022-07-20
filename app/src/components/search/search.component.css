@@ -1,19 +1,3 @@
-.journal-header svg {
-  height: 24px;
-  vertical-align: top;
-}
-
-.journal-header .date-toggle {
-  padding: 0;
-  margin-left: 4px;
-  margin-right: 4px;
-}
-
-.journal-header h2 {
-  font-weight: 400;
-  width: 315px;
-}
-
 ul.pager {
   display: flex;
   justify-content: space-between;
@@ -30,6 +14,12 @@ ul.pager {
 
 .pager li a.disabled {
   cursor: not-allowed;
+}
+
+.loading {
+  position: absolute;
+  left: 0;
+  top: calc(50% - 19px);
 }
 
 .card {
@@ -64,17 +54,6 @@ ul.pager {
 .card.panel-default .list-group-item:last-of-type {
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
-}
-
-.btn-journal-delete {
-  position: absolute;
-  display: flex;
-  right: 14px;
-  padding: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 24px;
-  width: 25px;
 }
 
 .card a:not(:hover) {

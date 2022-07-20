@@ -53,7 +53,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     
     router.activeRoute$.subscribe((activated) => {
       if (activated.route && activated.route.startsWith('/journal')) {
-        const date = activated.params.date ? new Date(activated.params.date) : this.utcDate;
+        const date = activated.params.date ? new Date(activated.params.date) : this.today;
         this.get(date);
       }
     });

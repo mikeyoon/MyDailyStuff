@@ -13,3 +13,5 @@ export function isDescendent(parent: Element, child: Element) {
   // Go up until the root but couldn't find the `parent`
   return false;
 };
+
+export const SUPPORTS_CON_CSS = typeof CSSStyleSheet.prototype.replaceSync !== 'undefined';

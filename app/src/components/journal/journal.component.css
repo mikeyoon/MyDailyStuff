@@ -15,6 +15,15 @@
   width: 315px;
 }
 
+.loading {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.empty {
+  margin: 30px 0;
+}
+
 .card {
   position: relative;
 }

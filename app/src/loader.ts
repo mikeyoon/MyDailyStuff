@@ -9,7 +9,7 @@ export async function importRelative(metaUrl: string, file: string) {
 export async function importCss(metaUrl: string, file: string) {
   const text = await importRelative(metaUrl, file);
   const style = document.createElement('style');
-  style.innerHTML = text;
+  style.textContent = text;
   return style;
 }
 
