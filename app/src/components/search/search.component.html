@@ -7,7 +7,7 @@
         <div>
             <div [repeat]="result of this.results" class="card panel-default">
                 <div class="card-body">
-                    <span [content]="this.__index + 1 + this.offset + '.'"></span>
+                    <span [content]="(this.__index + 1 + this.offset) + '.'"></span>
                     <a [href]="'/journal/' + this.getShortDate(this.result.date)"
                         [content]="this.getLongDate(this.result.date)"></a>
                 </div>

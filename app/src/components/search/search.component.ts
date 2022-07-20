@@ -1,9 +1,7 @@
 import { importCssAndHtml } from '../../loader.js';
 import { BaseComponent } from '../base.component.js';
-import { toHtml } from '../../util/markdown.js';
 
 import { searchStore } from '../../stores/search.store.js';
-import { router } from '../router.js';
 import { toGoDateString, toLongDateString } from '../../util/date-format.js';
 
 const [css, html] = await importCssAndHtml(import.meta.url, 'search.component');

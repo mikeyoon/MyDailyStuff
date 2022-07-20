@@ -430,7 +430,7 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
           // To handle any regular DOM elements with directives
           compileChildren(element, this.parent, this.compiledAncestor, childGraph);
           element.__digest = () => {
-            childGraph.forEach((ce, index) => {
+            childGraph.forEach((ce) => {
               // Hacks all the way down
               const context = Object.create(this.compiledAncestor);
               Object.assign(context, {
