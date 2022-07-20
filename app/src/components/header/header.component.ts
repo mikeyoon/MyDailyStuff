@@ -14,6 +14,13 @@ export class HeaderComponent extends BaseComponent {
   constructor() {
     super(html, css);
 
+    this.subscribe(router.activeRoute$, (active) => {
+      if (active.route && active.route.startsWith('/search') && active.params.query) {
+        this.currentQuery = decodeURI(active.params.query);
+        this.digest();
+      }
+    });
+
     this.subscribe(authStore.propChanged$, (key) => {
       switch (key) {
         case 'isLoggedIn':
@@ -60,7 +67,7 @@ export class HeaderComponent extends BaseComponent {
 
   search(event: Event) {
     event.preventDefault();
-    router.navigate(`/search/${this.currentQuery}/0`);
+    router.navigate(encodeURI(`/search/${this.currentQuery}/0`));
   }
 
   get email(): string | undefined {

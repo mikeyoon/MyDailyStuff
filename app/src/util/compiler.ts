@@ -80,6 +80,13 @@ function compileDirectives(element: Element, root: BaseComponent) {
           element.parentElement || root)
         );
         break;
+      case '[value]':
+        compiled.push(new CompiledValueDirective(
+          attr.value || '',
+          element,
+          element.parentElement || root
+        ));
+        break;
       case '[blur]':
         compiled.push(new CompiledBlurDirective(
           attr.value || '',
@@ -242,6 +249,32 @@ export class CompiledAttrDirective extends CompiledDirective {
     const value = this.func.call(context);
     if (this.value !== value) {
       this.node.setAttribute(this.name, (this.originalValue + ' ' + value).trim());
+      this.value = value;
+    }
+
+    return true;
+  }
+}
+
+export class CompiledValueDirective extends CompiledDirective {
+  value: string | null;
+  originalValue: string | null;
+
+  constructor(expr: string, node: Element, parent: Element) {
+    super(expr, node, parent);
+
+    if (!(node instanceof HTMLInputElement)) {
+      throw new Error('Cannot apply value directive to non-input elements');
+    } 
+    
+    this.value = null;
+    this.originalValue = node.getAttribute('value') || '';
+  }
+
+  execute(context: any) {
+    const value = this.func.call(context);
+    if (this.value !== value) {
+      (this.node as HTMLInputElement).value = value;
       this.value = value;
     }
 

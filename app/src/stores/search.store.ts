@@ -108,6 +108,10 @@ export class SearchStore extends BaseStore<StoreProps> {
   // }
 
   async search(offset: number) {
+    if (!this.query) {
+      return;
+    }
+
     this.searching = true;
     this.notifyPropertyChanged('searching');
 
@@ -115,7 +119,7 @@ export class SearchStore extends BaseStore<StoreProps> {
       const response = await fetch("/search", {
         method: 'POST',
         body: JSON.stringify({
-          query: this.query,
+          query: decodeURI(this.query),
           offset: offset,
           limit: LIMIT,
         })
