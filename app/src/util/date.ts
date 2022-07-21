@@ -10,6 +10,7 @@ export function readAsUtcMonth(localDate: Date) {
   );
 }
 
+// Parse date manually because chrome/firefox assume different timezones for non-iso datestrings
 export function parseDate(str: string) {
   const match = /(\d{4})\-(\d{1,2})\-(\d{1,2})/.exec(str);
   if (match) {
