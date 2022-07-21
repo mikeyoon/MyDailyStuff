@@ -39,7 +39,7 @@ export class SearchStore extends BaseStore<StoreProps> {
   query: string | null = null;
 
   get monthYear() {
-    return `${this.journal.utcDate.getFullYear()}-${this.journal.utcDate.getMonth() + 1}-1`;
+    return `${this.journal.currentDate.getFullYear()}-${this.journal.currentDate.getMonth() + 1}-1`;
   }
 
   constructor(private router: Router, private journal: JournalStore) {
@@ -128,11 +128,15 @@ export class SearchStore extends BaseStore<StoreProps> {
       if (response.ok) {
         const json = await response.json() as Responses.QuerySearchResult | BaseErrorResponse;
         if (json.success === true) {
-          this.searchResults = json.result.map((r) => ({
-            entries: r.entries,
-            id: r.id,
-            date: new Date(r.date)
-          }));
+          this.searchResults = json.result.map((r) => {
+            // Dates for entries come back in UTC time. Need to make a local date.
+            const utcDate = new Date(r.date);
+            return {
+              entries: r.entries,
+              id: r.id,
+              date: new Date(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate());
+            };
+          });
           offset = offset || 0;
 
           this.total = json.total || 0;

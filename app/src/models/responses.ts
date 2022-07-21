@@ -6,7 +6,7 @@ export interface JournalEntry {
     entries: string[];
     user_id: string;
     create_date: Date;
-    date: Date;
+    date: string;
     id: string;
 }
 

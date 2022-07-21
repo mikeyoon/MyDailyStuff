@@ -1,11 +1,11 @@
-export function toGoDateString(utcDate: Date) {
-  return `${utcDate.getUTCFullYear()}-${utcDate.getUTCMonth() + 1}-${utcDate.getUTCDate()}`;
+export function toGoDateString(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 }
 
-export function toDateString(utcDate: Date) {
-  return `${utcDate.getUTCMonth() + 1}-${utcDate.getUTCDate()}-${utcDate.getUTCFullYear()}`;
+export function toDateString(date: Date) {
+  return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`;
 }
 
-export function toLongDateString(utcDate: Date) {
-  return utcDate.toLocaleDateString(undefined, {  dateStyle: 'full', timeZone: 'utc' });
+export function toLongDateString(date: Date) {
+  return date.toLocaleDateString(undefined, {  dateStyle: 'full' });
 }

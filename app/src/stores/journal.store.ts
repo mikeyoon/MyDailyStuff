@@ -16,7 +16,7 @@ interface StoreProps {
   error: string | undefined;
 
   current: Responses.JournalEntry | null;
-  utcDate: Date;
+  currentDate: Date;
   showCalendar: boolean;
 }
 
@@ -32,7 +32,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   /**
    * The selected date at midnight, in UTC timezone
    */
-  utcDate: Date;
+  currentDate: Date;
   showCalendar = false;
 
   get hasEntry() {
@@ -41,7 +41,8 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
 
   get today() {
     const now = new Date();
-    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    now.setHours(0, 0, 0, 0);
+    return now;
   }
 
   constructor(
@@ -49,7 +50,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     private analyticsStore: AnalyticsStore,
   ) {
     super();
-    this.utcDate = this.today;
+    this.currentDate = this.today;
     
     router.activeRoute$.subscribe((activated) => {
       if (activated.route && activated.route.startsWith('/journal')) {
@@ -69,7 +70,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     try {
       const response = await fetch("/journal", {
         method: 'POST',
-        body: JSON.stringify({ entries: [entry], date: toGoDateString(this.utcDate) }),
+        body: JSON.stringify({ entries: [entry], date: toGoDateString(this.currentDate) }),
       });
 
       if (response.ok) {
@@ -167,8 +168,8 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
   async get(date: Date) {
     this.loading = true;
     this.error = undefined;
-    this.utcDate = date;
-    this.notifyPropertyChanged('loading', 'error', 'utcDate');
+    this.currentDate = date;
+    this.notifyPropertyChanged('loading', 'error', 'currentDate');
 
     try {
       const response = await fetch("/journal/" + toGoDateString(date));
