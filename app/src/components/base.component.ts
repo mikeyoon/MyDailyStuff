@@ -1,7 +1,7 @@
 import { Observable } from '../util/observable.js';
 import { compileFragment, CompiledGraph } from '../util/compiler.js';
 import { importRelative } from '../loader.js';
-import { SUPPORTS_CON_CSS } from '../util/dom.js';
+import { DomQueue, SUPPORTS_CON_CSS } from '../util/dom.js';
 
 const bsCssText = await importRelative(import.meta.url, '../bootstrap.min.css');
 
@@ -22,6 +22,8 @@ export abstract class BaseComponent extends HTMLElement {
   protected compiled: CompiledGraph = [];
   protected content: DocumentFragment;
   public bindings: any;
+  
+  protected domQueue: DomQueue | null = null;
 
   constructor(private html: DocumentFragment, private css?: HTMLStyleElement) {
     super();
@@ -36,6 +38,8 @@ export abstract class BaseComponent extends HTMLElement {
   routeParamsChanged(params: any) { }
 
   connectedCallback() {
+    this.digest(true);
+
     if (bsCss != null) {
       const componentCss = new CSSStyleSheet();
       if (this.css?.textContent) {
@@ -53,7 +57,6 @@ export abstract class BaseComponent extends HTMLElement {
       }
     }
 
-    this.digest(true);
     this.root.appendChild(this.content);
   };
 
@@ -71,8 +74,26 @@ export abstract class BaseComponent extends HTMLElement {
   }
 
   public digest(immediate = false) {
-    this.compiled.forEach((ce) => {
-      ce.digest(this, immediate);
-    });
+    if (this.domQueue) {
+      return;
+    }
+
+    const queue = new DomQueue();
+    this.domQueue = queue;
+
+    const run = () => {
+      this.compiled.forEach((ce) => {
+        ce.digest(this, queue, true);
+      });
+      queue.execute();
+  
+      this.domQueue = null;
+    };
+
+    if (immediate) {
+      run();
+    } else {
+      setTimeout(run, 10);
+    }
   }
 }

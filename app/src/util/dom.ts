@@ -15,3 +15,17 @@ export function isDescendent(parent: Element, child: Element) {
 };
 
 export const SUPPORTS_CON_CSS = typeof CSSStyleSheet.prototype.replaceSync !== 'undefined';
+
+export class DomQueue {
+  private patches: Array<Function> = [];
+
+  add(patch: Function) {
+    this.patches.push(patch);
+  }
+
+  execute() {
+    this.patches.forEach((patch) => {
+      patch();
+    })
+  }
+}

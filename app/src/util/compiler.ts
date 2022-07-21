@@ -1,4 +1,5 @@
 import { BaseComponent } from "../components/base.component.js";
+import { DomQueue } from "./dom.js";
 
 export type CompiledGraph = Array<CompiledElement>;
 
@@ -137,7 +138,7 @@ abstract class CompiledDirective {
     this.func = new Function(...args, `"use strict"; return ${expr};`);
   }
 
-  abstract execute(context: any): boolean;
+  abstract execute(context: any, queue: DomQueue): boolean;
 }
 
 abstract class CompiledActionDirective extends CompiledDirective {
@@ -160,22 +161,22 @@ export class CompiledElement {
     this.hasStructuralDirective = compiledDirectives.some((d) => d.type === DirectiveType.Structural);
   }
 
-  digest(context: any, immediate = false) {
+  digest(context: any, queue: DomQueue, immediate = false) {
     if (!this.digestTimeout) {
       if (immediate) {
-        this.execute(context);
+        this.execute(context, queue);
       } else {
         this.digestTimeout = window.setTimeout(() => {
-          this.execute(context);
+          this.execute(context, queue);
           this.digestTimeout = null;
         }, 5);
       }
     }
   }
 
-  private execute(context: any) {
+  private execute(context: any, queue: DomQueue) {
     for (const c of this.compiledDirectives) {
-      if (!c.execute(context)) {
+      if (!c.execute(context, queue)) {
         break;
       }
     }
@@ -224,10 +225,10 @@ export class CompiledContentDirective extends CompiledDirective {
     this.value = null;
   }
 
-  execute(context: any) {
+  execute(context: any, queue: DomQueue) {
     const value = this.func.call(context);
     if (this.value !== value) {
-      this.node.innerHTML = value;
+      queue.add(() => this.node.innerHTML = value);
       this.value = value;
     }
 
@@ -245,10 +246,10 @@ export class CompiledAttrDirective extends CompiledDirective {
     this.originalValue = node.getAttribute(name) || '';
   }
 
-  execute(context: any) {
+  execute(context: any, queue: DomQueue) {
     const value = this.func.call(context);
     if (this.value !== value) {
-      this.node.setAttribute(this.name, (this.originalValue + ' ' + value).trim());
+      queue.add(() => this.node.setAttribute(this.name, (this.originalValue + ' ' + value).trim()));
       this.value = value;
     }
 
@@ -271,10 +272,10 @@ export class CompiledValueDirective extends CompiledDirective {
     this.originalValue = node.getAttribute('value') || '';
   }
 
-  execute(context: any) {
+  execute(context: any, queue: DomQueue) {
     const value = this.func.call(context);
     if (this.value !== value) {
-      (this.node as HTMLInputElement).value = value;
+      queue.add(() => (this.node as HTMLInputElement).value = value);
       this.value = value;
     }
 
@@ -292,7 +293,7 @@ export class CompiledClassesDirective extends CompiledDirective {
     this.originalClass = node.getAttribute('class');
   }
 
-  execute(context: any) {
+  execute(context: any, queue: DomQueue) {
     const value = this.func.call(context);
     if (JSON.stringify(this.value) !== JSON.stringify(value)) {
       const classes = Object.keys(value).reduce((classes, className) => {
@@ -303,7 +304,7 @@ export class CompiledClassesDirective extends CompiledDirective {
         return classes;
       }, [] as string[]);
 
-      this.node.setAttribute('class', (this.originalClass + ' ' + classes.join(' ')).trim());
+      queue.add(() => this.node.setAttribute('class', (this.originalClass + ' ' + classes.join(' ')).trim()));
       this.value = value;
     }
 
@@ -441,13 +442,17 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
     node.remove();
   }
 
-  execute(context: any) {
+  execute(context: any, queue: DomQueue) {
     const [key, arrExp] = this.expr.split(' of ');
 
     const values = new Function(`return ${arrExp}`).call(context) as Array<any>;
     if (this.value !== values) {
       if (this.generatedNodes.length > 0) {
-        this.generatedNodes.forEach((node) => node.remove());
+        const nodesToRemove = this.generatedNodes;
+        queue.add(() => {
+          nodesToRemove.forEach((node) => node.remove());
+        });
+        
         this.generatedNodes = [];
       }
 
@@ -471,17 +476,17 @@ export class CompiledRepeatDirective extends CompiledStructuralDirective {
                 __index: index
               });
                
-              ce.digest(context, true);
+              ce.digest(context, queue, true);
             });
           }
         }
 
         // Insert element
+        let mark: Element = this.placeholder;
         if (this.generatedNodes?.length) {
-          this.generatedNodes[this.generatedNodes.length - 1].after(element);
-        } else {
-          this.placeholder.after(element);
+          mark = this.generatedNodes[this.generatedNodes.length - 1];
         }
+        queue.add(() => mark.after(element));
 
         this.generatedNodes.push(element);
       });
@@ -519,21 +524,23 @@ export class CompiledIfDirective extends CompiledStructuralDirective {
     compileChildren(this.node, this.parent, compiledAncestor, this.children);
   }
 
-  execute(context: any) {
+  execute(context: any, queue: DomQueue) {
     const value = !!this.func.call(context);
 
     if (value) {
       this.children.forEach((child) => {
-        child.digest(context, true);
+        child.digest(context, queue, true);
       });
     }
 
     if (this.value !== value) {
-      if (value) {
-        this.placeholder.after(this.node);
-      } else {
-        this.node.remove();
-      }
+      queue.add(() => {
+        if (value) {
+          this.placeholder.after(this.node);
+        } else {
+          this.node.remove();
+        }
+      });
 
       this.value = value;
     }
