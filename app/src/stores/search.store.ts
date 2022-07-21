@@ -134,7 +134,7 @@ export class SearchStore extends BaseStore<StoreProps> {
             return {
               entries: r.entries,
               id: r.id,
-              date: new Date(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate());
+              date: new Date(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate())
             };
           });
           offset = offset || 0;
