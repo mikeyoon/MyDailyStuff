@@ -5,8 +5,9 @@ import { SUPPORTS_CON_CSS } from '../util/dom.js';
 
 const bsCssText = await importRelative(import.meta.url, '../bootstrap.min.css');
 
-const bsCss = new CSSStyleSheet();
+let bsCss: CSSStyleSheet | undefined;
 if (SUPPORTS_CON_CSS) {
+  bsCss = new CSSStyleSheet();
   bsCss.replaceSync(bsCssText);
   document.adoptedStyleSheets = [bsCss];
 } else {
@@ -35,7 +36,7 @@ export abstract class BaseComponent extends HTMLElement {
   routeParamsChanged(params: any) { }
 
   connectedCallback() {
-    if (SUPPORTS_CON_CSS) {
+    if (bsCss != null) {
       const componentCss = new CSSStyleSheet();
       if (this.css?.textContent) {
         componentCss.replaceSync(this.css.textContent);
@@ -65,10 +66,6 @@ export abstract class BaseComponent extends HTMLElement {
     this.subscriptions.forEach((unsub) => unsub());
   }
 
-  setBindings(bindings: any) {
-    this.bindings = bindings;
-  }
-
   private compile(html: DocumentFragment) {
     compileFragment(html, (this.root.host as BaseComponent) || this, this.compiled);
   }
@@ -79,34 +76,3 @@ export abstract class BaseComponent extends HTMLElement {
     });
   }
 }
-
-// export abstract class ChildComponent extends HTMLElement {
-//   protected subscriptions: Array<Function>;
-//   protected scope!: CompiledElement;
-
-//   constructor(protected context: any, private html: DocumentFragment, private css?: HTMLStyleElement) {
-//     super();
-//     this.subscriptions = [];
-//   }
-
-//   connectedCallback() {
-//     if (this.css != null) {
-//       this.appendChild(this.css);
-//     }
-
-//     const html = this.html.cloneNode(true) as DocumentFragment;
-//     this.compile(html);
-//   }
-
-//   disconnectedCallback() {
-//     this.subscriptions.forEach((unsub) => unsub());
-//   }
-
-//   private compile(html: DocumentFragment) {
-//     this.scope = compileDirectives(html, this);
-//   }
-
-//   protected digest(context: any) {
-//     this.scope.digest(context);
-//   }
-// }
