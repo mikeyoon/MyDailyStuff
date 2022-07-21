@@ -1,4 +1,4 @@
-import { toGoDateString } from "../util/date-format.js";
+import { toGoDateString } from "../util/date.js";
 import { BaseResponse } from "../util/fetch.js";
 import { AnalyticsStore, analyticsStore } from "./analytics.store.js";
 import { BaseStore } from "./base.store.js";

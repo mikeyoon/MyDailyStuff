@@ -3,7 +3,7 @@ import { BaseComponent } from '../base.component.js';
 
 import { journalStore } from '../../stores/journal.store.js';
 import { router } from '../router.js';
-import { toGoDateString } from '../../util/date-format.js';
+import { toGoDateString } from '../../util/date.js';
 
 import '../streak/streak.component.js';
 import './entry.component.js';

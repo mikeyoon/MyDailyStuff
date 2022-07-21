@@ -4,7 +4,7 @@ import { BaseStore } from "./base.store.js";
 import { analyticsStore, AnalyticsStore } from "./analytics.store.js";
 import { router, Router } from '../components/router.js';
 import { BaseResponse, fetch } from '../util/fetch.js';
-import { toGoDateString } from "../util/date-format.js";
+import { parseDate, toGoDateString } from "../util/date.js";
 import { authStore } from "./auth.store.js";
 
 interface StoreProps {
@@ -54,7 +54,7 @@ export class JournalStore extends BaseStore<StoreProps> implements StoreProps {
     
     router.activeRoute$.subscribe((activated) => {
       if (activated.route && activated.route.startsWith('/journal')) {
-        const date = activated.params.date ? new Date(activated.params.date) : this.today;
+        const date = activated.params.date ? parseDate(activated.params.date) : this.today;
         this.get(date);
       }
     });

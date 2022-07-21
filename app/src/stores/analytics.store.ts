@@ -1,5 +1,5 @@
 import * as Requests from "../models/requests.js";
-import { toDateString } from "../util/date-format.js";
+import { toDateString } from "../util/date.js";
 
 declare var _gaq: any;
 

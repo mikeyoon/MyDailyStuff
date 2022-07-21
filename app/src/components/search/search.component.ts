@@ -2,7 +2,7 @@ import { importCssAndHtml } from '../../loader.js';
 import { BaseComponent } from '../base.component.js';
 
 import { searchStore } from '../../stores/search.store.js';
-import { toGoDateString, toLongDateString } from '../../util/date-format.js';
+import { toGoDateString, toLongDateString } from '../../util/date.js';
 
 const [css, html] = await importCssAndHtml(import.meta.url, 'search.component');
 
