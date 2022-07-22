@@ -82,6 +82,7 @@ func main() {
 	store := cookie.NewStore([]byte(secret))
 
 	router := gin.Default()
+	router.TrustedPlatform = gin.PlatformCloudflare
 
 	if os.Getenv("NEW_RELIC_LICENSE_KEY") != "" {
 		app, err := newrelic.NewApplication(
