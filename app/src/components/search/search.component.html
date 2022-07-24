@@ -21,7 +21,7 @@
         <ul class="pager">
             <li class="previous">
                 <a class="btn btn-link" [href]="`/search/${this.query}/${this.prevOffset}`"
-                    [classes]="{ disabled: this.prevOffset == null }" [click]="this.prevPage()">
+                    [classes]="{ disabled: this.prevOffset == null }">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-chevron-left" viewBox="0 0 16 16">
                         <path fill-rule="evenodd"
@@ -32,7 +32,7 @@
             </li>
             <li class="next">
                 <a class="btn btn-link" [classes]="{ disabled: this.nextOffset == null }"
-                    [href]="`/search/${this.query}/${this.nextOffset}`" [click]="this.nextPage()">
+                    [href]="`/search/${this.query}/${this.nextOffset}`">
                     next
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                         class="bi bi-chevron-right" viewBox="0 0 16 16">
@@ -55,12 +55,4 @@
             </g>
         </svg>
     </div>
-
-    <!-- <div class="col-md-8 col-md-offset-2" [if]="this.searching">
-        <div class="mt-4">
-            <div class="progress">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%" />
-            </div>
-        </div>
-    </div> -->
 </div>

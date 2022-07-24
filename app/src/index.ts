@@ -47,7 +47,8 @@ authStore.getAccount();
 
 // Hijack anchor tags
 document.body.addEventListener('click', (event) => {
-  const target = event.composedPath()[0] as HTMLElement | undefined;
+  // composed path is used because event target won't pass through shadowDOM elements
+  const target = event.composedPath().find((target) => (target as HTMLElement)?.tagName === 'A') as HTMLElement | undefined;
   if (target != null && target.tagName) {
     if (target.tagName === 'A') {
       const href = target.getAttribute('href');
