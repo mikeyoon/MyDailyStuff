@@ -100,7 +100,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
     }
 
     if (!refresh && (this.isLoggedIn || this.getAccountError)) {
-      return  Promise.resolve();
+      return Promise.resolve();
     }
 
     this.getAccountError = undefined;
@@ -199,7 +199,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
         const json = await response.json() as BaseResponse;
         if (json.success === true) {
           this.isLoggedIn = true;
-          await this.getAccount();
+          await this.getAccount(true);
           router.navigate('/journal');
         } else {
           this.loginError = json.error;
