@@ -115,6 +115,7 @@ export class AuthStore extends BaseStore<StoreProps> implements StoreProps  {
             this.isLoggedIn = true;
             this.email = json.result.email;
             this.user_id = json.result.id;
+            this.notifyPropertyChanged('email', 'user_id');
           } else {
             this.isLoggedIn = false;
             this.getAccountError = json.error;
