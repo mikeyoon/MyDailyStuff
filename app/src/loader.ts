@@ -1,6 +1,5 @@
 export async function importRelative(metaUrl: string, file: string) {
-  const directory = metaUrl.substring(0, metaUrl.lastIndexOf('/') + 1);
-  const url = directory + file;
+  const url = new URL(file, metaUrl);
   // TODO: ETags
   const response = await fetch(url, { cache: window.ENV === 'production' ? "default" : 'no-cache', mode: 'same-origin' });
   return await response.text();
@@ -22,5 +21,5 @@ export async function importHtml(metaUrl: string, file: string) {
 }
 
 export async function importCssAndHtml(metaUrl: string, name: string) {
-  return await Promise.all([importCss(metaUrl, name + '.css'), importHtml(metaUrl, `${name}.html`)]);
+  return await Promise.all([importCss(metaUrl, `${name}.css`), importHtml(metaUrl, `${name}.html`)]);
 }
